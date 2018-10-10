@@ -18,16 +18,22 @@ def client_ids(clients):
     return all_clids
 
 def send_connection_info(server,client_source, client_dest):
-    server.send_message(client_dest,json.dumps({
-        "type": "connect_info",
-        "name": client_source['postid'],
-        "con_data": client_source['con_data'],
+    client_source['initiator'] = True
+    client_dest['initiator'] = False
+    server.send_message(client_source,json.dumps({
+        "type": "get_connect_info",
+        'initiator': True,
     }))
 
 def client_mutually_connected(all_clients, client):
     for cli in all_clients:
         if "requested_name" in cli and cli['postid'] == client['requested_name'] and cli['requested_name'] == client['postid'] and client is not cli:
             return cli,client
+
+def get_client_with_requested_con(all_clients, client):
+    for cli in all_clients:
+        if "requested_name" in cli and cli['requested_name'] == client['postid'] and client is not cli:
+            return cli
 
 # Called when a client sends a message
 def message_received(client, server, message):
@@ -46,7 +52,6 @@ def message_received(client, server, message):
             }))
         else:
             client['postid'] = messageobj['info']
-            client['con_data'] = messageobj['outgoing']
             server.send_message(client,json.dumps({
                 "type": "postid_success"
             }))
@@ -67,7 +72,6 @@ def message_received(client, server, message):
             if res is not None:
                 con_client1, con_client2 = res
                 send_connection_info(server,con_client1,con_client2)
-                send_connection_info(server,con_client2,con_client1)
             else:
                 print("no connection!")
         else:
@@ -89,6 +93,29 @@ def message_received(client, server, message):
                 "type": "error",
                 "errname": "NO_REQUEST_TO_DELETE",
             }))
+    elif messageobj['type'] == "signal_data":
+        if 'requested_name' not in client or messageobj['destination'] != client['requested_name']:
+            server.send_message(client,json.dumps({
+                "type": "error",
+                "errname": "NO_REQUEST_SENT",
+            }))
+        other_cli = get_client_with_requested_con(server.clients,client)
+        if other_cli is None:
+            server.send_message(client,json.dumps({
+                "type": "error",
+                "errname": "NO_CLIENT_REQUESTED_YOU",
+            }))
+        elif 'initiator' not in other_cli or not other_cli['initiator']:
+            server.send_message(other_cli,json.dumps({
+                "type": "offer_info",
+                "data": messageobj['data'],
+            }))
+        elif 'initiator' in other_cli and other_cli['initiator']:
+            server.send_message(other_cli,json.dumps({
+                "type": "accepted_info",
+                "data": messageobj['data'],
+            }))
+
     else:
         print("erronious message: {}".format(message))
 

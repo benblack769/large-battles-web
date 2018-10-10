@@ -6,24 +6,30 @@ var socket = new window.WebSocket(conect_string)
 
 var myusername = null;
 
-var peer_con_send = new SimplePeer({
-    initiator: true,
-    trickle: false,
-})
-var peer_con_rec = new SimplePeer({
-    initiator: false,
-    trickle: false,
-})
-var peer_outgoing_data = null;
+var peer_con = null;
 
-
-peer_con_send.on('connect', function () {
-  console.log('CONNECT')
-  peer_con_send.send('myusername: ' + Math.random())
-})
-peer_con_rec.on('data', function (data) {
-  console.log('rec_data: ' + data)
-})
+function init_peer_con(initiator, requested_con_name){
+    peer_con = new SimplePeer({
+        initiator: initiator,
+        trickle: false,
+    })
+    peer_con.on('signal', function(data){
+        console.log(data)
+        socket.send(JSON.stringify({
+            "type": "signal_data",
+            "initiator": initiator,
+            "data": data,
+            "destination": requested_con_name,
+        }))
+    })
+    peer_con.on('connect', function () {
+        console.log('CONNECT')
+        peer_con.send('myusername: ' + Math.random())
+    })
+    peer_con.on('data', function (data) {
+        console.log('rec_data: ' + data)
+    })
+}
 
 socket.onclose = function(e) {
     console.log('Disconnected!');
@@ -53,9 +59,18 @@ function request_clicked(requested_name){
         if (message.type == "request_succeeded"){
             gray_out_requests(message.name)
         }
-        else if (message.type == "connect_info"){
+        else if (message.type == "get_connect_info"){
             console.log("connectinfo triggered")
-            peer_con_rec.signal(message.con_data)
+            init_peer_con(true, requested_name)
+        }
+        else if (message.type == "offer_info"){
+            console.log("offer triggered")
+            init_peer_con(false, requested_name)
+            peer_con.signal(message.data)
+        }
+        else if (message.type == "accepted_info"){
+            console.log("accepted triggered")
+            peer_con.signal(message.data)
         }
         else{
             console.log("bad response from server" + event.data)
@@ -146,7 +161,6 @@ function try_username(name, call_on_success){
     socket.send(JSON.stringify({
         "type": "postid",
         "info": name,
-        "outgoing": peer_outgoing_data,
     }))
     socket.onmessage = function(event){
         var message = JSON.parse(event.data)
@@ -184,9 +198,5 @@ function setup_interactive(){
     $("#refresh_users").click(refresh_users)
 }
 window.onload = function(){
-    peer_con_send.on('signal', function(data){
-        peer_outgoing_data = data
-        console.log(data)
-        socket.onopen = setup_interactive()
-    })
+    socket.onopen = setup_interactive()
 }
