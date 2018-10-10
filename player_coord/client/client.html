@@ -1,0 +1,29 @@
+<script src="simplepeer.min.js"></script>
+
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+
+<script src="get_server_info.js"></script>
+
+<link href="client.css" rel="stylesheet" type="text/css" />
+
+<body>
+<div id="entername">
+    <input id="username_input"></input>
+    <button id="submit">submit</button>
+    <i id="err_too_long" style="color:red" hidden>Username too long</i>
+    <i id="err_already_taken" style="color:red" hidden>Username already taken</i>
+</div>
+<div id="display_users" hidden>
+    <h2>Your username: </h2> <h2 id="myusername"></h2>
+    <button id="refresh_users">refresh</button>
+    <table id="other_users">
+        <tr>
+            <th>Username</th>
+            <th>Request status</th>
+        </tr>
+    </table>
+</div>
+</body>
