@@ -1,0 +1,13 @@
+{
+    "name": "web-script-wars",
+    "license": "MIT",
+    "description": "Highly programmable game",
+    "dependencies": {
+        "jquery": "^3.3.1",
+        "simple-peer": "^9.1.2"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/weepingwillowben/web-script-wars.git"
+    }
+}
