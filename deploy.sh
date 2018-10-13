@@ -1,1 +1,1 @@
- browserify modules/main.js -o static_files/bunde.js
+browserify modules/main.js -o static_files/bundle.js

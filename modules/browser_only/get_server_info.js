@@ -1,10 +1,6 @@
 var SimplePeer = require("simple-peer")
 
-var PORT = 9001
-var server = "ec2-35-165-130-155.us-west-2.compute.amazonaws.com"
-//var server = "localhost"
-var conect_string = 'ws://'+server+':'+PORT
-var socket = new window.WebSocket(conect_string)
+var socket = null
 
 var myusername = null;
 
@@ -13,18 +9,38 @@ var peer_con = null;
 
 var on_interactive_setup_fn = null
 
-function init_socket(){
+function on_init_socket(socket_opened_callback){
+    var PORT = 9001
+    var server = "ec2-35-165-130-155.us-west-2.compute.amazonaws.com"
+    //var server = "localhost"
+    var conect_string = 'ws://'+server+':'+PORT
+
+    socket = new window.WebSocket(conect_string)
+
     socket.onclose = function(e) {
         console.log('Disconnected!');
         $("#entername").show()
         $("#display_users").hide()
     };
+    socket.onopen = socket_opened_callback
 }
 
 function init_peer_con(initiator, requested_con_name){
     peer_con = new SimplePeer({
         initiator: initiator,
         trickle: false,
+        config: {
+          iceServers: [
+              {
+                  urls: "stun:stun.l.google.com:19302"
+              },
+              {
+                  url: 'turn:35.165.130.155:3478',
+                  username: 'benblack',
+                  credential: 'mky34769'
+              }
+          ]
+        }
     })
     peer_con.on('signal', function(data){
         console.log(data)
@@ -204,7 +220,6 @@ function setup_interactive(on_interactive_setup){
     $("#refresh_users").click(refresh_users)
 }
 
-init_socket()
 
 module.exports.setup_interactive = setup_interactive
-module.exports.set_socket = set_socket
+module.exports.on_init_socket = on_init_socket

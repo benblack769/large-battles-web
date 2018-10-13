@@ -9,6 +9,11 @@
 <link href="style.css" rel="stylesheet" type="text/css" />
 
 <body>
+<div id="player_number_choice">
+    <button id="single_player_choice">Single Player</button>
+    <button id="multi_player_choice">Two Player</button>
+</div>
+<div id="player_sync" hidden>
 <div id="entername">
     <input id="username_input"></input>
     <button id="submit">submit</button>
@@ -24,5 +29,11 @@
             <th>Request status</th>
         </tr>
     </table>
+</div>
+</div>
+<div id="game_page" hidden>
+    <canvas id="myCanvas" width="800" height="600">
+    </canvas>
+    <div id="canvas_images" hidden></div>
 </div>
 </body>

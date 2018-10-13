@@ -39,3 +39,6 @@ function create_unit(unit_type,unit_info){
         "icon": unit_info['icon'],
     }
 }
+module.exports = {
+    init_game: init_game,
+}
