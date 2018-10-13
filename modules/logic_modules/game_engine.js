@@ -1,7 +1,8 @@
 var CMath = require('./coord_engine.js')
+var game_config = require("./types.js")
 
-var x_size = 60;
-var y_size = 40;
+var x_size = 20;
+var y_size = 10;
 var num_players = 2;
 
 function init_game(){
@@ -13,7 +14,7 @@ function init_game(){
             game[i][j] = create_empty()
         }
     }
-    get_player_start_coords()
+    place_initial_units(game)
     return game
 }
 function create_empty(){
@@ -22,22 +23,32 @@ function create_empty(){
     }
 }
 function get_player_start_coords(){
-    var min_dist_from_borders = 0.1
-    var min_dist_from_players = 0.2
-    var player_centers = new Array(num_players);
+    var min_dist_from_borders = 0.2
+    var min_dist_from_players = 0.3
+    var player_centers = [];
     for(var i = 0; i < num_players; i++){
         var center;
         do{
             center = CMath.random_coord()
-        }while(CMath.min_distance(center,player_centers) > min_dist_from_players &&
-                CMath.dist_border(center) > min_dist_from_borders)
+            console.log("playdis"+CMath.min_distance(center,player_centers))
+            console.log("bord_dist"+CMath.dist_border(center))
+        }while(CMath.min_distance(center,player_centers) < min_dist_from_players ||
+                CMath.dist_border(center) < min_dist_from_borders);
+        player_centers.push(center)
     }
+    return player_centers
 }
 function place_initial_units(game_data){
+    var centers = get_player_start_coords()
+    for(var i = 0; i < num_players; i++){
+        var cen = centers[i]
+        game_data[cen.y][cen.x] = create_unit("soldier",game_config.unit_types['soldier'],i)
+    }
 }
-function create_unit(unit_type,unit_info){
+function create_unit(unit_type,unit_info,player_id){
     return {
         "category": "unit",
+        "player": player_id,
         "type": unit_type,
         "stats": unit_info['stats'],
         "icon": unit_info['icon'],

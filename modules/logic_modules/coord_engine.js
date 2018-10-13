@@ -38,4 +38,7 @@ module.exports = {
     dist_border: dist_border,
     min_distance: min_distance,
     random_coord: random_coord,
+    distance: distance,
+    min_distance: min_distance,
+    make_coord: make_coord,
 }
