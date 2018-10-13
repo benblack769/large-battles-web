@@ -1,8 +1,11 @@
+var CMath = require('./coord_engine.js')
+
 var x_size = 60;
 var y_size = 40;
 var num_players = 2;
 
 function init_game(){
+    CMath.set_size(x_size,y_size)
     var game = new Array(y_size)
     for(var i = 0; i < y_size; i++){
         game[i] = new Array(x_size)
@@ -10,6 +13,7 @@ function init_game(){
             game[i][j] = create_empty()
         }
     }
+    get_player_start_coords()
     return game
 }
 function create_empty(){
@@ -24,9 +28,9 @@ function get_player_start_coords(){
     for(var i = 0; i < num_players; i++){
         var center;
         do{
-            center = random_coord()
-        }while(min_distance(center,player_centers) > min_dist_from_players &&
-                dist_border(center) > min_dist_from_borders)
+            center = CMath.random_coord()
+        }while(CMath.min_distance(center,player_centers) > min_dist_from_players &&
+                CMath.dist_border(center) > min_dist_from_borders)
     }
 }
 function place_initial_units(game_data){

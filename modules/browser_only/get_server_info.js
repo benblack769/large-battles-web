@@ -1,4 +1,5 @@
 var SimplePeer = require("simple-peer")
+var $ = require('jquery');
 
 var socket = null
 

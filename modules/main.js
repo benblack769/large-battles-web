@@ -4,7 +4,7 @@ var display_board = require("./browser_only/display_board.js")
 
 var game_types = require("./logic_modules/types.js")
 var game_engine = require("./logic_modules/game_engine.js")
-
+var $ = require('jquery');
 
 var peer_con = null;
 
