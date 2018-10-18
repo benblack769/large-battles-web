@@ -1,14 +1,8 @@
-var SimplePeer = require("simple-peer")
 var $ = require('jquery');
 
 var socket = null
 
 var myusername = null;
-
-var peer_con = null;
-
-
-var on_interactive_setup_fn = null
 
 function on_init_socket(socket_opened_callback){
     var PORT = 9001
@@ -24,38 +18,6 @@ function on_init_socket(socket_opened_callback){
         $("#display_users").hide()
     };
     socket.onopen = socket_opened_callback
-}
-
-function init_peer_con(initiator, requested_con_name){
-    peer_con = new SimplePeer({
-        initiator: initiator,
-        trickle: false,
-        config: {
-          iceServers: [
-              {
-                  urls: "stun:stun.l.google.com:19302"
-              },
-              {
-                  url: 'turn:35.165.130.155:3478',
-                  username: 'benblack',
-                  credential: 'mky34769'
-              }
-          ]
-        }
-    })
-    peer_con.on('signal', function(data){
-        console.log(data)
-        socket.send(JSON.stringify({
-            "type": "signal_data",
-            "initiator": initiator,
-            "data": data,
-            "destination": requested_con_name,
-        }))
-    })
-    peer_con.on('connect', function () {
-        console.log('CONNECT')
-        on_interactive_setup_fn(peer_con)
-    })
 }
 
 function add_children(parent,child_list){
@@ -80,19 +42,6 @@ function request_clicked(requested_name){
 
         if (message.type == "request_succeeded"){
             gray_out_requests(message.name)
-        }
-        else if (message.type == "get_connect_info"){
-            console.log("connectinfo triggered")
-            init_peer_con(true, requested_name)
-        }
-        else if (message.type == "offer_info"){
-            console.log("offer triggered")
-            init_peer_con(false, requested_name)
-            peer_con.signal(message.data)
-        }
-        else if (message.type == "accepted_info"){
-            console.log("accepted triggered")
-            peer_con.signal(message.data)
         }
         else{
             console.log("bad response from server" + event.data)
