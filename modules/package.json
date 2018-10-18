@@ -4,7 +4,7 @@
     "description": "Highly programmable game",
     "dependencies": {
         "jquery": "^3.3.1",
-        "simple-peer": "^9.1.2",
+        "simple-peer": "^9.1.2"
     },
     "devDependencies": {
         "tape": "^4.9.1"

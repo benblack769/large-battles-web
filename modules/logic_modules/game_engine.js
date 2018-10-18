@@ -23,16 +23,14 @@ function create_empty(){
     }
 }
 function get_player_start_coords(){
-    var min_dist_from_borders = 0.2
-    var min_dist_from_players = 0.3
+    var min_dist_from_borders = 3
+    var min_dist_from_players = 5
     var player_centers = [];
     for(var i = 0; i < num_players; i++){
         var center;
-        do{
+        do {
             center = CMath.random_coord()
-            console.log("playdis"+CMath.min_distance(center,player_centers))
-            console.log("bord_dist"+CMath.dist_border(center))
-        }while(CMath.min_distance(center,player_centers) < min_dist_from_players ||
+        } while (CMath.min_distance(center,player_centers) < min_dist_from_players ||
                 CMath.dist_border(center) < min_dist_from_borders);
         player_centers.push(center)
     }
