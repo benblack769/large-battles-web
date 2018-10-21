@@ -4,6 +4,8 @@
     "description": "Highly programmable game",
     "dependencies": {
         "jquery": "^3.3.1",
+        "request": "^2.88.0",
+        "sqlite3": "^4.0.2",
         "ws": "^6.1.0"
     },
     "devDependencies": {

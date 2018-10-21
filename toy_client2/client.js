@@ -8,8 +8,9 @@ var conect_string = 'ws://'+server+':'+PORT
 
 var socket = new window.WebSocket(conect_string)
 
-var username = "user1"
-var password = "pass1"
+var username = "user2"
+var password = "pass2"
+
 
 socket.onopen = function(){
     socket.send(JSON.stringify({
