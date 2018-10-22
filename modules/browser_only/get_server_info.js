@@ -1,14 +1,15 @@
 var $ = require('jquery');
+var url_info = require("./url_info.js")
 
 var socket = null
 
 var myusername = null;
 
 function on_init_socket(socket_opened_callback){
-    var PORT = 9001
-    var server = "ec2-35-165-130-155.us-west-2.compute.amazonaws.com"
+    var port = url_info.connect_server_port
+    var server = url_info.connect_server_url
     //var server = "localhost"
-    var conect_string = 'ws://'+server+':'+PORT
+    var conect_string = 'ws://'+server+':'+port
 
     socket = new window.WebSocket(conect_string)
 

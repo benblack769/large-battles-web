@@ -3,30 +3,65 @@
 <link href="style.css" rel="stylesheet" type="text/css" />
 
 <body>
-<div id="player_number_choice">
-    <button id="single_player_choice">Single Player</button>
-    <button id="multi_player_choice">Two Player</button>
+<div class="navbar">
+    <div id="menu">
+      <a href="#contact">Contact</a>
+    </div>
+    <div id="profile">
+        <a href="#signup">Home</a>
+        <a href="#login">News</a>
+    </div>
 </div>
-<div id="player_sync" hidden>
-<div id="entername">
-    <input id="username_input"></input>
-    <button id="submit">submit</button>
-    <i id="err_too_long" style="color:red" hidden>Username too long</i>
-    <i id="err_already_taken" style="color:red" hidden>Username already taken</i>
-</div>
-<div id="display_users" hidden>
-    <h2>Your username: </h2> <h2 id="myusername"></h2>
-    <button id="refresh_users">refresh</button>
-    <table id="other_users">
-        <tr>
-            <th>Username</th>
-            <th>Request status</th>
-        </tr>
-    </table>
-</div>
-</div>
-<div id="game_page" hidden>
-    <canvas id="myCanvas" width="800" height="600"></canvas>
-    <div id="canvas_images" hidden></div>
+
+<div id="main_page_view">
+    <div id="signup_page" class="page_level" hidden>
+          Username:<br>
+          <input type="text" id="username_register_input"/>
+          <br>
+          <button id="submit_username">Submit</button>
+
+          <div id="password_reveal" hidden>
+              Password:<br>
+              <span id="password_register_reveal"> </span>
+              <br>
+              <b>If you wish to be able to use this account over time, save this password somewhere it will not be lost</b>
+          </div>
+          <div id="username_error">
+          </div>
+    </div>
+    <div id="login_page" class="page_level" hidden>
+          Username:<br>
+          <input type="text" id="username_login_input"/>
+          <br>
+          Password:<br>
+          <input type="text" id="password_login_input"/>
+    </div>
+    <div id="main_description_page" class="page_level">
+
+    </div>
+    <div id="rankings_page" class="page_level" hidden>
+        <table id="top_rankings_table">
+            <tr>
+                <th>Username</th>
+                <th>Request status</th>
+            </tr>
+        </table>
+    </div>
+    <div id="live_games" class="page_level" hidden>
+        <button id="refresh_users">refresh</button>
+        <table id="live_games_table">
+            <tr>
+                <th>Username</th>
+                <th>Request status</th>
+            </tr>
+        </table>
+    </div>
+    <div id="single_player" class="page_level" hidden>
+
+    </div>
+    <div id="game_page" class="page_level" hidden>
+        <canvas id="myCanvas" width="800" height="600"></canvas>
+        <div id="canvas_images" hidden></div>
+    </div>
 </div>
 </body>

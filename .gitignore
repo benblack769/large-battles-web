@@ -3,3 +3,6 @@ node_test
 node_modules
 bundle.js
 bundle.min.js
+*.sqlite
+__pycache__
+*.pyc

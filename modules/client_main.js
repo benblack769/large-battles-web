@@ -5,12 +5,12 @@ var display_board = require("./browser_only/display_board.js")
 var game_types = require("./logic_modules/types.js")
 var game_engine = require("./logic_modules/game_engine.js")
 var $ = require('jquery');
+var signup_login = require("./browser_only/signup_login.js")
 
 var peer_con = null;
 
-function interactive_setup_finished(peer_connection){
-    console.log("interactive_setup_finished")
-    peer_con = peer_connection
+function init_all(){
+    signup_login.init_signup_login()
 }
 function start_game(){
     var game_data = game_engine.init_game();
@@ -23,7 +23,9 @@ function start_game(){
 }
 
 window.onload = function(){
-    $("#single_player_choice").click(function(){
+    init_all()
+    signup_login.switch_to_signup()
+    /*$("#single_player_choice").click(function(){
         $("#player_number_choice").hide()
         $("#game_page").show()
         start_game()
@@ -34,5 +36,5 @@ window.onload = function(){
         get_serv_inf.on_init_socket(function(){
             get_serv_inf.setup_interactive(interactive_setup_finished)
         })
-    })
+    })*/
 }
