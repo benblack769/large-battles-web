@@ -9,7 +9,20 @@ var signup_login = require("./browser_only/signup_login.js")
 
 var peer_con = null;
 
+function setup_page_navigation(){
+    $("#signup_naventry").click(function(){
+        signup_login.switch_to_signup()
+    })
+    $("#login_naventry").click(function(){
+        signup_login.switch_to_login()
+    })
+    $("#logout_naventry").click(function(){
+        signup_login.logout()
+    })
+}
+
 function init_all(){
+    setup_page_navigation()
     signup_login.init_signup_login()
 }
 function start_game(){

@@ -5,19 +5,26 @@
 <body>
 <div class="navbar">
     <div id="menu">
-      <a href="#contact">Contact</a>
+      <span id="home_naventry" class="menu_entry">Home</span>
     </div>
     <div id="profile">
-        <a href="#signup">Home</a>
-        <a href="#login">News</a>
+        <div id="signup_login">
+            <span id="signup_naventry" class="menu_entry">Signup</span>
+            <span id="login_naventry" class="menu_entry">Login</span>
+        </div>
+        <div id="login_display" hidden>
+            <span class="username_display">Logged in as</span>
+            <span id="username_navbar_display" class="username_display"></span>
+            <span id="logout_naventry" class="menu_entry">Logout</span>
+        </div>
     </div>
 </div>
 
 <div id="main_page_view">
     <div id="signup_page" class="page_level" hidden>
-          Username:<br>
+          <span>Username:</span><br>
           <input type="text" id="username_register_input"/>
-          <br>
+          <br><br>
           <button id="submit_username">Submit</button>
 
           <div id="password_reveal" hidden>
@@ -35,6 +42,10 @@
           <br>
           Password:<br>
           <input type="text" id="password_login_input"/>
+          <br>
+          <br>
+          <button id="submit_login">Submit</button>
+          <p id="login_error"></p>
     </div>
     <div id="main_description_page" class="page_level">
 

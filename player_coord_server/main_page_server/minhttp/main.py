@@ -24,6 +24,11 @@ def add_header(response):#
     #response.headers['Access-Control-Allow-Credentials'] = 'true'
     return response
 
+@app.route('/rank_users', methods=['GET'])
+def get_users_ranks():
+    exists_query_result = db.session.query(db.exists().where(schema.User.username==response_data['username'])).scalar()
+    
+
 @app.route('/register_user', methods=['POST'])
 def new_info():
     response_data = json.loads(request.get_data())
@@ -42,6 +47,8 @@ def new_info():
         ties=0,
         disconnected=0
     )
+    print(response_data)
+    print(db_entry)
     db.session.add(db_entry)
     db.session.commit()
 
@@ -49,3 +56,20 @@ def new_info():
         "type": "registration_success",
         "username": response_data['username'],
     })
+
+@app.route('/verify_user', methods=['POST'])
+def verify_info():
+    response_data = json.loads(request.get_data())
+    exists_query_result = db.session.query(db.exists().where(schema.User.username==response_data['username'] and schema.User.password==response_data['password'])).scalar()
+    print(exists_query_result)
+    if not exists_query_result:
+        return json.dumps({
+            "type": "login_error",
+            "error_message": "no such username, password combination found.",
+        })
+    else:
+        return json.dumps({
+            "type": "login_success",
+            "username": response_data['username'],
+            "password": response_data['password'],
+        })

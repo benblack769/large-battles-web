@@ -27,6 +27,12 @@ function username_sumbitted(password,response){
         console.log("bad server response!")
     }
 }
+function login_display(){
+    var username = localStorage.getItem("username")
+    $("#signup_login").hide()
+    $("#login_display").show()
+    $("#username_navbar_display").text(username)
+}
 function switch_to_signup(){
     $(".page_level").hide()
     $("#signup_page").show()
@@ -34,7 +40,36 @@ function switch_to_signup(){
     $("#username_error").text("")
     $("#submit_username").prop('disabled', false);
 }
+function switch_to_login(){
+    $(".page_level").hide()
+    $("#login_page").show()
+    $("#submit_login").prop('disabled', false);
+    $("#login_error").text("")
+}
+function logout(){
+    localStorage.removeItem("username")
+    localStorage.removeItem("password")
+    $("#signup_login").show()
+    $("#login_display").hide()
+}
+function login_submitted(response){
+    if(response.type === "login_error"){
+        $("#submit_login").prop('disabled', false);
+        $("#login_error").text(response.error_message)
+    }
+    else if(response.type === "login_success"){
+        localStorage.setItem("password",response.password)
+        localStorage.setItem("username",response.username)
+        login_display()
+    }
+    else{
+        console.log("bad response from server")
+    }
+}
 function init_signup_login(){
+    if(!(localStorage.getItem("username") === null)){
+        login_display()
+    }
     $("#submit_username").click(function(){
         var generated_password = generate_random_string()
         $("#submit_username").prop('disabled', true);
@@ -44,7 +79,7 @@ function init_signup_login(){
             "username": username_summitted,
             "password": generated_password,
         }
-        var full_url = "http://"+url_info.user_server_url + ":" + url_info.user_server_port + "/register_user"
+        var full_url = url_info.user_server_full_url + "/register_user"
         $.ajax(full_url,
             {
                 accepts: 'application/json',
@@ -63,10 +98,38 @@ function init_signup_login(){
             }
         )
     })
+    $("#submit_login").click(function(){
+        $("#submit_login").prop('disabled', true);
+        var data = {
+            "type": "username_verification",
+            "username": $("#username_login_input").val(),
+            "password": $("#password_login_input").val(),
+        }
+        var full_url = url_info.user_server_full_url + "/verify_user"
+        $.ajax(full_url,
+            {
+                accepts: 'application/json',
+                dataType: "json",
+                type: 'post',
+                crossDomain: true,
+                data: JSON.stringify(data),
+                processData: false,
+                success: function(data){
+                    console.log(data)
+                    login_submitted(data)
+                },
+                error: function(jqXhr, textStatus, errorThrown ){
+                    console.log(errorThrown)
+                }
+            }
+        )
+    })
 }
 //console.log(generate_random_string())
 
 module.exports = {
     init_signup_login: init_signup_login,
     switch_to_signup: switch_to_signup,
+    switch_to_login: switch_to_login,
+    logout: logout,
 }
