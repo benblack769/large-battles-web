@@ -9,7 +9,9 @@
 <body>
 <div class="navbar">
     <div id="menu">
-      <span id="home_naventry" class="menu_entry">Home</span>
+        <span id="home_naventry" class="menu_entry">Home</span>
+        <span id="rankings_naventry" class="menu_entry">Rankings</span>
+        <span id="live_connect_naventry" class="menu_entry">Live Games</span>
     </div>
     <div id="profile">
         <div id="signup_login">
@@ -68,13 +70,18 @@
         </div>
     </div>
     <div id="live_games" class="page_level" hidden>
-        <button id="refresh_users">refresh</button>
-        <table id="live_games_table">
-            <tr>
-                <th>Username</th>
-                <th>Request status</th>
-            </tr>
-        </table>
+        <div>
+            <table id="live_games_table">
+                <thead>
+                    <th>Username</th>
+                    <th>Request status</th>
+                </thead>
+                <tbody id="live_games_table_body">
+
+                </tbody>
+            </table>
+        </div>
+
     </div>
     <div id="single_player" class="page_level" hidden>
 

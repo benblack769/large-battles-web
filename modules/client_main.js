@@ -6,25 +6,36 @@ var game_types = require("./logic_modules/types.js")
 var game_engine = require("./logic_modules/game_engine.js")
 var signup_login = require("./browser_only/signup_login.js")
 var rankings_page = require("./browser_only/rankings_page.js")
+var live_connections = require("./browser_only/live_connections_page.js")
 
 var peer_con = null;
 
+function switch_away_from_all(){
+    live_connections.switch_away_from_live_games()
+}
 function setup_page_navigation(){
     $("#signup_naventry").click(function(){
+        switch_away_from_all()
         signup_login.switch_to_signup()
     })
     $("#login_naventry").click(function(){
+        switch_away_from_all()
         signup_login.switch_to_login()
     })
     $("#logout_naventry").click(function(){
         signup_login.logout()
     })
-    $("#home_naventry").click(function(){
+    $("#rankings_naventry").click(function(){
+        switch_away_from_all()
         rankings_page.switch_to_rankings()
+    })
+    $("#live_connect_naventry").click(function(){
+        switch_away_from_all()
+        live_connections.switch_to_live_games()
     })
 }
 
-function init_all(){
+function on_init_all(){
     setup_page_navigation()
     signup_login.init_signup_login()
     rankings_page.init_rankings()

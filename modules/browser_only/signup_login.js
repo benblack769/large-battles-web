@@ -21,6 +21,8 @@ function username_sumbitted(password,response){
         $("#username_error").text("")
         $("#password_reveal").show()
         $("#password_register_reveal").text(password)
+        set_username(response.username,password)
+        login_display()
     }
     else{
         console.log("bad server response!")
@@ -51,14 +53,17 @@ function logout(){
     $("#signup_login").show()
     $("#login_display").hide()
 }
+function set_username(username, password){
+    localStorage.setItem("password",password)
+    localStorage.setItem("username",username)
+}
 function login_submitted(response){
     if(response.type === "login_error"){
         $("#submit_login").prop('disabled', false);
         $("#login_error").text(response.error_message)
     }
     else if(response.type === "login_success"){
-        localStorage.setItem("password",response.password)
-        localStorage.setItem("username",response.username)
+        set_username(response.username,response.password)
         login_display()
     }
     else{

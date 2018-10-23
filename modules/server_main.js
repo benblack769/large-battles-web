@@ -1,5 +1,4 @@
 const WebSocket = require('ws');
-var request = require('request');
 
 console.assert(process.argv.length >= 7, "needs 3 command line arguments, port, unique_game_id, p1_username, p2_username, p1_password, p2_password")
 

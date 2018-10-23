@@ -1,59 +1,54 @@
 from websocket_server import WebsocketServer
 import json
 
-# Called for every client connecting (after handshake)
+def send_clientlist_to_all(server):
+    server.send_message_to_all(json.dumps({
+        "type": "clientlist",
+        "info": client_ids(server.clients)
+    }))
+
 def new_client(client, server):
     print("New client connected and was given id %d" % client['id'])
     #server.send_message_to_all("Hey all, a new client has joined us")
 
 # Called for every client disconnecting
 def client_left(client, server):
+    if 'username' in client:
+        send_clientlist_to_all(server)
     print("Client(%d) disconnected" % client['id'])
 
 def client_ids(clients):
     all_clids = []
     for cli in clients:
-        if "postid" in cli:
-            all_clids.append(cli['postid'])
+        if "username" in cli:
+            all_clids.append(cli['username'])
     return all_clids
-
-def send_connection_info(server,client_source, client_dest):
-    client_source['initiator'] = True
-    client_dest['initiator'] = False
-    server.send_message(client_source,json.dumps({
-        "type": "get_connect_info",
-        'initiator': True,
-    }))
 
 def client_mutually_connected(all_clients, client):
     for cli in all_clients:
-        if "requested_name" in cli and cli['postid'] == client['requested_name'] and cli['requested_name'] == client['postid'] and client is not cli:
+        if "requested_name" in cli and cli['username'] == client['requested_name'] and cli['requested_name'] == client['username'] and client is not cli:
             return cli,client
 
 def get_client_with_requested_con(all_clients, client):
     for cli in all_clients:
-        if "requested_name" in cli and cli['requested_name'] == client['postid'] and client is not cli:
+        if "requested_name" in cli and cli['requested_name'] == client['username'] and client is not cli:
             return cli
 
 # Called when a client sends a message
 def message_received(client, server, message):
     messageobj = json.loads(message)
     print(server.clients)
-    if messageobj['type'] == "postid":
-        if len(messageobj['info']) > 100:
-            server.send_message(client,json.dumps({
-                "type": "error",
-                "errname":"NAME_TOO_LONG"
-            }))
-        elif messageobj['info'] in client_ids(server.clients):
+    if messageobj['type'] == "add_to_waiting":
+        if messageobj['info'] in client_ids(server.clients):
             server.send_message(client,json.dumps({
                 "type": "error",
                 "errname":"CLIENT_ID_USED"
             }))
         else:
-            client['postid'] = messageobj['info']
+            client['username'] = messageobj['info']
+            send_clientlist_to_all(server)
             server.send_message(client,json.dumps({
-                "type": "postid_success"
+                "type": "username_success"
             }))
     elif messageobj['type'] == "get_client_info":
         server.send_message(client,json.dumps({

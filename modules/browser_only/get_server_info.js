@@ -170,6 +170,7 @@ function setup_interactive(on_interactive_setup){
     $("#refresh_users").click(refresh_users)
 }
 
-
-module.exports.setup_interactive = setup_interactive
-module.exports.on_init_socket = on_init_socket
+module.exports = {
+    setup_interactive: setup_interactive,
+    on_init_socket: on_init_socket,
+}

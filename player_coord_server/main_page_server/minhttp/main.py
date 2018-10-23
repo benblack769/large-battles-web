@@ -32,7 +32,7 @@ def sort_users(all_users):
     sortable = []
     for user in all_users:
         sortable.append((score(user),user))
-    sortable.sort()
+    sortable.sort(reverse=True)
     strip_rankings = [user[1] for user in sortable]
     return strip_rankings
 
@@ -70,7 +70,6 @@ def new_info():
         disconnected=0
     )
     print(response_data)
-    print(db_entry)
     db.session.add(db_entry)
     db.session.commit()
 
