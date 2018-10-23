@@ -1,6 +1,10 @@
-<script src="bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.js" crossorigin="anonymous"></script>
 
+<script src="bundle.js" charset="utf-8"></script>
 <link href="style.css" rel="stylesheet" type="text/css" />
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.css" rel="stylesheet" type="text/css" />
 
 <body>
 <div class="navbar">
@@ -51,12 +55,17 @@
 
     </div>
     <div id="rankings_page" class="page_level" hidden>
-        <table id="top_rankings_table">
-            <tr>
+        <div id="table_container">
+            <table id="my-final-table">
+              <thead>
                 <th>Username</th>
-                <th>Request status</th>
-            </tr>
-        </table>
+                <th>Wins</th>
+                <th>Losses</th>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+        </div>
     </div>
     <div id="live_games" class="page_level" hidden>
         <button id="refresh_users">refresh</button>

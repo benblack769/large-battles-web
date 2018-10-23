@@ -1,4 +1,3 @@
-var $ = require('jquery');
 var url_info = require("./url_info.js")
 
 var socket = null

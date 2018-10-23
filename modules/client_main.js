@@ -4,8 +4,8 @@ var display_board = require("./browser_only/display_board.js")
 
 var game_types = require("./logic_modules/types.js")
 var game_engine = require("./logic_modules/game_engine.js")
-var $ = require('jquery');
 var signup_login = require("./browser_only/signup_login.js")
+var rankings_page = require("./browser_only/rankings_page.js")
 
 var peer_con = null;
 
@@ -19,11 +19,15 @@ function setup_page_navigation(){
     $("#logout_naventry").click(function(){
         signup_login.logout()
     })
+    $("#home_naventry").click(function(){
+        rankings_page.switch_to_rankings()
+    })
 }
 
 function init_all(){
     setup_page_navigation()
     signup_login.init_signup_login()
+    rankings_page.init_rankings()
 }
 function start_game(){
     var game_data = game_engine.init_game();

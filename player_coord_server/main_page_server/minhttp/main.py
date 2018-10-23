@@ -24,10 +24,32 @@ def add_header(response):#
     #response.headers['Access-Control-Allow-Credentials'] = 'true'
     return response
 
+
+def score(user):
+    return user.wins / (1.0 + user.losses)
+
+def sort_users(all_users):
+    sortable = []
+    for user in all_users:
+        sortable.append((score(user),user))
+    sortable.sort()
+    strip_rankings = [user[1] for user in sortable]
+    return strip_rankings
+
+def strip_password(user):
+    return {
+        "username": user.username,
+        "wins": user.wins,
+        "losses": user.losses,
+    }
+
 @app.route('/rank_users', methods=['GET'])
 def get_users_ranks():
-    exists_query_result = db.session.query(db.exists().where(schema.User.username==response_data['username'])).scalar()
-    
+    all_users = schema.User.query.all()
+    sorted_users = sort_users(all_users)
+    stripped_users = [strip_password(user) for user in sorted_users]
+    return json.dumps(stripped_users)
+
 
 @app.route('/register_user', methods=['POST'])
 def new_info():
