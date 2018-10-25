@@ -1,12 +1,29 @@
 var WebSocketServer = require('ws').Server;
 var request = require('request');
 var child_process = require('child_process');
+var client_info = require('./logic_modules/game_request_status.js').ClientInfo;
 
 var listen_port = 9003;
 var wss = new WebSocketServer({ port: listen_port });
 console.log("listening on port: "+listen_port)
 
-var waiting_clients = {}
+
+
+var waiting_set = new Set()
+function add_waiting(client_id){
+    waiting_set.add(client_id)
+    update_waiting_for_all()
+}
+function remove_waiting(client_id){
+    waiting_set.delete(client_id)
+    update_waiting_for_all()
+}
+function client_state_error(client_id, errmsg){
+    var socket = waiting_clients.get_client_info(client_id).socket
+    console.log("error: "+errmsg+" from ip: "+socket._socket.remoteAddress)
+    send_error(socket,errmsg)
+}
+var waiting_clients = new client_info(add_waiting, remove_waiting, client_state_error)
 
 function verify_username_password(username,password,on_verify){
     var req_options = {
@@ -23,6 +40,7 @@ function verify_username_password(username,password,on_verify){
             var verify_result = body
             console.log(body)
             if(verify_result.type === "login_success"){
+                console.log("verified!!!")
                 on_verify(true)
             }
             else{
@@ -34,7 +52,7 @@ function verify_username_password(username,password,on_verify){
 function send_error(socket,errname){
     socket.send(JSON.stringify({
         "type": "error",
-        "message": "BAD_USERNAME_PASSWORD_COMBINATION"
+        "message": errname,
     }))
 }
 function get_unused_port(){
@@ -78,7 +96,7 @@ function handle_bad_verification(socket,verified,on_verify){
 function update_waiting(client){
     client.send(JSON.stringify({
         "type":"waiting_clients",
-        "client_list": Object.keys(waiting_clients),
+        "client_list": Array.from(waiting_set.keys()),
     }))
 }
 function update_waiting_for_all(){
@@ -90,62 +108,59 @@ function message_handling(socket,message){
     if(msg.type === "add_to_waiting"){
         verify_username_password(msg.username,msg.password,function(verified){
             handle_bad_verification(socket,verified,function(){
-                socket.send(JSON.stringify({
-                    "type": "waiting_successful"
-                }))
-                waiting_clients[msg.username] = socket
-                socket.__username = msg.username
-                socket.__password = msg.password
-                update_waiting_for_all()
+                var client_info = {
+                    username: msg.username,
+                    password: msg.password,
+                    socket: socket,
+                }
+                if(waiting_clients.authenticated(msg.username, client_info)){
+                    socket.send(JSON.stringify({
+                        "type": "waiting_successful"
+                    }))
+                    socket.__username = msg.username
+                }
             })
         })
     }
-    else if(msg.type === "request_connection"){
-        if(!socket.__username){
-            send_error(socket, "NOT_IN_WAITING_LIST")
-        }
-        else if(!waiting_clients[msg.connect_username]){
-            send_error(socket, "REQUESTED_USER_NOT_WAITING")
-        }
-        else{
+    else if(msg.type === "request_connection") {
+        var myusername = socket.__username
+        if(waiting_clients.requesting(myusername,msg.connect_username)){
             socket.send(JSON.stringify({
                 "type": "request_successful"
             }))
-            waiting_clients[msg.connect_username].send(JSON.stringify({
+            waiting_clients.get_client_info(msg.connect_username).socket.send(JSON.stringify({
                 "type": "request_made",
-                "username": socket.__username,
+                "username": myusername,
             }))
-            socket.__requested_username = msg.connect_username
         }
     }
     else if(msg.type === "accept_request") {
-        if(!socket.__username){
-            send_error(socket, "SELF_NOT_IN_WAITING_LIST")
-        }
-        else if(!waiting_clients[msg.accepted_username]){
-            send_error(socket, "ACCPETED_USERNAME_NOT_IN_WAITING_LIST")
-        }
-        else if(!waiting_clients[msg.accepted_username].__requested_username ||
-                 !(waiting_clients[msg.accepted_username].__requested_username  === socket.__username)){
-            send_error(socket, "ACCPETED_DID_NOT_REQUEST_YOU")
-        }
-        else{
+        var myusername = socket.__username
+        if(waiting_clients.accepting(myusername, msg.accepted_username)){
             socket.send(JSON.stringify({
                 "type": "acceptance_successful"
             }))
-            waiting_clients[msg.accepted_username].send(JSON.stringify({
-                "type": "accepted_request",
-                "username": socket.__username,
-            }),
-            function (error) {
-              // If error is not defined, the send has been completed, otherwise the error
-              // object will indicate what failed.
-              if(error){
-                  send_error(socket, "COULD_NOT_REACH_REQUESTER")
-              }
-              else{
-                  start_game(socket,waiting_clients[msg.accepted_username])
-              }
+            waiting_clients.get_client_info(msg.accepted_username).socket.send(
+                JSON.stringify({
+                    "type": "accepted_request",
+                    "username": myusername,
+                }),
+                function (error) {
+                  // If error is not defined, the send has been completed, otherwise the error
+                  // object will indicate what failed.
+                  if(error){
+                      send_error(socket, "COULD_NOT_REACH_REQUESTER")
+                  }
+                  else{
+                    if(waiting_clients.game_should_start(myusername,msg.accepted_username)){
+                        var my_clientinfo = waiting_clients.get_client_info(myusername)
+                        var other_clientinfo = waiting_clients.get_client_info(msg.accepted_username)
+                        start_game(my_clientinfo,other_clientinfo)
+                    }
+                    else{
+                        send_error(socket, "SOME_STATE_CHANGED_BEFORE_GAME_START")
+                    }
+                  }
             })
         }
     }
@@ -160,8 +175,6 @@ wss.on('connection', function connection(ws) {
             message_handling(ws, message)
     });
     ws.on('close', function() {
-      if(waiting_clients[ws.__username]){
-          delete waiting_clients[ws.__username];
-      }
+        waiting_clients.disconnected(ws.__username)
     })
 })

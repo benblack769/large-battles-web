@@ -3,42 +3,55 @@ var login_info = require("./signup_login.js")
 
 var socket = null;
 
-function make_text(text){
-    var el = document.createElement("span")
-    el.innerText = text
-    return el
-}
 function add_cell(row, cell_data){
     var cell = document.createElement("th")
-    cell.appendChild(cell_data)
+    cell.innerText = (cell_data)
     row.appendChild(cell)
-}
-function make_request_button(username){
-    var button = document.createElement("button")
-    button.onclick = function(){
-        request_connection(username)
-    }
-    button.innerText = "Request connection"
-    return button
 }
 function add_row(username){
     var row = document.createElement("tr")
-    add_cell(row,make_text(username))
-    add_cell(row,make_request_button(username))
+    row.id = "__user"+username
+    add_cell(row,username)
     return row
+}
+function add_request_buttons(){
+    $("#request_button").show()
+    var request_button = document.createElement("th")
+    var button = document.createElement("button")
+    button.innerText = "Request Game"
+    button.onclick = function(){
+        var username = this.parentNode.parentNode.id.slice(6)
+        console.log("connected username: "+ username)
+        request_connection(username)
+    }
+    request_button.appendChild(button)
+    $("#live_games_table_body tr").append(request_button)
 }
 function make_table(user_list){
     console.log(user_list)
     var table = document.getElementById("live_games_table_body")
     table.innerHTML = ""
+    $("#request_button").hide()
+    var myusername = login_info.get_credentials().username
     user_list.forEach(function(user){
-        table.appendChild(add_row(user))
+        if(user !== myusername){
+            table.appendChild(add_row(user))
+        }
     })
+    if(login_info.is_logged_in()){
+        add_request_buttons()
+    }
 }
 function request_connection(username){
-
+    console.log(username + " requested")
+    socket.send(JSON.stringify({
+        type: "request_connection",
+        connect_username: username,
+    }))
 }
 function process_message(msg){
+    console.log("received message of type: " + msg.type)
+    console.log(msg)
     switch(msg.type){
         case "waiting_clients": make_table(msg.client_list); break;
         case "game_started": break;
