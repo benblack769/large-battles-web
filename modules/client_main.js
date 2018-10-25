@@ -35,7 +35,7 @@ function setup_page_navigation(){
     })
 }
 
-function on_init_all(){
+function init_all(){
     setup_page_navigation()
     signup_login.init_signup_login()
     rankings_page.init_rankings()

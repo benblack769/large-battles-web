@@ -1,5 +1,14 @@
 var url_info = require("./url_info.js")
 
+function is_logged_in(){
+    return localStorage.getItem("username") !== null
+}
+function get_credentials(){
+    return {
+        username: localStorage.getItem("username"),
+        password: localStorage.getItem("password"),
+    }
+}
 function uint_to_hex(uint_array){
     var res = ""
     for(var i = 0; i < uint_array.length; i++){
@@ -136,4 +145,6 @@ module.exports = {
     switch_to_signup: switch_to_signup,
     switch_to_login: switch_to_login,
     logout: logout,
+    is_logged_in: is_logged_in,
+    get_credentials: get_credentials,
 }

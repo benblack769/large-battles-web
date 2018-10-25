@@ -20,14 +20,14 @@ function verify_username_password(username,password,on_verify){
 
     request(req_options, function (error, response, body) {
         if (!error && response.statusCode == 200) {
-            var verify_result = JSON.parse(body)
+            var verify_result = body
+            console.log(body)
             if(verify_result.type === "login_success"){
                 on_verify(true)
             }
             else{
                 on_verify(false)
             }
-            console.log(body.id) // Print the shortened url.
         }
     });
 }
@@ -71,10 +71,22 @@ function handle_bad_verification(socket,verified,on_verify){
     if(!verified){
         send_error(socket,"BAD_USERNAME_PASSWORD_COMBINATION")
     }
-    on_verify()
+    else{
+        on_verify()
+    }
+}
+function update_waiting(client){
+    client.send(JSON.stringify({
+        "type":"waiting_clients",
+        "client_list": Object.keys(waiting_clients),
+    }))
+}
+function update_waiting_for_all(){
+    wss.clients.forEach(update_waiting)
 }
 function message_handling(socket,message){
     var msg = JSON.parse(message);
+    console.log(msg)
     if(msg.type === "add_to_waiting"){
         verify_username_password(msg.username,msg.password,function(verified){
             handle_bad_verification(socket,verified,function(){
@@ -84,6 +96,7 @@ function message_handling(socket,message){
                 waiting_clients[msg.username] = socket
                 socket.__username = msg.username
                 socket.__password = msg.password
+                update_waiting_for_all()
             })
         })
     }
@@ -141,15 +154,12 @@ function message_handling(socket,message){
     }
 }
 wss.on('connection', function connection(ws) {
-    ws.send(JSON.stringify({
-        "type":"waiting_clients",
-        "client_list": Object.keys(waiting_clients),
-    }))
-    message_handling(ws)
-    ws.on('message', function incoming(message) {
-      message_handling(socket, message)
+    update_waiting(ws)
+    ws.on('message', function(message) {
+            console.log(message)
+            message_handling(ws, message)
     });
-    ws.on('close', function close() {
+    ws.on('close', function() {
       if(waiting_clients[ws.__username]){
           delete waiting_clients[ws.__username];
       }
