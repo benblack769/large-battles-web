@@ -73,8 +73,6 @@ function request_connection(username){
         connect_username: username,
     }))
     $("#request_issued_live_games").show()
-    $("#main_live_game_page").hide()
-    $("#waiting_for_game_live_games").hide()
     $("#request_username_request").text(username)
 }
 function accept_connection(username){
@@ -83,14 +81,10 @@ function accept_connection(username){
         type: "accept_request",
         accepted_username: username,
     }))
-    $("#request_issued_live_games").hide()
-    $("#main_live_game_page").hide()
-    $("#waiting_for_game_live_games").show()
-    $("#game_starting_username").text(username)
+    request_accepted(username)
 }
 function request_accepted(username){
     $("#request_issued_live_games").hide()
-    $("#main_live_game_page").hide()
     $("#waiting_for_game_live_games").show()
     $("#game_starting_username").text(username)
 }
@@ -100,6 +94,15 @@ function add_all_waiting(waiting_list){
 function game_started(game_info){
     console.log(game_info)
 }
+function remove_username_from_all(username){
+    remove_username_from_table(username)
+    if((document.getElementById("request_issued_live_games").style.display !== 'none' &&
+            $("#request_username_request").text() === username) ||
+        (document.getElementById("waiting_for_game_live_games").style.display !== 'none' &&
+            $("#game_starting_username").text() === username)){
+        reset_page()
+    }
+}
 function process_message(msg){
     console.log("received message of type: " + msg.type)
     console.log(msg)
@@ -108,7 +111,8 @@ function process_message(msg){
         case "add_waiting_username": add_username_to_request_table(msg.username); break;
         case "remove_waiting_username": remove_username_from_table(msg.username); break;
         case "request_made": add_username_to_accept_table(msg.username); break;
-        case "requester_gone": reset_page();  break;
+        case "username_disconnected": remove_username_from_all(msg.username); break;
+        //case "requester_gone": reset_page();  break;
         case "accepted_request": request_accepted(msg.username); break;
         case "game_started": game_started(msg); break;
         case "acceptance_successful": break;
@@ -124,8 +128,13 @@ function reset_page(){
 function switch_to_live_games(){
     $(".page_level").hide()
     $("#live_games").show()
+
     $("#requested_games_table_body").empty()
     $("#waiting_games_table_body").empty()
+
+    $("#main_live_game_page").show()
+    $("#request_issued_live_games").hide()
+    $("#waiting_for_game_live_games").hide()
 
     on_init_socket(function(){
         if(login_info.is_logged_in()){

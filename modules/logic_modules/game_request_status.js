@@ -1,4 +1,4 @@
-function ClientInfo(on_add_waiting, on_remove_waiting, on_add_requester, on_remove_requester, on_error){
+function ClientInfo(on_add_waiting, on_remove_waiting, on_add_requester, on_disconnect, on_error){
     /*
     Each client is a state machine
 
@@ -97,7 +97,8 @@ function ClientInfo(on_add_waiting, on_remove_waiting, on_add_requester, on_remo
     }
     this.disconnected = function(client_id){
         if(this.is_authenticated(client_id)){
-            var client = this.client_mapping[client_id];
+            on_disconnect(client_id)
+            /*var client = this.client_mapping[client_id];
             if(client.type === "authenticated"){
                 on_remove_waiting(client_id)
             }
@@ -105,7 +106,7 @@ function ClientInfo(on_add_waiting, on_remove_waiting, on_add_requester, on_remo
                 if(this.is_authenticated(client.request_name)) {
                     on_remove_requester(this.client_mapping[client.request_name].client_info,client_id)
                 }
-            }
+            }*/
             delete this.client_mapping[client_id]
         }
     }

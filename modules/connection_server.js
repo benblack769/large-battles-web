@@ -32,18 +32,20 @@ function add_requester(target_client_info, client_id){
         "username": client_id,
     }))
 }
-function remove_requester(target_client_info, client_id){
-    target_client_info.socket.send(JSON.stringify({
-        "type": "requester_gone",
-        "username": client_id,
-    }))
+function disconnected(client_id){
+    wss.clients.forEach(function(client){
+        client.send(JSON.stringify({
+            "type": "username_disconnected",
+            "username": client_id,
+        }))
+    })
 }
 function client_state_error(client_id, errmsg){
     var socket = waiting_clients.get_client_info(client_id).socket
     console.log("error: "+errmsg+" from ip: "+socket._socket.remoteAddress)
     send_error(socket,errmsg)
 }
-var waiting_clients = new client_info(add_waiting, remove_waiting, add_requester, remove_requester, client_state_error)
+var waiting_clients = new client_info(add_waiting, remove_waiting, add_requester, disconnected, client_state_error)
 
 function verify_username_password(username,password,on_verify){
     var req_options = {
@@ -186,8 +188,8 @@ function message_handling(socket,message){
 wss.on('connection', function connection(ws) {
     send_full_waiting_list(ws)
     ws.on('message', function(message) {
-            console.log(message)
-            message_handling(ws, message)
+        console.log(message)
+        message_handling(ws, message)
     });
     ws.on('close', function() {
         waiting_clients.disconnected(ws.__username)
