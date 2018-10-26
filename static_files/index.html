@@ -75,15 +75,25 @@
                 <thead id="live_game_table_head">
                     <tr>
                         <th>Username</th>
-                        <th id="request_button" hidden>Request</th>
+                        <th id="request_button" hidden>Request status</th>
                     </tr>
                 </thead>
-                <tbody id="live_games_table_body">
+                <tbody id="requested_games_table_body">
+
+                </tbody>
+                <tbody id="waiting_games_table_body">
 
                 </tbody>
             </table>
         </div>
-
+        <div id="request_issued_live_games" hidden>
+            <span>Request issued. Waiting for response from: </span>
+            <span id="request_username_request"></span>
+        </div>
+        <div id="waiting_for_game_live_games" hidden>
+            <span>Game starting. Waiting for server to start game with: </span>
+            <span id="game_starting_username"></span>
+        </div>
     </div>
     <div id="single_player" class="page_level" hidden>
 

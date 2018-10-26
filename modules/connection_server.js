@@ -9,21 +9,41 @@ console.log("listening on port: "+listen_port)
 
 
 
-var waiting_set = new Set()
 function add_waiting(client_id){
-    waiting_set.add(client_id)
-    update_waiting_for_all()
+    wss.clients.forEach(function(client){
+        client.send(JSON.stringify({
+            "type": "add_waiting_username",
+            "username": client_id,
+        }))
+    })
 }
 function remove_waiting(client_id){
-    waiting_set.delete(client_id)
-    update_waiting_for_all()
+    wss.clients.forEach(function(client){
+        client.send(JSON.stringify({
+            "type": "remove_waiting_username",
+            "username": client_id,
+        }))
+    })
+}
+function add_requester(target_client_info, client_id){
+    console.log("added requester to socket: "+target_client_info.__username)
+    target_client_info.socket.send(JSON.stringify({
+        "type": "request_made",
+        "username": client_id,
+    }))
+}
+function remove_requester(target_client_info, client_id){
+    target_client_info.socket.send(JSON.stringify({
+        "type": "requester_gone",
+        "username": client_id,
+    }))
 }
 function client_state_error(client_id, errmsg){
     var socket = waiting_clients.get_client_info(client_id).socket
     console.log("error: "+errmsg+" from ip: "+socket._socket.remoteAddress)
     send_error(socket,errmsg)
 }
-var waiting_clients = new client_info(add_waiting, remove_waiting, client_state_error)
+var waiting_clients = new client_info(add_waiting, remove_waiting, add_requester, remove_requester, client_state_error)
 
 function verify_username_password(username,password,on_verify){
     var req_options = {
@@ -61,27 +81,29 @@ function get_unused_port(){
 function get_unique_game_id(){
     return 12123
 }
-function start_game(socket1,socket2){
+function start_game(cl1,cl2){
     var game_port = get_unused_port()
     var args = [
         "server_main.js",
         game_port,
         get_unique_game_id(),
-        socket1.__username,
-        socket2.__username,
-        socket1.__password,
-        socket2.__password,
+        cl1.username,
+        cl2.username,
+        cl1.password,
+        cl2.password,
     ]
     child_process.spawn("node",args,{
         detached: true,
         stdio: 'ignore',
     })
-    socket1.send(JSON.stringify({
+    cl1.socket.send(JSON.stringify({
         "type":"game_started",
+        "username": cl2.username,
         "port": game_port,
     }))
-    socket2.send(JSON.stringify({
+    cl2.socket.send(JSON.stringify({
         "type":"game_started",
+        "username": cl1.username,
         "port": game_port,
     }))
 }
@@ -93,14 +115,11 @@ function handle_bad_verification(socket,verified,on_verify){
         on_verify()
     }
 }
-function update_waiting(client){
+function send_full_waiting_list(client){
     client.send(JSON.stringify({
         "type":"waiting_clients",
-        "client_list": Array.from(waiting_set.keys()),
+        "client_list": waiting_clients.get_waiting_list(),
     }))
-}
-function update_waiting_for_all(){
-    wss.clients.forEach(update_waiting)
 }
 function message_handling(socket,message){
     var msg = JSON.parse(message);
@@ -127,10 +146,6 @@ function message_handling(socket,message){
         if(waiting_clients.requesting(myusername,msg.connect_username)){
             socket.send(JSON.stringify({
                 "type": "request_successful"
-            }))
-            waiting_clients.get_client_info(msg.connect_username).socket.send(JSON.stringify({
-                "type": "request_made",
-                "username": myusername,
             }))
         }
     }
@@ -169,7 +184,7 @@ function message_handling(socket,message){
     }
 }
 wss.on('connection', function connection(ws) {
-    update_waiting(ws)
+    send_full_waiting_list(ws)
     ws.on('message', function(message) {
             console.log(message)
             message_handling(ws, message)

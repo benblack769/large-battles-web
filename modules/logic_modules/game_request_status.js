@@ -1,4 +1,4 @@
-function ClientInfo(on_add_waiting, on_remove_waiting, on_error){
+function ClientInfo(on_add_waiting, on_remove_waiting, on_add_requester, on_remove_requester, on_error){
     /*
     Each client is a state machine
 
@@ -45,6 +45,7 @@ function ClientInfo(on_add_waiting, on_remove_waiting, on_error){
         }
         else{
             on_remove_waiting(client_id)
+            on_add_requester(this.client_mapping[requested_client_id].client_info, client_id)
             this.client_mapping[client_id] = {
                 type:"reqesting",
                 request_name: requested_client_id,
@@ -96,8 +97,14 @@ function ClientInfo(on_add_waiting, on_remove_waiting, on_error){
     }
     this.disconnected = function(client_id){
         if(this.is_authenticated(client_id)){
-            if(this.client_mapping[client_id].type === "authenticated"){
+            var client = this.client_mapping[client_id];
+            if(client.type === "authenticated"){
                 on_remove_waiting(client_id)
+            }
+            else if(client.type === "requesting"){
+                if(this.is_authenticated(client.request_name)) {
+                    on_remove_requester(this.client_mapping[client.request_name].client_info,client_id)
+                }
             }
             delete this.client_mapping[client_id]
         }
@@ -105,6 +112,15 @@ function ClientInfo(on_add_waiting, on_remove_waiting, on_error){
     this.get_client_info = function(client_id){
         console.assert(this.is_authenticated(client_id),"got unautheticated client with get_client_info")
         return this.client_mapping[client_id].client_info
+    }
+    this.get_waiting_list = function(){
+        var res_list = []
+        for(var key in this.client_mapping){
+            if(this.client_mapping[key].type === "authenticated"){
+                res_list.push(key)
+            }
+        }
+        return res_list
     }
 }
 
