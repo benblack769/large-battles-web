@@ -6,6 +6,79 @@ table, th, td {
     border: 1px solid black;
 }
 
+/*override bad dynatable background style for th*/
+th {
+  background: #ffffff;
+}
+.dynatable-head {
+  background: #006a72;
+}
+
+/*fix live table widths so that updates don't jitter widths*/
+.live_table_col1 {
+    width: 150px;
+}
+.live_table_col2 {
+    width: 110px;
+}
+
+/*make gray cancel overlays for game requests*/
+.gray_page_overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 50;
+}
+.central_cancel_box {
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    /* size of box on larger screens*/
+    height: 200px;
+    width: 300px;
+    margin: auto;
+    /*differentiates popup background slightly from normal background*/
+    background: rgba(0,0,0,0.5);
+    /* border around box on large screens
+     * pattern:  _ _ blur spread color*/
+    box-shadow: 0 0 10px 10px rgba(0,0,0,0.2);
+    overflow: hidden;
+
+    z-index: 500;
+}
+.horizontal-center{
+    width: 100%;
+    margin: auto;
+}
+.central_cancel_message{
+    height: 50%;
+    font-size: 1.3em;
+    color: white;
+    padding: 0.9em;
+}
+.central_cancel_button_holder{
+    width: 100%;
+    text-align: center;
+}
+.central_cancel_button{
+    font-size: 1.3em;
+    background-color: #000000;
+    margin: auto;
+    border-style: solid;
+    border-color: rgb(100,100,100);
+    padding: 0.2em;
+    color: white;
+}
+.central_cancel_button:active{
+    background-color: #222222;
+}
+
+
 /*
 navigation bar style
 */

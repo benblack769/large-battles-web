@@ -1,10 +1,15 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.js" crossorigin="anonymous"></script>
+<!DOCTYPE html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.js" crossorigin="anonymous"></script>
 
-<script src="bundle.js" charset="utf-8"></script>
-<link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.css" rel="stylesheet" type="text/css" />
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.css" rel="stylesheet" type="text/css" />
+    <script src="bundle.js" charset="utf-8"></script>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+
+    <title>script-wars</title>
+</head>
 
 <body>
 <div class="navbar">
@@ -60,9 +65,11 @@
         <div id="table_container">
             <table id="my-final-table">
               <thead>
-                <th>Username</th>
-                <th>Wins</th>
-                <th>Losses</th>
+                  <tr>
+                    <th>Username</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                </tr>
               </thead>
               <tbody>
               </tbody>
@@ -72,10 +79,14 @@
     <div id="live_games" class="page_level" hidden>
         <div id="main_live_game_page">
             <table id="live_games_table">
+               <colgroup>
+                 <col class="live_table_col1">
+                 <col class="live_table_col2">
+               </colgroup>
                 <thead id="live_game_table_head">
                     <tr>
                         <th>Username</th>
-                        <th id="request_button" hidden>Request status</th>
+                        <th>Request status</th>
                     </tr>
                 </thead>
                 <tbody id="requested_games_table_body">
@@ -86,13 +97,27 @@
                 </tbody>
             </table>
         </div>
-        <div id="request_issued_live_games" hidden>
-            <span>Request issued. Waiting for response from: </span>
-            <span id="request_username_request"></span>
+        <div id="request_issued_live_games" class="gray_page_overlay">
+            <div class="central_cancel_box">
+                <div class="central_cancel_message horizontal-center">
+                    <span>Request issued. Waiting for response from: </span>
+                    <span id="request_username_request"></span>
+                </div>
+                <div class="central_cancel_button_holder">
+                    <span class="central_cancel_button">Cancel</span>
+                </div>
+            </div>
         </div>
-        <div id="waiting_for_game_live_games" hidden>
-            <span>Game starting. Waiting for server to start game with: </span>
-            <span id="game_starting_username"></span>
+        <div id="waiting_for_game_live_games" class="gray_page_overlay">
+            <div class="central_cancel_box">
+                <div class="central_cancel_message horizontal-center">
+                    <span>Game starting. Waiting for server to start game with: </span>
+                    <span id="game_starting_username"></span>
+                </div>
+                <div class="central_cancel_button_holder">
+                    <span class="central_cancel_button">Cancel</span>
+                </div>
+            </div>
         </div>
     </div>
     <div id="single_player" class="page_level" hidden>

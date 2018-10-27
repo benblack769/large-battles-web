@@ -39,6 +39,7 @@ function init_all(){
     setup_page_navigation()
     signup_login.init_signup_login()
     rankings_page.init_rankings()
+    live_connections.init_live_games()
 }
 function start_game(){
     var game_data = game_engine.init_game();

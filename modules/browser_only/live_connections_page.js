@@ -6,9 +6,10 @@ var socket = null;
 function add_cell(row, cell_data){
     var cell = document.createElement("th")
     cell.innerText = (cell_data)
+    cell.class = "live_tab_col1"
     row.appendChild(cell)
 }
-function add_row(username){
+function add_row(username, button){
     var row = document.createElement("tr")
     row.id = "__waiting_user"+username
     add_cell(row,username)
@@ -16,6 +17,7 @@ function add_row(username){
 }
 function add_button(row,button){
     var res = document.createElement("th")
+    res.class = "live_tab_col2"
     res.appendChild(button)
     row.appendChild(res)
 }
@@ -87,6 +89,8 @@ function request_accepted(username){
     $("#request_issued_live_games").hide()
     $("#waiting_for_game_live_games").show()
     $("#game_starting_username").text(username)
+    $("#requested_games_table_body").empty()
+    console.log("request accepted graphic")
 }
 function add_all_waiting(waiting_list){
     waiting_list.forEach(add_username_to_request_table)
@@ -115,10 +119,10 @@ function process_message(msg){
         //case "requester_gone": reset_page();  break;
         case "accepted_request": request_accepted(msg.username); break;
         case "game_started": game_started(msg); break;
-        case "acceptance_successful": break;
+        case "acceptance_successful": request_accepted(msg.username) break;
         case "request_successful": break;
         case "waiting_successful": break;
-        case "error": break;
+        case "error": reset_page(); break;
     }
 }
 function reset_page(){
@@ -158,6 +162,9 @@ function switch_away_from_live_games(){
         socket = null;
     }
 }
+function init_live_games(){
+    $(".central_cancel_button").click(reset_page)
+}
 
 function on_init_socket(socket_opened_callback){
     var port = url_info.connect_server_port
@@ -173,6 +180,7 @@ function on_init_socket(socket_opened_callback){
     socket.onopen = socket_opened_callback
 }
 module.exports = {
+    init_live_games: init_live_games,
     switch_to_live_games: switch_to_live_games,
     switch_away_from_live_games: switch_away_from_live_games,
 }

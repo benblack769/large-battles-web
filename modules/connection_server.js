@@ -155,7 +155,8 @@ function message_handling(socket,message){
         var myusername = socket.__username
         if(waiting_clients.accepting(myusername, msg.accepted_username)){
             socket.send(JSON.stringify({
-                "type": "acceptance_successful"
+                "type": "acceptance_successful",
+                "username": msg.accepted_username,
             }))
             waiting_clients.get_client_info(msg.accepted_username).socket.send(
                 JSON.stringify({

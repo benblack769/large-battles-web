@@ -5,6 +5,8 @@ from flask import Flask, render_template, request, redirect, make_response
 from minhttp import db, app
 from minhttp import schema
 import json
+import re
+
 
 @app.route('/add_info')
 def add_info():
@@ -54,11 +56,24 @@ def get_users_ranks():
 @app.route('/register_user', methods=['POST'])
 def new_info():
     response_data = json.loads(request.get_data())
+
+    if len(response_data['username']) > 16:
+        return json.dumps({
+            "type": "registration_error",
+            "error_message": "USERNAME_TOO_LONG",
+        })
+        
+    if not re.match(r'^[A-Za-z0-9_-]+$', response_data['username']):
+        return json.dumps({
+            "type": "registration_error",
+            "error_message": "USERNAME_NOT_VALID",
+        })
+
     exists_query_result = db.session.query(db.exists().where(schema.User.username==response_data['username'])).scalar()
     if exists_query_result:
         return json.dumps({
             "type": "registration_error",
-            "error_message": "username already taken, please try again with a different username",
+            "error_message": "USERNAME_TAKEN",
         })
 
     db_entry = schema.User(
