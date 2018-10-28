@@ -1,7 +1,7 @@
 var WebSocketServer = require('ws').Server;
 var request = require('request');
 var child_process = require('child_process');
-var client_info = require('./logic_modules/game_request_status.js').ClientInfo;
+var client_info = require('./server_only/game_request_status.js').ClientInfo;
 
 var listen_port = 9003;
 var wss = new WebSocketServer({ port: listen_port });
