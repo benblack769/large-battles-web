@@ -122,3 +122,41 @@ main page style
 #main_page_view {
     margin-top: 45px; /* Add a top margin to avoid content overlay */
 }
+
+/* Main game css */
+
+.game_full_container {
+    position: absolute;
+    top: 45px;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    overflow: hidden;
+}
+.game_overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    z-index: 10;
+    overflow: hidden;
+    background-color: rgba(100,100,100,0.5);
+    overflow-y: hidden;
+}
+.game_script_box {
+    width: 80px;
+    height: 80px;
+    background-color: brown;
+}
+.script_box_button {
+    width: 40px;
+    height: 15px;
+    font-size: 10px;
+}
+.script_box_button:active {
+    color: red;
+    text-decoration: underline;
+}
+.script_box_button:hover {
+    text-decoration: underline;
+}

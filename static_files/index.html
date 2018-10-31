@@ -8,7 +8,7 @@
     <script src="bundle.js" charset="utf-8"></script>
     <link href="style.css" rel="stylesheet" type="text/css" />
 
-    <title>script-wars</title>
+    <title>Script Wars</title>
 </head>
 
 <body>
@@ -17,6 +17,7 @@
         <span id="home_naventry" class="menu_entry">Home</span>
         <span id="rankings_naventry" class="menu_entry">Rankings</span>
         <span id="live_connect_naventry" class="menu_entry">Live Games</span>
+        <span id="single_player_naventry" class="menu_entry">Single Player</span>
     </div>
     <div id="profile">
         <div id="signup_login">
@@ -120,12 +121,22 @@
             </div>
         </div>
     </div>
-    <div id="single_player" class="page_level" hidden>
-
-    </div>
-    <div id="game_page" class="page_level" hidden>
-        <canvas id="myCanvas" width="800" height="600"></canvas>
-        <div id="canvas_images" hidden></div>
+    <div id="single_player_page" class="page_level" hidden>
+        <div class="game_full_container">
+            <!--<canvas id="single_player_canvas" width="800" height="600"></canvas>
+            -->
+            <div class="game_overlay" id="single_page_game_overlay">
+                <div class="game_script_box">
+                    <span class="script_box_button script_box_edit_button">Edit</span>
+                    <span class="script_box_button script_box_delete_button">Delete</span>
+                </div>
+                <div class="game_script_box">
+                    <span class="script_box_button script_box_edit_button">Edit</span>
+                    <span class="script_box_button script_box_delete_button">Delete</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+<div id="canvas_images" hidden></div>
 </body>

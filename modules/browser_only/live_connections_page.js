@@ -119,7 +119,7 @@ function process_message(msg){
         //case "requester_gone": reset_page();  break;
         case "accepted_request": request_accepted(msg.username); break;
         case "game_started": game_started(msg); break;
-        case "acceptance_successful": request_accepted(msg.username) break;
+        case "acceptance_successful": request_accepted(msg.username); break;
         case "request_successful": break;
         case "waiting_successful": break;
         case "error": reset_page(); break;
