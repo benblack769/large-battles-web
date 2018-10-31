@@ -28,6 +28,7 @@ function createSpan(methods){
 function make_change_script_popup(current_value, verifier, callback){
     $("#global_text_popup").show()
     $("#text_edit_textarea").val(current_value)
+    $("#text_edit_error_textarea").val("")
 
     $("#text_edit_ok_button").click(function(){
         $("#text_edit_error_textarea").val("")
@@ -45,30 +46,111 @@ function make_change_script_popup(current_value, verifier, callback){
         $("#global_text_popup").hide()
     })
 }
-class ScriptButton{
-    constructor(){
+class BaseComponent {
+    constructor(parent, basediv){
+        this.__parent = parent;
+        this.basediv = basediv;
+    }
+    messageChildren(message){
+        this.children().forEach(function(child){
+            child.messageDown(message)
+        })
+    }
+    sendMessageUp(message){
+        this.__parent.messageUp(message)
+    }
+    messageDown(message){
+        //no-op
+    }
+    children(){
+        return []
+    }
+}
+class ScriptInterface extends BaseComponent {
+    constructor(parent, basediv){
+        super(parent,basediv)
+        this.mybuttonpannel = new ScriptButtonPannel(this,basediv)
+        this.edit_overlay = new EditOverlay(this,basediv)
+    }
+    children(){
+        return [this.mybuttonpannel, this.edit_overlay]
+    }
+    messageUp(message){
+        switch(message.type){
+            case "EDIT_MODE": this.messageChildren(message); break;
+            case "STOP_EDIT_MODE": this.messageChildren(message); break;
+        }
+    }
+}
+class EditOverlay extends BaseComponent {
+    constructor(parent, basediv){
+        super(parent,basediv)
+        this.overlay_div = createDiv({
+            className: "game_overlay",
+        })
+        $(this.overlay_div).hide()
+        this.overlay_div.onclick = this.overlay_gone.bind(this)
+    }
+    messageDown(message){
+        switch(message.type){
+            case "EDIT_MODE": $(this.overlay_div).show(); break;
+            case "STOP_EDIT_MODE": $(this.overlay_div).hide(); break;
+        }
+    }
+    overlay_gone(){
+        this.sendMessageUp("STOP_EDIT_MODE")
+    }
+}
+class ScriptButtonPannel extends BaseComponent {
+    constructor(parent, basediv){
+        super(parent, basediv)
+        this.buttons = [
+            new ScriptButton(this,basediv),
+            new ScriptButton(this,basediv),
+        ]
+    }
+    messageUp(message){
+        switch(message.type){
+            case "EDIT_MODE": this.messageUp(message); break;
+            case "STOP_EDIT_MODE": this.messageUp(message); break;
+            case "ADD_CELL": break;
+            case "CELL_SELECTED": break;
+            default: console.log(message); break;
+        }
+    }
+    children(){
+        return this.buttons
+    }
+    messageDown(message){
+        switch(message.type){
+            case "EDIT_MODE": this.messageDown(message); break;
+            case "STOP_EDIT_MODE": this.messageDown(message); break;
+        }
+    }
+}
+class ScriptButton extends BaseComponent {
+    constructor(parent, basediv){
+        super(parent, basediv)
+
         this.state = {
             data: {},
             selected: false,
-            editing: false,
+            editing: true,
         }
-        this.should_render = true
-    }
-    changeState(newstate){
-        this.state = newstate
-        this.should_render = true
-    }
-    shouldRender(){
-        return this.should_render
+        this.mydiv = this.render()
+        this.basediv.appendChild(this.mydiv)
     }
     selectScript(){
         console.log("selected")
-        this.changeState(Object.assign({selected:true},this.state))
+        this.state.selected = true;
+        this.changedState()
+        //this.changeState(Object.assign({selected:true},this.state))
     }
-
+    changedState(){
+        this.basediv.replaceChild(this.render(),this.mydiv)
+    }
     render(){
-        this.should_render = false
-        var myChildren = !this.editing ? [] :  [
+        var myChildren = !this.state.editing ? [] :  [
             createSpan({
                 className: "script_box_button script_box_edit_button",
                 innerText: "Edit",
@@ -86,13 +168,16 @@ class ScriptButton{
             onclick: this.selectScript.bind(this),
             children: myChildren,
         })
+        if(this.state.selected){
+            el.classList.add("game_script_box_selected")
+        }
         return el;
     }
 }
 
 function init_single_player(){
-    var button = new ScriptButton()
-    document.getElementById("single_page_game_overlay").appendChild(button.render())
+    var basediv = document.getElementById("single_page_game_overlay")
+    var base = new ScriptInterface(null,basediv)
 
     /*var obj = JSON.stringify({
         hithere: 123,
