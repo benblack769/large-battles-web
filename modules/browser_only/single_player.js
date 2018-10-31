@@ -111,8 +111,7 @@ class ScriptButtonPannel extends BaseComponent {
     }
     messageUp(message){
         switch(message.type){
-            case "EDIT_MODE": this.messageUp(message); break;
-            case "STOP_EDIT_MODE": this.messageUp(message); break;
+            case "SCRIPT_BUTTON_SELECTED": this.messageChildren(message); break;
             case "ADD_CELL": break;
             case "CELL_SELECTED": break;
             default: console.log(message); break;
@@ -123,8 +122,8 @@ class ScriptButtonPannel extends BaseComponent {
     }
     messageDown(message){
         switch(message.type){
-            case "EDIT_MODE": this.messageDown(message); break;
-            case "STOP_EDIT_MODE": this.messageDown(message); break;
+            case "EDIT_MODE": this.messageChildren(message); break;
+            case "STOP_EDIT_MODE": this.messageChildren(message); break;
         }
     }
 }
@@ -140,14 +139,33 @@ class ScriptButton extends BaseComponent {
         this.mydiv = this.render()
         this.basediv.appendChild(this.mydiv)
     }
+    messageDown(message){
+        switch(message.type){
+            case "EDIT_MODE": this.state.editing = true; this.changedState(); break;
+            case "STOP_EDIT_MODE": this.state.editing = false; this.changedState(); break;
+            case "SCRIPT_BUTTON_SELECTED": this.deselectScript(); break;
+        }
+    }
+    deselectScript(){
+        if(this.state.selected){
+            this.state.selected = false;
+            this.changedState()
+        }
+    }
     selectScript(){
-        console.log("selected")
-        this.state.selected = true;
-        this.changedState()
+        if(!this.state.selected){
+            this.sendMessageUp({
+                type: "SCRIPT_BUTTON_SELECTED"
+            })
+            this.state.selected = true;
+            this.changedState()
+        }
         //this.changeState(Object.assign({selected:true},this.state))
     }
     changedState(){
-        this.basediv.replaceChild(this.render(),this.mydiv)
+        var newmydiv = this.render()
+        this.basediv.replaceChild(newmydiv,this.mydiv)
+        this.mydiv = newmydiv
     }
     render(){
         var myChildren = !this.state.editing ? [] :  [
