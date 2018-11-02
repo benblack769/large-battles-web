@@ -1,4 +1,6 @@
-
+var display_board = require("./display_board.js")
+var load_images = require("./load_images.js")
+var game_types = require("../logic_modules/types.js")
 
 function switch_to_single_player(){
     console.log("switched to single player")
@@ -8,6 +10,12 @@ function switch_to_single_player(){
 
 function createEL(name,methods){
     var el = document.createElement(name)
+    if(methods.style){
+        for(var key in methods.style){
+            el.style[key] = methods.style[key]
+        }
+        delete methods.style
+    }
     if(methods.children){
         methods.children.forEach(function(child){
             el.appendChild(child)
@@ -69,8 +77,12 @@ class BaseComponent {
 class ScriptInterface extends BaseComponent {
     constructor(parent, basediv){
         super(parent,basediv)
-        this.mybuttonpannel = new ScriptButtonPannel(this,basediv)
-        this.edit_overlay = new EditOverlay(this,basediv)
+        this.interface_div = createDiv({
+            className: "script_container",
+        })
+        basediv.appendChild(this.interface_div)
+        this.mybuttonpannel = new ScriptButtonPannel(this,this.interface_div)
+        this.edit_overlay = new EditOverlay(this,this.interface_div)
     }
     children(){
         return [this.mybuttonpannel, this.edit_overlay]
@@ -155,7 +167,8 @@ class ScriptButton extends BaseComponent {
     selectScript(){
         if(!this.state.selected){
             this.sendMessageUp({
-                type: "SCRIPT_BUTTON_SELECTED"
+                type: "SCRIPT_BUTTON_SELECTED",
+                data: this.state.data,
             })
             this.state.selected = true;
             this.changedState()
@@ -173,9 +186,7 @@ class ScriptButton extends BaseComponent {
                 className: "script_box_button script_box_edit_button",
                 innerText: "Edit",
             }),
-            createSpan({
-                innerText:"   ",
-            }),
+            document.createTextNode(" "),
             createSpan({
                 className: "script_box_button script_box_delete_button",
                 innerText: "Delete",
@@ -192,11 +203,144 @@ class ScriptButton extends BaseComponent {
         return el;
     }
 }
+function getxy_from_click(event){
+    return {
+        x: event.offsetX,
+        y: event.offsetY,
+    }
+}
+function create_canvas_of_size(gamesize){
+    var sizes = display_board.get_game_pixel_size(gamesize.xsize,gamesize.ysize)
+    var canvas = createEL("canvas",{
+        width: sizes.xsize,
+        height: sizes.ysize,
+    })
+    return canvas
+}
+class BackgroundCanvas extends BaseComponent {
+    constructor(parent,basediv, gamesize){
+        super(parent,basediv)
+        this.canvas = create_canvas_of_size(gamesize)
+        this.context = this.canvas.getContext('2d')
+        display_board.draw_background(this.context,gamesize.xsize,gamesize.ysize)
+        basediv.appendChild(this.canvas)
+    }
+}
+class ForegroundCanvas extends BaseComponent {
+    constructor(parent,basediv,gamesize){
+        super(parent,basediv)
+        this.canvas = create_canvas_of_size(gamesize)
+        this.context = this.canvas.getContext('2d')
+        basediv.appendChild(this.canvas)
+    }
+}
+class ClickInterfaceCanvas extends BaseComponent {
+    constructor(parent, basediv, gamesize){
+        super(parent,basediv)
+        this.canvas = create_canvas_of_size(gamesize)
+        this.context = this.canvas.getContext('2d')
+        basediv.appendChild(this.canvas)
+        display_board.draw_rect(this.context, {x:5,y:6}, "rgba(255,0,0,0.4)", "rgba(255,0,0,0.8)")
+        this.canvas.onclick = this.handleClick.bind(this)
+    }
+    handleClick(clickevent){
+        var xyloc = getxy_from_click(clickevent)
+        var xycoord = display_board.get_game_coords_from_pixels(xyloc.x,xyloc.y)
+        display_board.draw_rect(this.context, xycoord, "rgba(255,0,0,0.4)", "rgba(255,0,0,0.8)")
+    }
+}
+function canvas_overlay_div(basediv){
+    var el = createDiv({
+        className: "canvas_holder",
+    })
+    basediv.appendChild(el)
+    return el
+}
+function canvas_container_div(){
+    return createDiv({
+
+    })
+}
+class GameBoard extends BaseComponent {
+    constructor(parent, basediv, gamesize){
+        super(parent,basediv)
+        this.gamesize = gamesize
+        this.x_pos = 0
+        this.y_pos = 0
+        var sizes = display_board.get_game_pixel_size(gamesize.xsize,gamesize.ysize)
+        this.parent_div = createDiv({
+            style: {
+                position:"fixed",
+                width:sizes.xsize+"px",
+                height:sizes.ysize+"px",
+                top:0+"px",
+                left:0+"px",
+                "z-index": "1",
+            }
+        })
+        this.handleScreenShift({x:0,y:0})
+        basediv.appendChild(this.parent_div)
+        this.background_canvas = new BackgroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
+        this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
+        this.click_interface_canvas = new ClickInterfaceCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
+        this.handle_arrowkeys()
+    }
+    handle_arrowkeys(){
+        document.addEventListener('keydown', (function(e) {
+            var shift_amt = {
+                x: 0,
+                y: 0,
+            }
+            switch (e.keyCode) {
+                case 37:
+                    //left key
+                    shift_amt.x -= 1;
+                    break;
+                case 38:
+                    //up key
+                    shift_amt.y += 1;
+                    break;
+                case 39:
+                    //right key
+                    shift_amt.x += 1;
+                    break;
+                case 40:
+                    //down key
+                    shift_amt.y -= 1;
+                    break;
+            }
+            this.handleScreenShift(shift_amt)
+        }).bind(this));
+    }
+    handleScreenShift(shift){
+        this.x_pos = Math.max(1,Math.min(this.gamesize.xsize+1,this.x_pos+shift.x))
+        this.y_pos = Math.max(1,Math.min(this.gamesize.ysize+1,this.y_pos-shift.y))
+        var game_pix = display_board.game_position_to_pix(this.x_pos,this.y_pos)
+        this.parent_div.style.top = game_pix.y+"px";
+        this.parent_div.style.left = game_pix.x+"px";
+    }
+}
+class GameInterface extends BaseComponent {
+    constructor(parent,basediv,gamesize){
+        super(parent,basediv)
+        this.gameboard = new GameBoard(this,basediv,gamesize)
+        this.script_inter = new ScriptInterface(this,(basediv))
+    }
+    children(){
+        return [this.gameboard, this.script_inter]
+    }
+
+}
 
 function init_single_player(){
     var basediv = document.getElementById("single_page_game_overlay")
-    var base = new ScriptInterface(null,basediv)
-
+    var gamesize = {
+        xsize: 90,
+        ysize: 60,
+    }
+    load_images.on_load_all_images(game_types.get_all_sources(),function(){
+        var base = new GameInterface(null, basediv, gamesize)
+    })
     /*var obj = JSON.stringify({
         hithere: 123,
         bob: "green"

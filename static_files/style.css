@@ -90,6 +90,7 @@ navigation bar style
     top: 0; /* Position the navbar at the top of the page */
     height: 45px;
     width: 100%; /* Full width */
+    z-index: 10000;
 }
 
 /* Links inside the navbar */
@@ -144,10 +145,21 @@ main page style
     background-color: rgba(100,100,100,0.5);
     overflow-y: hidden;
 }
+.script_container {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    overflow: hidden;
+    pointer-events: none;
+}
 .game_script_box {
     width: 80px;
     height: 80px;
     background-color: brown;
+    pointer-events: auto;
 }
 .game_script_box_selected{
     background-color: green;
@@ -219,4 +231,18 @@ main page style
 #text_edit_error_textarea{
     width: 500px;
     height: 50px;
+}
+.all_canvas_container {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    width: 400px;
+    height: 400px;
+}
+.canvas_holder {
+    position:absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
