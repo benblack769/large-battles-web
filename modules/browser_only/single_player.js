@@ -313,11 +313,12 @@ class GameBoard extends BaseComponent {
         }).bind(this));
     }
     handleScreenShift(shift){
-        this.x_pos = Math.max(1,Math.min(this.gamesize.xsize+1,this.x_pos+shift.x))
-        this.y_pos = Math.max(1,Math.min(this.gamesize.ysize+1,this.y_pos-shift.y))
+        this.x_pos = Math.max(-3,Math.min(this.gamesize.xsize+1,this.x_pos+shift.x))
+        this.y_pos = Math.max(-2,Math.min(this.gamesize.ysize+1,this.y_pos-shift.y))
         var game_pix = display_board.game_position_to_pix(this.x_pos,this.y_pos)
         this.parent_div.style.top = game_pix.y+"px";
         this.parent_div.style.left = game_pix.x+"px";
+        console.log(game_pix)
     }
 }
 class GameInterface extends BaseComponent {

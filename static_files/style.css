@@ -232,13 +232,6 @@ main page style
     width: 500px;
     height: 50px;
 }
-.all_canvas_container {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    width: 400px;
-    height: 400px;
-}
 .canvas_holder {
     position:absolute;
     top: 0;

@@ -10,8 +10,8 @@ function get_game_pixel_size(xsize,ysize){
 }
 function game_position_to_pix(xpos,ypos){
     return {
-        x: 45 - xpos * sqr_size,
-        y: 0 - ypos * sqr_size
+        x: 0 - xpos * sqr_size,
+        y: 45 - ypos * sqr_size
     }
 }
 function get_game_coords_from_pixels(xpix,ypix){
@@ -45,8 +45,8 @@ function draw_square(x,y,square_data){
 }
 function draw_background(context, xsize, ysize){
     var background_image = document.getElementById(type_info.background_icon)
-    for(var y = 0; y < xsize; y++){
-        for(var x = 0; x < ysize; x++){
+    for(var y = 0; y < ysize; y++){
+        for(var x = 0; x < xsize; x++){
             context.drawImage(background_image,x*sqr_size,y*sqr_size)
         }
     }
