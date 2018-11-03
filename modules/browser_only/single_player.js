@@ -2,10 +2,12 @@ var display_board = require("./display_board.js")
 var load_images = require("./load_images.js")
 var game_types = require("../logic_modules/types.js")
 
+
 function switch_to_single_player(){
     console.log("switched to single player")
     $(".page_level").hide()
     $("#single_player_page").show()
+    window.scrollTo(80, 40);
 }
 
 function createEL(name,methods){
@@ -277,7 +279,6 @@ class GameBoard extends BaseComponent {
                 bottom: "-10px",
                 width: sizes.xsize+300+"px",
                 height: sizes.ysize+300+"px",
-                overflow: "scroll",
             }
         })
         this.parent_div = createDiv({
