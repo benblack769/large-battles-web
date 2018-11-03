@@ -127,23 +127,13 @@ main page style
 
 /* Main game css */
 
-.game_full_container {
-    position: absolute;
-    top: 45px;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    overflow: hidden;
-}
 .game_overlay {
     position: absolute;
     width: 100%;
     height: 100%;
     bottom: 0;
     z-index: 10;
-    overflow: hidden;
     background-color: rgba(100,100,100,0.5);
-    overflow-y: hidden;
 }
 .script_container {
     position: fixed;
@@ -152,7 +142,6 @@ main page style
     right: 0;
     bottom: 0;
     z-index: 10;
-    overflow: hidden;
     pointer-events: none;
 }
 .game_script_box {

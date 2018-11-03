@@ -82,7 +82,7 @@ class ScriptInterface extends BaseComponent {
         })
         basediv.appendChild(this.interface_div)
         this.mybuttonpannel = new ScriptButtonPannel(this,this.interface_div)
-        this.edit_overlay = new EditOverlay(this,this.interface_div)
+        //this.edit_overlay = new EditOverlay(this,this.interface_div)
     }
     children(){
         return [this.mybuttonpannel, this.edit_overlay]
@@ -268,57 +268,34 @@ class GameBoard extends BaseComponent {
         this.x_pos = 0
         this.y_pos = 0
         var sizes = display_board.get_game_pixel_size(gamesize.xsize,gamesize.ysize)
-        this.parent_div = createDiv({
+        this.super_parent_div = createDiv({
             style: {
-                position:"fixed",
-                width:sizes.xsize+"px",
-                height:sizes.ysize+"px",
-                top:0+"px",
-                left:0+"px",
-                "z-index": "1",
+                position: "absolute",
+                top: "80px",
+                left: "80px",
+                right: "-10px",
+                bottom: "-10px",
+                width: sizes.xsize+300+"px",
+                height: sizes.ysize+300+"px",
+                overflow: "scroll",
             }
         })
-        this.handleScreenShift({x:0,y:0})
-        basediv.appendChild(this.parent_div)
+        this.parent_div = createDiv({
+            style: {
+                position:"absolute",
+                width:sizes.xsize+"px",
+                height:sizes.ysize+"px",
+                top:-50,
+                left:-50,
+                "z-index": "1",
+                overflow: "hidden",
+            }
+        })
+        basediv.appendChild(this.super_parent_div)
+        this.super_parent_div.appendChild(this.parent_div)
         this.background_canvas = new BackgroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.click_interface_canvas = new ClickInterfaceCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
-        this.handle_arrowkeys()
-    }
-    handle_arrowkeys(){
-        document.addEventListener('keydown', (function(e) {
-            var shift_amt = {
-                x: 0,
-                y: 0,
-            }
-            switch (e.keyCode) {
-                case 37:
-                    //left key
-                    shift_amt.x -= 1;
-                    break;
-                case 38:
-                    //up key
-                    shift_amt.y += 1;
-                    break;
-                case 39:
-                    //right key
-                    shift_amt.x += 1;
-                    break;
-                case 40:
-                    //down key
-                    shift_amt.y -= 1;
-                    break;
-            }
-            this.handleScreenShift(shift_amt)
-        }).bind(this));
-    }
-    handleScreenShift(shift){
-        this.x_pos = Math.max(-3,Math.min(this.gamesize.xsize+1,this.x_pos+shift.x))
-        this.y_pos = Math.max(-2,Math.min(this.gamesize.ysize+1,this.y_pos-shift.y))
-        var game_pix = display_board.game_position_to_pix(this.x_pos,this.y_pos)
-        this.parent_div.style.top = game_pix.y+"px";
-        this.parent_div.style.left = game_pix.x+"px";
-        console.log(game_pix)
     }
 }
 class GameInterface extends BaseComponent {
@@ -330,7 +307,6 @@ class GameInterface extends BaseComponent {
     children(){
         return [this.gameboard, this.script_inter]
     }
-
 }
 
 function init_single_player(){
