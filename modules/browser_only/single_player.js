@@ -25,9 +25,6 @@ class GameInterface extends base_inter.BaseComponent {
     }
 }
 function process_clicks(clicks, click_num){
-    console.log("process clicks")
-    console.log(clicks)
-    console.log(click_num)
     my_web_worker.postMessage({
         type: "ACTIVATE_FUNCTION",
         args: clicks,

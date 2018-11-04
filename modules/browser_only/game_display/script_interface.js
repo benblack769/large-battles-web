@@ -99,28 +99,35 @@ class ScriptButtonPannel extends BaseComponent {
             className: "script_container",
         })
         var initial_button_datas = [
-            
+            {
+                click_num:2,
+                js_file:"make_soldier(clicks)",
+            },
+            {
+                click_num:2,
+                js_file:"make_catapult(clicks)",
+            }
         ]
         basediv.appendChild(this.interface_div)
-        this.buttons = [
-            new ScriptButton(this,this.interface_div),
-            new ScriptButton(this,this.interface_div),
-        ]
+        this.makeButtonsFromData(initial_button_datas)
         this.buttons[0].selectScript()
+    }
+    makeButtonsFromData(init_data){
+        this.buttons = []
+        init_data.forEach((data) => {
+            this.buttons.push(new ScriptButton(this, this.interface_div, data))
+        })
     }
     children(){
         return this.buttons
     }
 }
 class ScriptButton extends BaseComponent {
-    constructor(parent, basediv){
+    constructor(parent, basediv, init_data){
         super(parent, basediv)
 
         this.state = {
-            data: {
-                click_num: 2,
-                js_file: "",
-            },
+            data: init_data,
             selected: false,
             editing: false,
         }
