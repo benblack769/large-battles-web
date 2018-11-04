@@ -1,18 +1,23 @@
+function imgLoaded(imgElement) {
+  return imgElement.complete && imgElement.naturalHeight !== 0;
+}
 function on_load_all_images(image_sources, function_to_call){
     // calls function when all images are loaded
     var inc_counter = 0;
-    var parent_el = document.getElementById("canvas_images")
     image_sources.forEach(function(source){
-        var image = document.createElement("img")
-        image.src = "images/"+source
-        image.id = source
-        image.addEventListener( 'load', function(){
+        var image = document.getElementById(source)
+        function image_loaded(){
             inc_counter++;
             if(inc_counter == image_sources.length){
                 function_to_call()
             }
-        })
-        parent_el.appendChild(image)
+        }
+        if(imgLoaded(image)){
+            image_loaded()
+        }
+        else{
+            image.addEventListener( 'load', image_loaded)
+        }
     })
 }
 module.exports = {

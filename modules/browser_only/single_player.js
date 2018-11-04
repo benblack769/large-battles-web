@@ -50,6 +50,13 @@ function init_single_player(){
             js_str: data.js_file,
         })
     })
+    my_web_worker.onmessage = function(message){
+        var message = message.data
+        //validate message
+        //change local game state
+        //relay message to server
+        //display message on canvas
+    }
     /*var obj = JSON.stringify({
         hithere: 123,
         bob: "green"
