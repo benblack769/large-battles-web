@@ -1,9 +1,13 @@
 var display_board = require("../display_board.js")
 var basecomp = require("./base_component.js")
+var signals = require("./global_signals.js")
+
 var BaseComponent = basecomp.BaseComponent
 var createEL = basecomp.createEL
 var createDiv = basecomp.createDiv
 var createSpan = basecomp.createSpan
+
+var Signal = signals.Signal
 
 function getxy_from_click(event){
     return {
@@ -36,19 +40,55 @@ class ForegroundCanvas extends BaseComponent {
         basediv.appendChild(this.canvas)
     }
 }
+class Color {
+    constructor(r,g,b){
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+    toString(alpha){
+        if(alpha){
+            return "rgba("+this.r+","+this.g+","+this.b+","+alpha+")";
+        }else{
+            return "rgb("+this.r+","+this.g+","+this.b+")";
+        }
+    }
+}
 class ClickInterfaceCanvas extends BaseComponent {
     constructor(parent, basediv, gamesize){
         super(parent,basediv)
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
-        display_board.draw_rect(this.context, {x:5,y:6}, "rgba(255,0,0,0.4)", "rgba(255,0,0,0.8)")
+        //display_board.draw_rect(this.context, {x:5,y:6}, "rgba(255,0,0,0.4)", "rgba(255,0,0,0.8)")
         this.canvas.onclick = this.handleClick.bind(this)
+        this.state = {
+            click_stack: [],
+            color_cycle: [new Color(255,0,0),new Color(0,0,255),new Color(255,0,255)],
+            backup_color: new Color(128,128,128),
+        }
+        this.handle_signals()
     }
     handleClick(clickevent){
         var xyloc = getxy_from_click(clickevent)
         var xycoord = display_board.get_game_coords_from_pixels(xyloc.x,xyloc.y)
-        display_board.draw_rect(this.context, xycoord, "rgba(255,0,0,0.4)", "rgba(255,0,0,0.8)")
+        var thiscolor = this.drawColor()
+        this.state.click_stack.push(xycoord)
+        display_board.draw_rect(this.context, xycoord, thiscolor.toString(0.4), thiscolor.toString(0.8))
+    }
+    drawColor(){
+        var num = this.state.click_stack.length
+        var colors = this.state.color_cycle
+        return colors.length > num ? colors[num] : this.state.backup_color
+    }
+    clearClicks(){
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.state.click_stack = []
+    }
+    handle_signals(){
+        signals.clear_clicks.listen(() => {
+            this.clearClicks()
+        })
     }
 
 }
@@ -58,11 +98,6 @@ function canvas_overlay_div(basediv){
     })
     basediv.appendChild(el)
     return el
-}
-function canvas_container_div(){
-    return createDiv({
-
-    })
 }
 class GameBoard extends BaseComponent {
     constructor(parent, basediv, gamesize){

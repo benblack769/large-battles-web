@@ -33,20 +33,6 @@ class BaseComponent {
         this.__parent = parent;
         this.basediv = basediv;
     }
-    messageChildren(message){
-        this.children().forEach(function(child){
-            child.messageDown(message)
-        })
-    }
-    sendMessageUp(message){
-        this.__parent.messageUp(message)
-    }
-    messageUp(message){
-        this.sendMessageUp(message)
-    }
-    messageDown(message){
-        //no-op
-    }
     children(){
         return []
     }

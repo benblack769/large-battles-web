@@ -1,8 +1,17 @@
 var basecomp = require("./base_component.js")
+var signals = require("./global_signals.js")
+
 var BaseComponent = basecomp.BaseComponent
 var createEL = basecomp.createEL
 var createDiv = basecomp.createDiv
 var createSpan = basecomp.createSpan
+
+var Signal = signals.Signal
+
+var edit_signal = new Signal()
+var stop_edit_signal = new Signal()
+var script_selected = new Signal()
+script_selected.listen(()=>signals.clear_clicks.fire())
 
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
@@ -15,6 +24,7 @@ class LibPannel extends BaseComponent {
             js_lib: "",
         }
         this.stop_edit()
+        this.handle_signals()
     }
     start_edit(){
         $(this.interface_div).empty()
@@ -32,7 +42,7 @@ class LibPannel extends BaseComponent {
             innerText: "Stop Edit",
             className: "lib_edit_button",
             parent: this.interface_div,
-            onclick: () => {this.sendMessageUp({type:"STOP_EDIT_MODE"})}
+            onclick: () => {stop_edit_signal.fire()}
         })
     }
     stop_edit(){
@@ -41,14 +51,12 @@ class LibPannel extends BaseComponent {
             innerText: "Edit",
             className: "lib_edit_button",
             parent: this.interface_div,
-            onclick: () => {this.sendMessageUp({type:"EDIT_MODE"})}
+            onclick: () => {edit_signal.fire()}
         })
     }
-    messageDown(message){
-        switch(message.type){
-            case "EDIT_MODE": this.start_edit(); break;
-            case "STOP_EDIT_MODE": this.stop_edit(); break;
-        }
+    handle_signals(){
+        edit_signal.listen(() => {this.start_edit()})
+        stop_edit_signal.listen(() => {this.stop_edit()})
     }
 }
 class ScriptInterface extends BaseComponent {
@@ -61,12 +69,6 @@ class ScriptInterface extends BaseComponent {
     children(){
         return [this.mybuttonpannel,this.libbuttonpannel,this.edit_overlay]
     }
-    messageUp(message){
-        switch(message.type){
-            case "EDIT_MODE": this.messageChildren(message); break;
-            case "STOP_EDIT_MODE": this.messageChildren(message); break;
-        }
-    }
 }
 class EditOverlay extends BaseComponent {
     constructor(parent, basediv){
@@ -77,16 +79,14 @@ class EditOverlay extends BaseComponent {
         basediv.appendChild(this.overlay_div)
         $(this.overlay_div).hide()
         this.overlay_div.onclick = this.overlay_gone.bind(this)
+        this.handle_signals()
     }
-    messageDown(message){
-        console.log(message)
-        switch(message.type){
-            case "EDIT_MODE": $(this.overlay_div).show(); break;
-            case "STOP_EDIT_MODE": $(this.overlay_div).hide(); break;
-        }
+    handle_signals(){
+        edit_signal.listen(() => {$(this.overlay_div).show()})
+        stop_edit_signal.listen(() => {$(this.overlay_div).hide()})
     }
     overlay_gone(){
-        this.sendMessageUp({type:"STOP_EDIT_MODE"})
+        stop_edit_signal.fire()
     }
 }
 class ScriptButtonPannel extends BaseComponent {
@@ -101,22 +101,8 @@ class ScriptButtonPannel extends BaseComponent {
             new ScriptButton(this,this.interface_div),
         ]
     }
-    messageUp(message){
-        switch(message.type){
-            case "SCRIPT_BUTTON_SELECTED": this.messageChildren(message); break;
-            case "ADD_CELL": break;
-            case "CELL_SELECTED": break;
-            default: console.log(message); break;
-        }
-    }
     children(){
         return this.buttons
-    }
-    messageDown(message){
-        switch(message.type){
-            case "EDIT_MODE": this.messageChildren(message); break;
-            case "STOP_EDIT_MODE": this.messageChildren(message); break;
-        }
     }
 }
 class ScriptButton extends BaseComponent {
@@ -129,14 +115,21 @@ class ScriptButton extends BaseComponent {
             editing: false,
         }
         this.mydiv = this.render()
-        this.basediv.appendChild(this.mydiv)
+        basediv.appendChild(this.mydiv)
+        this.handle_signals()
     }
-    messageDown(message){
-        switch(message.type){
-            case "EDIT_MODE": this.state.editing = true; this.changedState(); break;
-            case "STOP_EDIT_MODE": this.state.editing = false; this.changedState(); break;
-            case "SCRIPT_BUTTON_SELECTED": this.deselectScript(); break;
-        }
+    handle_signals(){
+        edit_signal.listen(() => {
+            this.state.editing = true;
+            this.changedState();
+        })
+        stop_edit_signal.listen(() => {
+            this.state.editing = false;
+            this.changedState();
+        })
+        script_selected.listen(() => {
+            this.deselectScript();
+        })
     }
     deselectScript(){
         if(this.state.selected){
@@ -146,10 +139,7 @@ class ScriptButton extends BaseComponent {
     }
     selectScript(){
         if(!this.state.selected){
-            this.sendMessageUp({
-                type: "SCRIPT_BUTTON_SELECTED",
-                data: this.state.data,
-            })
+            script_selected.fire(this.state.data)
             this.state.selected = true;
             this.changedState()
         }
