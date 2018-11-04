@@ -20,6 +20,12 @@ function get_game_coords_from_pixels(xpix,ypix){
         y: Math.floor(ypix / 30.0),
     }
 }
+function clear_rect(ctx,coord){
+    ctx.clearRect(coord.x*sqr_size-1,
+                coord.y*sqr_size-1,
+                sqr_size+2,
+                sqr_size+2);
+}
 function draw_rect(ctx, coord, fillcolor, strokecolor){
     ctx.fillStyle=fillcolor;
     ctx.fillRect(coord.x*sqr_size,
@@ -70,4 +76,5 @@ module.exports = {
     get_game_coords_from_pixels: get_game_coords_from_pixels,
     draw_rect: draw_rect,
     game_position_to_pix: game_position_to_pix,
+    clear_rect: clear_rect,
 }

@@ -54,6 +54,14 @@ class Color {
         }
     }
 }
+function event_to_coord(event){
+    var xyloc = getxy_from_click(event)
+    var xycoord = display_board.get_game_coords_from_pixels(xyloc.x,xyloc.y)
+    return xycoord;
+}
+function deep_equals(obj1,obj2){
+    return JSON.stringify(obj1) === JSON.stringify(obj2)
+}
 class ClickInterfaceCanvas extends BaseComponent {
     constructor(parent, basediv, gamesize){
         super(parent,basediv)
@@ -67,33 +75,65 @@ class ClickInterfaceCanvas extends BaseComponent {
             color_cycle: [new Color(255,0,0),new Color(0,0,255),new Color(255,0,255)],
             backup_color: new Color(128,128,128),
         }
+        this.canvas.onmousemove = (event) => {
+            this.handleMove(event)
+        }
         this.handle_signals()
     }
-    handleClick(clickevent){
-        var xyloc = getxy_from_click(clickevent)
-        var xycoord = display_board.get_game_coords_from_pixels(xyloc.x,xyloc.y)
-        var thiscolor = this.drawColor()
-        this.state.click_stack.push(xycoord)
-        if(this.state.click_stack.length === signals.selectedData.getState().click_num){
-            signals.clickCycleFinished.setState(this.state.click_stack)
+    handleMove(moveevent){
+        var xycoord = event_to_coord(moveevent)
+        var click_stack = this.state.click_stack
+
+        if(click_stack.length){
+            if(deep_equals(xycoord, click_stack[click_stack.length-1])){
+                return;
+            }
             this.clearClicks()
+            click_stack.pop()
         }
-        else{
-            display_board.draw_rect(this.context, xycoord, thiscolor.toString(0.4), thiscolor.toString(0.8))
+        click_stack.push(xycoord)
+        this.drawCoordStack()
+    }
+    drawCoordStack(){
+        var cs = this.state.click_stack
+        for(var i = 0; i < cs.length; i++){
+            this.drawCoord(cs[i],this.drawColor(i))
         }
     }
-    drawColor(){
-        var num = this.state.click_stack.length
+    drawCoord(xycoord,thiscolor){
+        display_board.draw_rect(this.context, xycoord, thiscolor.toString(0.4), thiscolor.toString(0.8))
+    }
+    handleClick(clickevent){
+        var xycoord = event_to_coord(clickevent)
+        var click_stack = this.state.click_stack
+        this.clearClicks()
+        if(click_stack.length){
+            click_stack.pop()
+        }
+        click_stack.push(xycoord)
+        if(click_stack.length === signals.selectedData.getState().click_num){
+            signals.clickCycleFinished.setState(this.state.click_stack)
+            this.clearClicks()
+            this.state.click_stack = []
+        }
+        else{
+            click_stack.push(xycoord)
+            this.drawCoordStack()
+        }
+    }
+    drawColor(num){
         var colors = this.state.color_cycle
         return colors.length > num ? colors[num] : this.state.backup_color
     }
     clearClicks(){
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.state.click_stack = []
+        this.state.click_stack.forEach((coord) => {
+            display_board.clear_rect(this.context,coord)
+        })
     }
     handle_signals(){
         signals.clear_clicks.listen(() => {
             this.clearClicks()
+            this.state.click_stack = []
         })
     }
 }
