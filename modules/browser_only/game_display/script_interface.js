@@ -1,5 +1,6 @@
 var basecomp = require("./base_component.js")
 var signals = require("./global_signals.js")
+var make_change_script_popup = require("./change_script.js").make_change_script_popup
 
 var BaseComponent = basecomp.BaseComponent
 var createEL = basecomp.createEL
@@ -10,8 +11,10 @@ var Signal = signals.Signal
 
 var edit_signal = new Signal()
 var stop_edit_signal = new Signal()
-var script_selected = signals.selectedData
-script_selected.listen(()=>signals.clear_clicks.fire())
+signals.selectedData.listen(()=>signals.clear_clicks.fire())
+edit_signal.listen(()=>signals.clear_clicks.fire())
+signals.clickCycleFinished.listen(()=>signals.clear_clicks.fire())
+
 
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
@@ -95,11 +98,15 @@ class ScriptButtonPannel extends BaseComponent {
         this.interface_div = createDiv({
             className: "script_container",
         })
+        var initial_button_datas = [
+            
+        ]
         basediv.appendChild(this.interface_div)
         this.buttons = [
             new ScriptButton(this,this.interface_div),
             new ScriptButton(this,this.interface_div),
         ]
+        this.buttons[0].selectScript()
     }
     children(){
         return this.buttons
@@ -110,7 +117,10 @@ class ScriptButton extends BaseComponent {
         super(parent, basediv)
 
         this.state = {
-            data: "",
+            data: {
+                click_num: 2,
+                js_file: "",
+            },
             selected: false,
             editing: false,
         }
@@ -127,7 +137,7 @@ class ScriptButton extends BaseComponent {
             this.state.editing = false;
             this.changedState();
         })
-        script_selected.listen(() => {
+        signals.selectedData.listen(() => {
             this.deselectScript();
         })
     }
@@ -139,7 +149,7 @@ class ScriptButton extends BaseComponent {
     }
     selectScript(){
         if(!this.state.selected){
-            script_selected.setState(this.state.data)
+            signals.selectedData.setState(this.state.data)
             this.state.selected = true;
             this.changedState()
         }
@@ -150,9 +160,6 @@ class ScriptButton extends BaseComponent {
         this.basediv.replaceChild(newmydiv,this.mydiv)
         this.mydiv = newmydiv
     }
-    data_edited(new_data){
-        this.state.data = new_data
-    }
     render(){
         var myself = this
         var myChildren = !this.state.editing ? [] :  [
@@ -160,8 +167,14 @@ class ScriptButton extends BaseComponent {
                 className: "script_box_button script_box_edit_button",
                 innerText: "Edit",
                 onclick: (function(){
-                    make_change_script_popup(myself.data,Function,function(js_code){
-                        myself.data = js_code
+                    make_change_script_popup(myself.state.data.js_file,Function,function(js_code){
+                        myself.state.data.js_file = js_code
+                        if(myself.state.selected){
+                            console.log(myself.state)
+                            signals.selectedData.setState(myself.state.data)
+                            myself.state.selected = true;
+                            myself.changedState()
+                        }
                     })
                 })
             }),
@@ -173,9 +186,11 @@ class ScriptButton extends BaseComponent {
         ]
         var el = createDiv({
             className: "game_script_box",
-            onclick: this.selectScript.bind(this),
             children: myChildren,
         })
+        if(!this.state.editing){
+            el.onclick = this.selectScript.bind(this)
+        }
         if(this.state.selected){
             el.classList.add("game_script_box_selected")
         }

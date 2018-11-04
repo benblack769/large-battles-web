@@ -74,7 +74,13 @@ class ClickInterfaceCanvas extends BaseComponent {
         var xycoord = display_board.get_game_coords_from_pixels(xyloc.x,xyloc.y)
         var thiscolor = this.drawColor()
         this.state.click_stack.push(xycoord)
-        display_board.draw_rect(this.context, xycoord, thiscolor.toString(0.4), thiscolor.toString(0.8))
+        if(this.state.click_stack.length === signals.selectedData.getState().click_num){
+            signals.clickCycleFinished.setState(this.state.click_stack)
+            this.clearClicks()
+        }
+        else{
+            display_board.draw_rect(this.context, xycoord, thiscolor.toString(0.4), thiscolor.toString(0.8))
+        }
     }
     drawColor(){
         var num = this.state.click_stack.length
@@ -90,7 +96,6 @@ class ClickInterfaceCanvas extends BaseComponent {
             this.clearClicks()
         })
     }
-
 }
 function canvas_overlay_div(basediv){
     var el = createDiv({

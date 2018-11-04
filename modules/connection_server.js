@@ -49,13 +49,14 @@ var waiting_clients = new client_info(add_waiting, remove_waiting, add_requester
 
 function verify_username_password(username,password,on_verify){
     var req_options = {
-        uri: 'http://localhost:8000/verify_user',
+        uri: 'http://localhost:8803/verify_user',
         method: 'POST',
         json: {
             "username": username,
             "password": password,
         }
     };
+    console.log("requested verification.")
 
     request(req_options, function (error, response, body) {
         if (!error && response.statusCode == 200) {
@@ -75,7 +76,9 @@ function send_error(socket,errname){
     socket.send(JSON.stringify({
         "type": "error",
         "message": errname,
-    }))
+    }),function (error) {
+        //do nothing, we don't really care if an error didn't get processed correctly
+    })
 }
 function get_unused_port(){
     return 9005
@@ -127,8 +130,8 @@ function message_handling(socket,message){
     var msg = JSON.parse(message);
     console.log(msg)
     if(msg.type === "add_to_waiting"){
-        verify_username_password(msg.username,msg.password,function(verified){
-            handle_bad_verification(socket,verified,function(){
+        verify_username_password(msg.username, msg.password, function(verified){
+            handle_bad_verification(socket, verified, function(){
                 var client_info = {
                     username: msg.username,
                     password: msg.password,
@@ -137,7 +140,7 @@ function message_handling(socket,message){
                 if(waiting_clients.authenticated(msg.username, client_info)){
                     socket.send(JSON.stringify({
                         "type": "waiting_successful"
-                    }))
+                    }),function(){})
                     socket.__username = msg.username
                 }
             })

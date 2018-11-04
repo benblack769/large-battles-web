@@ -2,6 +2,7 @@ simple-peer
 node_test
 node_modules
 bundle.js
+static_files/web_worker.js
 bundle.min.js
 *.sqlite
 __pycache__

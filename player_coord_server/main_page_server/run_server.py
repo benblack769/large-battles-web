@@ -3,4 +3,4 @@
 from minhttp import main
 
 if __name__ == '__main__':
-    main.app.run(port=8000,host="0.0.0.0",debug=True)
+    main.app.run(port=8803,host="0.0.0.0",debug=False)

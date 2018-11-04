@@ -35,4 +35,5 @@ module.exports = {
     clear_clicks: new Signal(),
     click_state_finished: new Signal(),
     selectedData: new StateHolder(),
+    clickCycleFinished: new StateHolder(),
 }

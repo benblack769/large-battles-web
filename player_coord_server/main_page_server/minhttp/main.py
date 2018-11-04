@@ -6,6 +6,7 @@ from minhttp import db, app
 from minhttp import schema
 import json
 import re
+import sys
 
 
 @app.route('/add_info')
@@ -62,7 +63,7 @@ def new_info():
             "type": "registration_error",
             "error_message": "USERNAME_TOO_LONG",
         })
-        
+
     if not re.match(r'^[A-Za-z0-9_-]+$', response_data['username']):
         return json.dumps({
             "type": "registration_error",
@@ -96,6 +97,7 @@ def new_info():
 @app.route('/verify_user', methods=['POST'])
 def verify_info():
     response_data = json.loads(request.get_data())
+    print(response_data)
     exists_query_result = db.session.query(db.exists().where(schema.User.username==response_data['username'] and schema.User.password==response_data['password'])).scalar()
     print(exists_query_result)
     if not exists_query_result:
