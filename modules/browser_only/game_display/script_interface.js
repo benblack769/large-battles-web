@@ -10,7 +10,7 @@ var Signal = signals.Signal
 
 var edit_signal = new Signal()
 var stop_edit_signal = new Signal()
-var script_selected = new Signal()
+var script_selected = signals.selectedData
 script_selected.listen(()=>signals.clear_clicks.fire())
 
 class LibPannel extends BaseComponent {
@@ -139,7 +139,7 @@ class ScriptButton extends BaseComponent {
     }
     selectScript(){
         if(!this.state.selected){
-            script_selected.fire(this.state.data)
+            script_selected.setState(this.state.data)
             this.state.selected = true;
             this.changedState()
         }
