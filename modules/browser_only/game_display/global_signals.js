@@ -40,4 +40,5 @@ module.exports = {
     activePlayer: new StateHolder(),
     myPlayer: new StateHolder(),
     moneyChange: new Signal(),
+    gameStateChange: new Signal(),
 }

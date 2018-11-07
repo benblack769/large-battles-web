@@ -3,7 +3,7 @@ var game_config = require("./types.js")
 
 var num_players = 2;
 
-function init_map(x_size,y_size){
+function init_map(x_size, y_size, player_ids){
     CMath.set_size(x_size,y_size)
     var map = new Array(y_size)
     for(var i = 0; i < y_size; i++){
@@ -12,28 +12,14 @@ function init_map(x_size,y_size){
             map[i][j] = create_empty()
         }
     }
-    place_initial_units(map)
+    place_initial_units(game.map, player_ids)
     return map
 }
-class Game {
-    constructor(x_size, y_size, players, player_start_id){
-        this.x_size = x_size
-        this.y_size = y_size
-        this.players = players
-        this.player_turn = player_start_id
-        this.map = init_map(x_size,y_size)
-        this.players.forEach((player) => {
-            player.listen((instr) => {
-
-            })
-        })
-    }
-}
-function init_game(x_size, y_size, players){
+function make_game(map, player_info, first_player){
     return {
-        player_turn: 0,
-        map: init_map(x_size, y_size),
-        players: players,
+        map: map,
+        player_info: player_info,
+        active_player: first_player,
     }
 }
 function create_empty(){
@@ -73,4 +59,5 @@ function create_unit(unit_type,unit_info,player_id){
 }
 module.exports = {
     init_game: init_game,
+    place_initial_units: place_initial_units,
 }

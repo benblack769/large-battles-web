@@ -59,5 +59,5 @@ function start_game(){
 
 window.onload = function(){
     init_all()
-    signup_login.switch_to_signup()
+    single_player.switch_to_single_player()
 }

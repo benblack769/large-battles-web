@@ -38,6 +38,21 @@ class ForegroundCanvas extends BaseComponent {
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
+        signals.gameStateChange.listen(this.onGameStateChange.bind(this))
+    }
+    onGameStateChange(statechange){
+        switch(statechange.type){
+            case "REMOVE": this.removeChange(statechange); break;
+            //case "MOVE": this.removeChange(statechange); break;
+            case "CREATE": this.createChange(statechange); break;
+            default: console.log("bad state change"); break;
+        }
+    }
+    removeChange(data){
+        display_board.clear_rect(this.context,data.coord)
+    }
+    createChange(data){
+        display_board.draw_image(data.icon,data.coord)
     }
 }
 class Color {

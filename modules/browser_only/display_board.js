@@ -38,9 +38,9 @@ function draw_rect(ctx, coord, fillcolor, strokecolor){
                 sqr_size,
                 sqr_size);
 }
-function draw_image(filename,x,y){
+function draw_image(filename,coord){
     var image = document.getElementById(filename)
-    context.drawImage(image,x*sqr_size,y*sqr_size)
+    context.drawImage(image,coord.x*sqr_size,coord.y*sqr_size)
 }
 function draw_square(x,y,square_data){
     draw_image(type_info.background_icon,x,y)
@@ -77,4 +77,5 @@ module.exports = {
     draw_rect: draw_rect,
     game_position_to_pix: game_position_to_pix,
     clear_rect: clear_rect,
+    draw_image: draw_image,
 }
