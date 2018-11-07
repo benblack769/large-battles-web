@@ -84,18 +84,18 @@ function init_single_player(){
         var message = message.data
 
         //validate message
-        var error = validate.validate_instruction(message)
+        var error = validate.validate_instruction(game_state,message)
         if(error){
             console.log("ERROR "+error.name+": \n"+error.message)
             return
         }
-
-        var instr_parts = decompose.decompose_instructions(message)
+        console.log(message)
+        var instr_parts = decompose.decompose_instructions(game_state,message)
         instr_parts.forEach(function(part){
             //change local game state
             consume.consume_change(game_state,part)
             //display message on canvas
-            signals.gameStateChange(part)
+            signals.gameStateChange.fire(part)
         })
         //relay message to server
     }

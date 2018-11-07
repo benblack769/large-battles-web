@@ -29,8 +29,9 @@ function clear_rect(ctx,coord){
 function copy_rect(ctx,start_coord, end_coord){
     var sc = start_coord
     var ec = end_coord
+    console.log("copied")
     var imgData = ctx.getImageData(sc.x*sqr_size,sc.y*sqr_size,sqr_size,sqr_size);
-    ctx.putImageData(imgData,sc.x*sqr_size,sc.y*sqr_size);
+    ctx.putImageData(imgData,ec.x*sqr_size,ec.y*sqr_size);
 }
 function draw_rect(ctx, coord, fillcolor, strokecolor){
     ctx.fillStyle=fillcolor;

@@ -56,7 +56,8 @@ class ForegroundCanvas extends BaseComponent {
     }
     moveChange(start_coord, end_coord){
         console.log("moved!")
-        display_board.copy_rect(this.context,start_coord, end_coord)
+        display_board.copy_rect(this.context, start_coord, end_coord)
+        display_board.clear_rect(this.context,start_coord)
     }
 }
 class Color {

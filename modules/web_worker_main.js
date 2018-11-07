@@ -11,7 +11,12 @@ function make_catapult(clicks){
     console.log("made catapult at: "+clicks[0])
 }
 function make_soldier(clicks){
-    console.log("made soldier at: "+clicks[0])
+    console.log("made soldier at: "+JSON.stringify(clicks[0]))
+    postMessage({
+        type: "MOVE",
+        start_coord: clicks[0],
+        end_coord: clicks[1],
+    })
 }
 
 onmessage = function(message){
