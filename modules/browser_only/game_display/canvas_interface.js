@@ -112,8 +112,7 @@ class ClickInterfaceCanvas extends BaseComponent {
         }
         click_stack.push(xycoord)
         if(click_stack.length === signals.selectedData.getState().click_num){
-            signals.clickCycleFinished.setState(this.state.click_stack)
-            this.clearClicks()
+            signals.clickCycleFinished.fire(this.state.click_stack)
             this.state.click_stack = []
         }
         else{

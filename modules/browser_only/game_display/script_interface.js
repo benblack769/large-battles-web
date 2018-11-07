@@ -1,9 +1,10 @@
 var basecomp = require("./base_component.js")
 var signals = require("./global_signals.js")
+var player_utils = require("../player_utils.js")
 var make_change_script_popup = require("./change_script.js").make_change_script_popup
 
 var BaseComponent = basecomp.BaseComponent
-var createEL = basecomp.createEL
+var createEl = basecomp.createEL
 var createDiv = basecomp.createDiv
 var createSpan = basecomp.createSpan
 
@@ -14,7 +15,6 @@ var stop_edit_signal = new Signal()
 signals.selectedData.listen(()=>signals.clear_clicks.fire())
 edit_signal.listen(()=>signals.clear_clicks.fire())
 signals.clickCycleFinished.listen(()=>signals.clear_clicks.fire())
-
 
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
@@ -204,6 +204,87 @@ class ScriptButton extends BaseComponent {
         return el;
     }
 }
+class PlayerInfoPannel extends BaseComponent {
+    constructor(parent, basediv, player_ids){
+        super(parent, basediv)
+        var player_rows = player_ids.map(this.makePlayerRow.bind(this))
+        this.table_div = document.getElementById("player_info_tbody")
+        this.table_div.innerHTML = ''
+        player_rows.forEach((row)=>this.table_div.appendChild(row))
+        this.createEndTurnButton()
+    }
+    createEndTurnButton(){
+        $("#end_turn_button").click(function(){
+            signals.ended_turn.fire()
+        })
+        function status_changed(){
+            if(signals.activePlayer.getState() === signals.myPlayer.getState()){
+                $("#end_turn_button").show()
+            }
+            else{
+                $("#end_turn_button").hide()
+            }
+        }
+        signals.activePlayer.listen(status_changed)
+        signals.myPlayer.listen(status_changed)
+    }
+    createStatusCircle(player_id){
+        var circ = createSpan({
+            className: "player_status_dot",
+        })
+        signals.activePlayer.listen(() => this.statusChanged(circ,player_id))
+        signals.myPlayer.listen(() => this.statusChanged(circ,player_id))
+        return circ
+    }
+    statusChanged(circ,player_id){
+        var act_player = signals.activePlayer.getState()
+        var myplayer = signals.myPlayer.getState()
+        var newcolor = this.colorForState(player_id,myplayer,act_player)
+        circ.style["background-color"] = newcolor
+    }
+    makePlayerRow(player_id){
+        var player_box = createEl('tr',{
+            children: [
+                createEl('td',{
+                    children: [this.createStatusCircle(player_id)]
+                }),
+                createEl('td',{
+                    children: [createSpan({
+                        innerText: player_id
+                    })]
+                }),
+                createEl('td',{
+                    children: [this.makeMoney(player_id)]
+                })
+            ]
+        })
+        return player_box
+    }
+    colorForState(this_id,my_id,active_id){
+        if(this_id === my_id && this_id === active_id){
+            return "green"
+        }
+        else if(this_id === my_id){
+            return "blue"
+        }
+        else if(this_id === active_id){
+            return "red"
+        }
+        else{
+            return "white"
+        }
+    }
+    makeMoney(player_id){
+        var money = createSpan({})
+        signals.moneyChange.listen((money_player) => {
+            if(money_player.player === player_id){
+                money.innerText = money_player.money
+            }
+        })
+        return money
+    }
+}
 module.exports = {
     ScriptInterface: ScriptInterface,
+    PlayerInfoPannel: PlayerInfoPannel,
 }

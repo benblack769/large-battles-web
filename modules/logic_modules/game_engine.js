@@ -1,21 +1,40 @@
 var CMath = require('./coord_engine.js')
 var game_config = require("./types.js")
 
-var x_size = 20;
-var y_size = 10;
 var num_players = 2;
 
-function init_game(){
+function init_map(x_size,y_size){
     CMath.set_size(x_size,y_size)
-    var game = new Array(y_size)
+    var map = new Array(y_size)
     for(var i = 0; i < y_size; i++){
-        game[i] = new Array(x_size)
+        map[i] = new Array(x_size)
         for(var j = 0; j < x_size; j++){
-            game[i][j] = create_empty()
+            map[i][j] = create_empty()
         }
     }
-    place_initial_units(game)
-    return game
+    place_initial_units(map)
+    return map
+}
+class Game {
+    constructor(x_size, y_size, players, player_start_id){
+        this.x_size = x_size
+        this.y_size = y_size
+        this.players = players
+        this.player_turn = player_start_id
+        this.map = init_map(x_size,y_size)
+        this.players.forEach((player) => {
+            player.listen((instr) => {
+
+            })
+        })
+    }
+}
+function init_game(x_size, y_size, players){
+    return {
+        player_turn: 0,
+        map: init_map(x_size, y_size),
+        players: players,
+    }
 }
 function create_empty(){
     return {

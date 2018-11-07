@@ -88,10 +88,11 @@ function get_unique_game_id(){
 }
 function start_game(cl1,cl2){
     var game_port = get_unused_port()
+    var unique_game_id = get_unique_game_id();
     var args = [
         "server_main.js",
         game_port,
-        get_unique_game_id(),
+        unique_game_id,
         cl1.username,
         cl2.username,
         cl1.password,
@@ -105,11 +106,13 @@ function start_game(cl1,cl2){
         "type":"game_started",
         "username": cl2.username,
         "port": game_port,
+        "game_id": unique_game_id,
     }))
     cl2.socket.send(JSON.stringify({
         "type":"game_started",
         "username": cl1.username,
         "port": game_port,
+        "game_id": unique_game_id,
     }))
 }
 function handle_bad_verification(socket,verified,on_verify){

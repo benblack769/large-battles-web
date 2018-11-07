@@ -5,9 +5,9 @@ class Signal {
     listen(func){
         this.listeners.push(func)
     }
-    fire(){
+    fire(data){
         this.listeners.forEach(function(func){
-            func()
+            func(data)
         })
     }
 }
@@ -35,5 +35,9 @@ module.exports = {
     clear_clicks: new Signal(),
     click_state_finished: new Signal(),
     selectedData: new StateHolder(),
-    clickCycleFinished: new StateHolder(),
+    clickCycleFinished: new Signal(),
+    ended_turn: new Signal(),
+    activePlayer: new StateHolder(),
+    myPlayer: new StateHolder(),
+    moneyChange: new Signal(),
 }

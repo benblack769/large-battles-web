@@ -4,6 +4,7 @@ var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 var base_inter = require("./game_display/base_component.js")
 var signals = require("./game_display/global_signals.js")
+var player_utils = require("./player_utils.js")
 
 var my_web_worker = new Worker("web_worker.js")
 
@@ -15,10 +16,11 @@ function switch_to_single_player(){
 }
 
 class GameInterface extends base_inter.BaseComponent {
-    constructor(parent,basediv,gamesize){
+    constructor(parent,basediv,gamesize,init_player_state){
         super(parent,basediv)
         this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize)
         this.script_inter = new script_inter.ScriptInterface(this,(basediv))
+        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state)
     }
     children(){
         return [this.gameboard, this.script_inter]
@@ -30,18 +32,26 @@ function process_clicks(clicks, click_num){
         args: clicks,
     })
 }
-
+function deep_copy(obj){
+    return JSON.parse(JSON.stringify(obj))
+}
 function init_single_player(){
     var basediv = document.getElementById("single_page_game_overlay")
     var gamesize = {
-        xsize: 90,
-        ysize: 60,
+        xsize: 30,
+        ysize: 20,
     }
+    var mystate = player_utils.example_player_state
     load_images.on_load_all_images(game_types.get_all_sources(),function(){
-        var base = new GameInterface(null, basediv, gamesize)
+        var base = new GameInterface(null, basediv, gamesize, mystate.players_order)
+        player_utils.init_player_interface(mystate,"ben's player","ben's player")
     })
     signals.clickCycleFinished.listen(function(clicks){
         process_clicks(clicks, signals.selectedData.getState().click_num)
+    })
+    signals.ended_turn.listen(() => {
+        player_utils.turn_ended(mystate)
+        signals.myPlayer.setState(signals.activePlayer.getState())
     })
     signals.selectedData.listen(function(data){
         console.log(data)

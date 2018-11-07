@@ -243,3 +243,27 @@ main page style
 .lib_edit_button:hover {
     background: blue;
 }
+.player_info_bar {
+    position: fixed;
+    top: 45px;
+    right: 0;
+    z-index: 2;
+    text-align: center;
+}
+.player_status_dot {
+  height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+.player_info_table{
+    background-color: white;
+}
+.player_info_button {
+    width: 100%;
+    background-color: red;
+}
+.player_info_button:hover {
+    background-color: blue;
+}
