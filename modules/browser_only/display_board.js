@@ -26,6 +26,12 @@ function clear_rect(ctx,coord){
                 sqr_size+2,
                 sqr_size+2);
 }
+function copy_rect(ctx,start_coord, end_coord){
+    var sc = start_coord
+    var ec = end_coord
+    var imgData = ctx.getImageData(sc.x*sqr_size,sc.y*sqr_size,sqr_size,sqr_size);
+    ctx.putImageData(imgData,sc.x*sqr_size,sc.y*sqr_size);
+}
 function draw_rect(ctx, coord, fillcolor, strokecolor){
     ctx.fillStyle=fillcolor;
     ctx.fillRect(coord.x*sqr_size,
@@ -38,16 +44,9 @@ function draw_rect(ctx, coord, fillcolor, strokecolor){
                 sqr_size,
                 sqr_size);
 }
-function draw_image(filename,coord){
+function draw_image(context,filename,coord){
     var image = document.getElementById(filename)
     context.drawImage(image,coord.x*sqr_size,coord.y*sqr_size)
-}
-function draw_square(x,y,square_data){
-    draw_image(type_info.background_icon,x,y)
-    if(square_data.category == "unit"){
-        var icon = square_data['icon']
-        draw_image(icon,x,y)
-    }
 }
 function draw_background(context, xsize, ysize){
     var background_image = document.getElementById(type_info.background_icon)
@@ -78,4 +77,5 @@ module.exports = {
     game_position_to_pix: game_position_to_pix,
     clear_rect: clear_rect,
     draw_image: draw_image,
+    copy_rect: copy_rect,
 }

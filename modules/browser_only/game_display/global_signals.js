@@ -1,37 +1,21 @@
-class Signal {
-    constructor(initial_state){
-        this.listeners = []
-    }
-    listen(func){
-        this.listeners.push(func)
-    }
-    fire(data){
-        this.listeners.forEach(function(func){
-            func(data)
-        })
-    }
-}
-class StateHolder {
-    constructor(initial_state){
-        this.listeners = []
-        this._state = initial_state
-    }
-    getState(){
-        return this._state
-    }
-    setState(newstate){
-        this._state = newstate
-        this.listeners.forEach(function(func){
-            func(newstate)
-        })
-    }
-    listen(func){
-        this.listeners.push(func)
-    }
-}
+var signal_lib = require("../../logic_modules/signals.js")
+var Signal = signal_lib.Signal
+var StateHolder = signal_lib.StateHolder
 
+function clear_all_listeners(){
+    module.exports.clear_clicks.clear()
+    module.exports.click_state_finished.clear()
+    module.exports.selectedData.clear()
+    module.exports.clickCycleFinished.clear()
+    module.exports.ended_turn.clear()
+    module.exports.activePlayer.clear()
+    module.exports.myPlayer.clear()
+    module.exports.moneyChange.clear()
+    module.exports.gameStateChange.clear()
+}
 module.exports = {
     Signal: Signal,
+    clear_all_listeners: clear_all_listeners,
     clear_clicks: new Signal(),
     click_state_finished: new Signal(),
     selectedData: new StateHolder(),

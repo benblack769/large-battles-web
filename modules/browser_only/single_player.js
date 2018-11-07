@@ -4,6 +4,10 @@ var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 var base_inter = require("./game_display/base_component.js")
 var signals = require("./game_display/global_signals.js")
+var validate = require("../logic_modules/validate_instruction.js")
+var decompose = require("../logic_modules/decompose_instructions.js")
+var consume = require("../logic_modules/consume_instructions.js")
+var init_game = require("../logic_modules/game_engine.js")
 var player_utils = require("./player_utils.js")
 
 var my_web_worker = new Worker("web_worker.js")
@@ -42,9 +46,25 @@ function init_single_player(){
         ysize: 20,
     }
     var mystate = player_utils.example_player_state
+    var map = init_game.init_map(gamesize)
+    var game_state = {
+        players: mystate,
+        map: map,
+    }
+    var init_units_messages = init_game.place_initial_units(gamesize,mystate.players_order)
+
+    init_units_messages.forEach(function(part){
+        //change local game state
+        consume.consume_change(game_state,part)
+    })
     load_images.on_load_all_images(game_types.get_all_sources(),function(){
         var base = new GameInterface(null, basediv, gamesize, mystate.players_order)
         player_utils.init_player_interface(mystate,"ben's player","ben's player")
+        //init canvas positions
+        init_units_messages.forEach(function(part){
+            //display message on canvas
+            signals.gameStateChange.fire(part)
+        })
     })
     signals.clickCycleFinished.listen(function(clicks){
         process_clicks(clicks, signals.selectedData.getState().click_num)
@@ -62,10 +82,22 @@ function init_single_player(){
     })
     my_web_worker.onmessage = function(message){
         var message = message.data
+
         //validate message
-        //change local game state
+        var error = validate.validate_instruction(message)
+        if(error){
+            console.log("ERROR "+error.name+": \n"+error.message)
+            return
+        }
+
+        var instr_parts = decompose.decompose_instructions(message)
+        instr_parts.forEach(function(part){
+            //change local game state
+            consume.consume_change(game_state,part)
+            //display message on canvas
+            signals.gameStateChange(part)
+        })
         //relay message to server
-        //display message on canvas
     }
     /*var obj = JSON.stringify({
         hithere: 123,

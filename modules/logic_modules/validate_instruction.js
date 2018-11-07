@@ -37,11 +37,11 @@ function validate_instruction(gamestate,instr){
         else{
             throw new Error('Bad type')
         }
-        return true;
+        return null;
     }
     catch(e) {
         console.log("ERROR "+e.name+": \n"+e.message)
-        return false;
+        return e;
     }
 }
 module.exports = {

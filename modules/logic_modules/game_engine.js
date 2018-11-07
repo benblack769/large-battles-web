@@ -1,52 +1,51 @@
-var CMath = require('./coord_engine.js')
+var CMath = require('./coord_engine.js').CMath
 var game_config = require("./types.js")
 
 var num_players = 2;
 
-function init_map(x_size, y_size, player_ids){
-    CMath.set_size(x_size,y_size)
-    var map = new Array(y_size)
-    for(var i = 0; i < y_size; i++){
-        map[i] = new Array(x_size)
-        for(var j = 0; j < x_size; j++){
+function init_map(gamesize){
+    var map = new Array(gamesize.ysize)
+    for(var i = 0; i < gamesize.ysize; i++){
+        map[i] = new Array(gamesize.xsize)
+        for(var j = 0; j < gamesize.xsize; j++){
             map[i][j] = create_empty()
         }
     }
-    place_initial_units(game.map, player_ids)
     return map
-}
-function make_game(map, player_info, first_player){
-    return {
-        map: map,
-        player_info: player_info,
-        active_player: first_player,
-    }
 }
 function create_empty(){
     return {
         "category": "empty"
     }
 }
-function get_player_start_coords(){
+function get_player_start_coords(gamesize){
+    var cmath = new CMath(gamesize.xsize, gamesize.ysize)
     var min_dist_from_borders = 3
     var min_dist_from_players = 5
     var player_centers = [];
     for(var i = 0; i < num_players; i++){
         var center;
         do {
-            center = CMath.random_coord()
-        } while (CMath.min_distance(center,player_centers) < min_dist_from_players ||
-                CMath.dist_border(center) < min_dist_from_borders);
+            center = cmath.random_coord()
+        } while (cmath.min_distance(center,player_centers) < min_dist_from_players ||
+                cmath.dist_border(center) < min_dist_from_borders);
         player_centers.push(center)
     }
     return player_centers
 }
-function place_initial_units(game_data){
-    var centers = get_player_start_coords()
+function place_initial_units(gamesize,player_ids){
+    var centers = get_player_start_coords(gamesize)
+    var all_messages = []
     for(var i = 0; i < num_players; i++){
         var cen = centers[i]
-        game_data[cen.y][cen.x] = create_unit("soldier",game_config.unit_types['soldier'],i)
+        var data = create_unit("soldier",game_config.unit_types['soldier'],player_ids[i])
+        all_messages.push({
+            type: "CREATE",
+            data: data,
+            coord: cen,
+        })
     }
+    return all_messages
 }
 function create_unit(unit_type,unit_info,player_id){
     return {
@@ -58,6 +57,6 @@ function create_unit(unit_type,unit_info,player_id){
     }
 }
 module.exports = {
-    init_game: init_map,
+    init_map: init_map,
     place_initial_units: place_initial_units,
 }

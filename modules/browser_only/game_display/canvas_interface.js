@@ -42,17 +42,21 @@ class ForegroundCanvas extends BaseComponent {
     }
     onGameStateChange(statechange){
         switch(statechange.type){
-            case "REMOVE": this.removeChange(statechange); break;
-            //case "MOVE": this.removeChange(statechange); break;
-            case "CREATE": this.createChange(statechange); break;
+            case "REMOVE": this.removeChange(statechange.coord); break;
+            case "CREATE": this.createChange(statechange.data,statechange.coord); break;
+            case "MOVE": this.moveChange(statechange.start_coord,statechange.end_coord); break;
             default: console.log("bad state change"); break;
         }
     }
-    removeChange(data){
-        display_board.clear_rect(this.context,data.coord)
+    removeChange(coord){
+        display_board.clear_rect(this.context,coord)
     }
-    createChange(data){
-        display_board.draw_image(data.icon,data.coord)
+    createChange(data, coord){
+        display_board.draw_image(this.context,data.icon,coord)
+    }
+    moveChange(start_coord, end_coord){
+        console.log("moved!")
+        display_board.copy_rect(this.context,start_coord, end_coord)
     }
 }
 class Color {
