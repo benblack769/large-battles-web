@@ -22,9 +22,9 @@ function assert_player_is(map, coord, player){
     }
 }
 function valid_move(gamestate, instr, player){
-    //assert_keys_equal(instr,["type","start_coord","end_coord"])
-    //assert_empty(gamestate.map, instr.end_coord)
-    //assert_player_is(gamestate.map, instr.end_coord, player)
+    assert_keys_equal(instr,["type","start_coord","end_coord"])
+    assert_empty(gamestate.map, instr.end_coord)
+    assert_player_is(gamestate.map, instr.end_coord, player)
 }
 var validate_funcs = {
     "MOVE": valid_move,

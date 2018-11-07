@@ -7,7 +7,7 @@ var signals = require("./game_display/global_signals.js")
 var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
-var init_game = require("../logic_modules/game_engine.js")
+var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 
 var my_web_worker = new Worker("web_worker.js")

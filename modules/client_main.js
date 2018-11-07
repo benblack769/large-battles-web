@@ -2,8 +2,6 @@ var get_serv_inf = require("./browser_only/get_server_info.js")
 var load_images = require("./browser_only/load_images.js")
 var display_board = require("./browser_only/display_board.js")
 
-var game_types = require("./logic_modules/types.js")
-var game_engine = require("./logic_modules/game_engine.js")
 var signup_login = require("./browser_only/signup_login.js")
 var rankings_page = require("./browser_only/rankings_page.js")
 var live_connections = require("./browser_only/live_connections_page.js")
@@ -46,15 +44,6 @@ function init_all(){
     rankings_page.init_rankings()
     live_connections.init_live_games()
     single_player.init_single_player()
-}
-function start_game(){
-    var game_data = game_engine.init_game();
-    display_board.init_canvas()
-    console.log(game_types.get_all_sources())
-    load_images.on_load_all_images(game_types.get_all_sources(),function(){
-        console.log("images loaded")
-        display_board.draw_game(game_data)
-    })
 }
 
 window.onload = function(){

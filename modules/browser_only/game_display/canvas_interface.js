@@ -1,6 +1,7 @@
 var display_board = require("../display_board.js")
 var basecomp = require("./base_component.js")
 var signals = require("./global_signals.js")
+var unit_types = require("../../logic_modules/types.js").unit_types
 
 var BaseComponent = basecomp.BaseComponent
 var createEL = basecomp.createEL
@@ -52,10 +53,10 @@ class ForegroundCanvas extends BaseComponent {
         display_board.clear_rect(this.context,coord)
     }
     createChange(data, coord){
-        display_board.draw_image(this.context,data.icon,coord)
+        console.log(data)
+        display_board.draw_image(this.context,unit_types[data.unit_type].icon,coord)
     }
     moveChange(start_coord, end_coord){
-        console.log("moved!")
         display_board.copy_rect(this.context, start_coord, end_coord)
         display_board.clear_rect(this.context,start_coord)
     }
