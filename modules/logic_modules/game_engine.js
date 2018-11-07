@@ -58,6 +58,6 @@ function create_unit(unit_type,unit_info,player_id){
     }
 }
 module.exports = {
-    init_game: init_game,
+    init_game: init_map,
     place_initial_units: place_initial_units,
 }
