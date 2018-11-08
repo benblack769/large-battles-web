@@ -9,15 +9,10 @@ function init_map(gamesize){
     for(var i = 0; i < gamesize.ysize; i++){
         map[i] = new Array(gamesize.xsize)
         for(var j = 0; j < gamesize.xsize; j++){
-            map[i][j] = create_empty()
+            map[i][j] = create_utils.create_empty()
         }
     }
     return map
-}
-function create_empty(){
-    return {
-        "category": "empty"
-    }
 }
 function get_player_start_coords(gamesize){
     var cmath = new CMath(gamesize.xsize, gamesize.ysize)

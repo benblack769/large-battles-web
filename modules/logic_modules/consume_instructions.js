@@ -1,9 +1,12 @@
+var create_utils = require('./create_utils.js')
+
 function consume_move(game_state, instr){
     console.log("consumed moved!")
     var sc = instr.start_coord
     var ec = instr.end_coord
     var obj = game_state.map[sc.y][sc.x]
     game_state.map[ec.y][ec.x] = obj
+    game_state.map[sc.y][sc.x] = create_utils.create_empty()
 }
 function consume_create(game_state, instr){
     game_state.map[instr.coord] = instr.data
