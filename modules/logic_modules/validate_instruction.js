@@ -44,9 +44,8 @@ function assert_hasnt_moved(unit){
     }
 }
 function assert_movement_range(gamestate, instr, unit){
-    var range = gamestate.stats.unit_types[unit.unit_type].stats.move_range
+    var range = gamestate.stats.unit_types[unit.unit_type].move_range
     var is_possible = pathing.is_possible_move(gamestate.map, instr.start_coord, instr.end_coord, range)
-    console.log(is_possible)
     if(!is_possible){
         throw new Error('Square out of movement range. Remember that units cannot move through each other')
     }

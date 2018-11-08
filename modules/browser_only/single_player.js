@@ -1,5 +1,5 @@
 var load_images = require("./load_images.js")
-var game_types = require("../logic_modules/types.js")
+var types = require("../logic_modules/types.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 var base_inter = require("./game_display/base_component.js")
@@ -50,6 +50,7 @@ function init_single_player(){
     var game_state = {
         players: mystate,
         map: map,
+        stats: types.default_stats,
     }
     var init_units_messages = init_game.place_initial_units(gamesize,mystate.players_order)
 
@@ -57,7 +58,7 @@ function init_single_player(){
         //change local game state
         consume.consume_change(game_state,part)
     })
-    load_images.on_load_all_images(game_types.get_all_sources(),function(){
+    load_images.on_load_all_images(types.get_all_sources(),function(){
         var base = new GameInterface(null, basediv, gamesize, mystate.players_order)
         player_utils.init_player_interface(mystate,"ben's player","ben's player")
         //init canvas positions
@@ -84,7 +85,7 @@ function init_single_player(){
         var message = message.data
 
         //validate message
-        var error = validate.validate_instruction(game_state,message)
+        var error = validate.validate_instruction(game_state,message,signals.myPlayer.getState())
         if(error){
             console.log("ERROR "+error.name+": \n"+error.message)
             return

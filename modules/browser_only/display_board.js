@@ -49,7 +49,7 @@ function draw_image(context,filename,coord){
     context.drawImage(image,coord.x*sqr_size,coord.y*sqr_size)
 }
 function draw_background(context, xsize, ysize){
-    var background_image = document.getElementById(type_info.background_icon)
+    var background_image = document.getElementById(type_info.icons.background_icon)
     for(var y = 0; y < ysize; y++){
         for(var x = 0; x < xsize; x++){
             context.drawImage(background_image,x*sqr_size,y*sqr_size)

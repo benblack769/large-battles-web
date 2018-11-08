@@ -1,5 +1,4 @@
 var CMath = require('./coord_engine.js').CMath
-var game_config = require("./types.js")
 var create_utils = require("./create_utils.js")
 
 var num_players = 2;
@@ -34,7 +33,7 @@ function place_initial_units(gamesize,player_ids){
     var all_messages = []
     for(var i = 0; i < num_players; i++){
         var cen = centers[i]
-        var data = create_utils.create_unit("soldier",game_config.unit_types['soldier'],player_ids[i])
+        var data = create_utils.create_unit("soldier",player_ids[i])
         all_messages.push({
             type: "CREATE",
             data: data,
