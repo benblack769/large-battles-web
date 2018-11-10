@@ -21,10 +21,14 @@ function consume_status_change(game_state,instr){
     var unit = at(game_state.map, instr.coord)
     unit.status[instr.status_key] = instr.new_status
 }
+function consume_money_change(game_state,instr){
+    game_state.players.player_info[instr.player].money = instr.amount;
+}
 var consume_funcs = {
     "MOVE": consume_move,
     "CREATE": consume_create,
     "SET_STATUS": consume_status_change,
+    "SET_MONEY": consume_money_change,
 }
 function consume_change(gamestate, instr){
     consume_funcs[instr.type](gamestate,instr)

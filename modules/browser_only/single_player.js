@@ -78,7 +78,7 @@ function main_init(){
             return
         }
         console.log(message)
-        var instr_parts = decompose.decompose_instructions(game_state,message)
+        var instr_parts = decompose.decompose_instructions(game_state,message,signals.myPlayer.getState())
         instr_parts.forEach(function(part){
             //change local game state
             consume.consume_change(game_state,part)

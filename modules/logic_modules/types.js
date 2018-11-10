@@ -7,6 +7,12 @@ var default_stats = {
         "catapult": {
             "attack_range": 3,
             "move_range": 1,
+        },
+        "farm": {
+            "attack_range": 0,
+            "move_range": 0,
+            "cost": 50,
+            "buildable": true,
         }
     }
 }
@@ -15,6 +21,7 @@ var icons = {
     "unit_icons": {
         "soldier": "Soldier.png",
         "catapult": "Catapult.png",
+        "farm": "farm.png"
     },
 }
 

@@ -7,8 +7,13 @@ function replace_exec_fn(js_str){
     console.log("replaced function with: "+js_str )
     myexec_fn = function(clicks){eval(js_str)}
 }
-function make_catapult(clicks){
-    console.log("made catapult at: "+clicks[0])
+function make_farm(clicks){
+    console.log("made farm at: "+clicks[0])
+    postMessage({
+        type: "BUILD",
+        building_type: "farm",
+        coord: clicks[0],
+    })
 }
 function make_soldier(clicks){
     console.log("made soldier at: "+JSON.stringify(clicks[0]))

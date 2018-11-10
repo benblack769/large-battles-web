@@ -10,7 +10,6 @@ function clear_all_listeners(){
     module.exports.ended_turn.clear()
     module.exports.activePlayer.clear()
     module.exports.myPlayer.clear()
-    module.exports.moneyChange.clear()
     module.exports.gameStateChange.clear()
 }
 module.exports = {
@@ -23,6 +22,5 @@ module.exports = {
     ended_turn: new Signal(),
     activePlayer: new StateHolder(),
     myPlayer: new StateHolder(),
-    moneyChange: new Signal(),
     gameStateChange: new Signal(),
 }

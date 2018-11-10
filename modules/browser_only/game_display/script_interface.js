@@ -16,6 +16,7 @@ signals.selectedData.listen(()=>signals.clear_clicks.fire())
 edit_signal.listen(()=>signals.clear_clicks.fire())
 signals.clickCycleFinished.listen(()=>signals.clear_clicks.fire())
 
+
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
@@ -105,7 +106,7 @@ class ScriptButtonPannel extends BaseComponent {
             },
             {
                 click_num:2,
-                js_file:"make_catapult(clicks)",
+                js_file:"make_farm(clicks)",
             }
         ]
         basediv.appendChild(this.interface_div)
@@ -276,9 +277,9 @@ class PlayerInfoPannel extends BaseComponent {
     }
     makeMoney(player_id){
         var money = createSpan({})
-        signals.moneyChange.listen((money_player) => {
-            if(money_player.player === player_id){
-                money.innerText = money_player.money
+        signals.gameStateChange.listen(instr=>{
+            if(instr.type === "SET_MONEY" && instr.player === player_id){
+                money.innerText = instr.amount
             }
         })
         return money

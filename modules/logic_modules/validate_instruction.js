@@ -62,8 +62,29 @@ function valid_move(gamestate, instr, player){
     assert_hasnt_moved(unit)
     assert_movement_range(gamestate, instr, unit)
 }
+function get_money(gamestate, player_id){
+    return gamestate.players.player_info[player_id].money
+}
+function assert_money_enough(build_type, player_id, gamestate){
+    if(gamestate.stats.unit_types[build_type].cost > get_money(gamestate,player_id)){
+        throw new Error('Building costs more money than you have!!')
+    }
+}
+function assert_buildable(build_type, game_stats){
+    if(!game_stats.unit_types[build_type].buildable){
+        throw new Error('Unit type not buildable!')
+    }
+}
+function valid_build(gamestate, instr, player){
+    assert_keys_equal(instr,["type","building_type","coord"])
+    assert_is_valid_coord(instr.coord,gamestate.map)
+    assert_empty(gamestate.map, instr.coord)
+    assert_buildable(instr.building_type,gamestate.stats)
+    assert_money_enough(instr.building_type, player, gamestate)
+}
 var validate_funcs = {
     "MOVE": valid_move,
+    "BUILD": valid_build,
 }
 function validate_instruction(gamestate, instr, player){
     try{

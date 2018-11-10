@@ -1,6 +1,6 @@
 var signals = require("./game_display/global_signals.js")
 var example_player_state = {
-    players_info: {
+    player_info: {
         "ben's player": {
             money: 120,
         },
@@ -14,10 +14,11 @@ var example_player_state = {
     ],
 }
 function init_player_interface(state, active_player, myplayer){
-    for(var id in state.players_info){
-        signals.moneyChange.fire({
+    for(var id in state.player_info){
+        signals.gameStateChange.fire({
+            type: "SET_MONEY",
             player: id,
-            money: state.players_info[id].money
+            amount: state.player_info[id].money
         })
     }
     signals.activePlayer.setState(active_player)

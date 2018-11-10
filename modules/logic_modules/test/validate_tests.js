@@ -13,13 +13,13 @@ function make_stats(){
             "rangedunit": {
                 "attack_range": 3,
                 "move_range": 1,
-            }
-        }
+            },
+        },
     }
 }
 function make_player_state(m1, m2){
     return {
-        players_info: {
+        player_info: {
             "p1": {
                 money: m1,
             },
@@ -33,7 +33,6 @@ function make_player_state(m1, m2){
         ],
     }
 }
-var game_size = {xsize:5, ysize:6}
 
 function ee(){
     return create_utils.create_empty()
