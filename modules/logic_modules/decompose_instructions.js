@@ -11,6 +11,12 @@ function decomp_move(gamestate,instr){
         type: "MOVE",
         start_coord: instr.start_coord,
         end_coord: instr.end_coord,
+    },
+    {
+        type: "SET_STATUS",
+        status_key: "moved",
+        new_status: true,
+        coord: instr.end_coord,
     }]
 }
 var decomp_funcs = {

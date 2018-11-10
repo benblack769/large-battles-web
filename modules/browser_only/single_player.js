@@ -39,7 +39,7 @@ function process_clicks(clicks, click_num){
 function deep_copy(obj){
     return JSON.parse(JSON.stringify(obj))
 }
-function init_single_player(){
+function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
     var gamesize = {
         xsize: 30,
@@ -54,19 +54,6 @@ function init_single_player(){
     }
     var init_units_messages = init_game.place_initial_units(gamesize,mystate.players_order)
 
-    init_units_messages.forEach(function(part){
-        //change local game state
-        consume.consume_change(game_state,part)
-    })
-    load_images.on_load_all_images(types.get_all_sources(),function(){
-        var base = new GameInterface(null, basediv, gamesize, mystate.players_order)
-        player_utils.init_player_interface(mystate,"ben's player","ben's player")
-        //init canvas positions
-        init_units_messages.forEach(function(part){
-            //display message on canvas
-            signals.gameStateChange.fire(part)
-        })
-    })
     signals.clickCycleFinished.listen(function(clicks){
         process_clicks(clicks, signals.selectedData.getState().click_num)
     })
@@ -100,6 +87,15 @@ function init_single_player(){
         })
         //relay message to server
     }
+    var base = new GameInterface(null, basediv, gamesize, mystate.players_order)
+    player_utils.init_player_interface(mystate,"ben's player","ben's player")
+    //init canvas positions
+    init_units_messages.forEach(function(part){
+        //display message on canvas
+        signals.gameStateChange.fire(part)
+        consume.consume_change(game_state,part)
+    })
+
     /*var obj = JSON.stringify({
         hithere: 123,
         bob: "green"
@@ -107,6 +103,9 @@ function init_single_player(){
     make_change_script_popup(obj,JSON.parse,function(res_val){
         console.log(res_val)
     })*/
+}
+function init_single_player(){
+    load_images.on_load_all_images(types.get_all_sources(),main_init)
 }
 
 module.exports = {

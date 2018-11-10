@@ -76,7 +76,7 @@ function validate_instruction(gamestate, instr, player){
         return null;
     }
     catch(e) {
-        console.log("ERROR "+e.name+": \n"+e.message)
+        //console.log("ERROR "+e.name+": \n"+e.message)
         return e;
     }
 }
