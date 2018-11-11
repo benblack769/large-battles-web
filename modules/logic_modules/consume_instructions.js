@@ -24,11 +24,15 @@ function consume_status_change(game_state,instr){
 function consume_money_change(game_state,instr){
     game_state.players.player_info[instr.player].money = instr.amount;
 }
+function consume_set_active_player(){
+    //this is a no-op because this functionality has to be handled elsewhere
+}
 var consume_funcs = {
     "MOVE": consume_move,
     "CREATE": consume_create,
     "SET_STATUS": consume_status_change,
     "SET_MONEY": consume_money_change,
+    "SET_ACTIVE_PLAYER": consume_set_active_player,
 }
 function consume_change(gamestate, instr){
     consume_funcs[instr.type](gamestate,instr)

@@ -5,7 +5,8 @@ function create_unit(unit_type,player_id){
         "player": player_id,
         "unit_type": unit_type,
         "status": {
-            "moved": false,
+            "moved": true,
+            "buys_left": 0,
         }
     }
 }

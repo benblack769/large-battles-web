@@ -34,20 +34,25 @@ function make_player_state(m1, m2){
     }
 }
 
+function create_active_unit(unit_type,player_id){
+    var unit = create_utils.create_unit(unit_type,player_id)
+    unit.status.moved = false
+    return unit
+}
 function ee(){
     return create_utils.create_empty()
 }
 function F1(){
-    return create_utils.create_unit("fastunit", "p1")
+    return create_active_unit("fastunit", "p1")
 }
 function F2(){
-    return create_utils.create_unit("fastunit", "p2")
+    return create_active_unit("fastunit", "p2")
 }
 function R1(){
-    return create_utils.create_unit("rangedunit", "p1")
+    return create_active_unit("rangedunit", "p1")
 }
 function R2(){
-    return create_utils.create_unit("rangedunit", "p2")
+    return create_active_unit("rangedunit", "p2")
 }
 function make_game_map(){
     return [

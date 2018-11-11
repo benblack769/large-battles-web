@@ -105,8 +105,16 @@ class ScriptButtonPannel extends BaseComponent {
                 js_file:"make_soldier(clicks)",
             },
             {
-                click_num:2,
+                click_num:1,
                 js_file:"make_farm(clicks)",
+            },
+            {
+                click_num:1,
+                js_file:"make_barracks(clicks)",
+            },
+            {
+                click_num:1,
+                js_file:"make_armory(clicks)",
             }
         ]
         basediv.appendChild(this.interface_div)

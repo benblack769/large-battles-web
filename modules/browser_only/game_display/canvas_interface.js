@@ -46,7 +46,7 @@ class ForegroundCanvas extends BaseComponent {
             case "REMOVE": this.removeChange(statechange.coord); break;
             case "CREATE": this.createChange(statechange.data,statechange.coord); break;
             case "MOVE": this.moveChange(statechange.start_coord,statechange.end_coord); break;
-            default: console.log("bad state change"); break;
+            //default: console.log("bad state change"); break;
         }
     }
     removeChange(coord){

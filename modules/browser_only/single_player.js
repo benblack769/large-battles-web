@@ -39,6 +39,44 @@ function process_clicks(clicks, click_num){
 function deep_copy(obj){
     return JSON.parse(JSON.stringify(obj))
 }
+function process_instruction(game_state,instruction,player){
+    //validate instruction
+    var error = validate.validate_instruction(game_state,instruction,player)
+    if(error){
+        console.log("ERROR "+error.name+": \n"+error.message)
+        return
+    }
+    console.log(instruction)
+    var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
+    instr_parts.forEach(function(part){
+        //change local game state
+        consume.consume_change(game_state,part)
+        //display instruction on canvas
+        signals.gameStateChange.fire(part)
+    })
+    //relay instruction to server
+}
+function init_signals(game_state){
+    signals.clickCycleFinished.listen(function(clicks){
+        process_clicks(clicks, signals.selectedData.getState().click_num)
+    })
+    signals.ended_turn.listen(() => {
+        process_instruction(game_state,{type:"END_TURN"},signals.myPlayer.getState())
+    })
+    signals.selectedData.listen(function(data){
+        console.log(data)
+        my_web_worker.postMessage({
+            type: "REPLACE_FUNCTION",
+            js_str: data.js_file,
+        })
+    })
+    signals.gameStateChange.listen(function(instr){
+        if(instr.type === "SET_ACTIVE_PLAYER"){
+            signals.activePlayer.setState(instr.player)
+            signals.myPlayer.setState(signals.activePlayer.getState())
+        }
+    })
+}
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
     var gamesize = {
@@ -52,40 +90,12 @@ function main_init(){
         map: map,
         stats: types.default_stats,
     }
+    init_signals(game_state)
     var init_units_messages = init_game.place_initial_units(gamesize,mystate.players_order)
 
-    signals.clickCycleFinished.listen(function(clicks){
-        process_clicks(clicks, signals.selectedData.getState().click_num)
-    })
-    signals.ended_turn.listen(() => {
-        player_utils.turn_ended(mystate)
-        signals.myPlayer.setState(signals.activePlayer.getState())
-    })
-    signals.selectedData.listen(function(data){
-        console.log(data)
-        my_web_worker.postMessage({
-            type: "REPLACE_FUNCTION",
-            js_str: data.js_file,
-        })
-    })
     my_web_worker.onmessage = function(message){
         var message = message.data
-
-        //validate message
-        var error = validate.validate_instruction(game_state,message,signals.myPlayer.getState())
-        if(error){
-            console.log("ERROR "+error.name+": \n"+error.message)
-            return
-        }
-        console.log(message)
-        var instr_parts = decompose.decompose_instructions(game_state,message,signals.myPlayer.getState())
-        instr_parts.forEach(function(part){
-            //change local game state
-            consume.consume_change(game_state,part)
-            //display message on canvas
-            signals.gameStateChange.fire(part)
-        })
-        //relay message to server
+        process_instruction(game_state,message,signals.myPlayer.getState())
     }
     var base = new GameInterface(null, basediv, gamesize, mystate.players_order)
     player_utils.init_player_interface(mystate,"ben's player","ben's player")

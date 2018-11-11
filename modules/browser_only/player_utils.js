@@ -12,6 +12,7 @@ var example_player_state = {
         "ben's player",
         "oragano's player",
     ],
+    active_player: "ben's player",
 }
 function init_player_interface(state, active_player, myplayer){
     for(var id in state.player_info){
@@ -24,15 +25,15 @@ function init_player_interface(state, active_player, myplayer){
     signals.activePlayer.setState(active_player)
     signals.myPlayer.setState(myplayer)
 }
-function turn_ended(state, active_player){
+function next_player(player_state, active_player){
     var active_player = signals.activePlayer.getState()
-    var idx = state.players_order.indexOf(active_player)
-    var newidx = (idx + 1) % state.players_order.length
-    var new_id = state.players_order[newidx]
-    signals.activePlayer.setState(new_id)
+    var idx = player_state.players_order.indexOf(active_player)
+    var newidx = (idx + 1) % player_state.players_order.length
+    var new_id = player_state.players_order[newidx]
+    return new_id
 }
 module.exports = {
     example_player_state: example_player_state,
-    turn_ended: turn_ended,
+    next_player: next_player,
     init_player_interface: init_player_interface,
 }

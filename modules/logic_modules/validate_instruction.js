@@ -34,7 +34,7 @@ function assert_is_unit(map, coord){
 }
 function assert_is_valid_coord(coord, map){
     assert_keys_equal(coord,["x","y"])
-    if(at(map,coord) === undefined){
+    if(map[coord.y] === undefined || map[coord.y][coord.x] === undefined){
         throw new Error('bad coordinate')
     }
 }
@@ -43,13 +43,21 @@ function assert_hasnt_moved(unit){
         throw new Error('tried to move unit twice in single turn')
     }
 }
-function assert_movement_range(gamestate, instr, unit){
-    var range = gamestate.stats.unit_types[unit.unit_type].move_range
-    var is_possible = pathing.is_possible_move(gamestate.map, instr.start_coord, instr.end_coord, range)
+function assert_in_range(map,start_coord,end_coord,range){
+    var is_possible = pathing.is_possible_move(map, start_coord, end_coord, range)
     if(!is_possible){
-        throw new Error('Square out of movement range. Remember that units cannot move through each other')
+        throw new Error('Square out of range. Remember that nothing can move through a unit')
     }
 }
+function assert_movement_range(gamestate, instr, unit){
+    var range = gamestate.stats.unit_types[unit.unit_type].move_range
+    assert_in_range(gamestate.map, instr.start_coord, instr.end_coord, range)
+}
+/*function assert_active_player(gamestate, player){
+    if(gamestate.players.active_player !== player){
+        throw new Error('You are not the current active player, so you cannot execute instructions')
+    }
+}*/
 function valid_move(gamestate, instr, player){
     assert_keys_equal(instr,["type","start_coord","end_coord"])
     assert_is_valid_coord(instr.start_coord,gamestate.map)
@@ -82,9 +90,37 @@ function valid_build(gamestate, instr, player){
     assert_buildable(instr.building_type,gamestate.stats)
     assert_money_enough(instr.building_type, player, gamestate)
 }
+function valid_end_turn(gamestate, instr, player){
+    assert_keys_equal(instr,["type"])
+}
+function assert_building_can_build(gamestate,instr,player){
+    var building = at(gamestate.map,instr.building_coord)
+    var building_stats = gamestate.stats.unit_types[building.unit_type]
+    var building_status = building.status
+    if(!building_stats.can_make || !building_stats.can_make.includes(instr.buy_type)){
+        throw new Error('Selected building of type: "'+building.unit_type+'" cannot make unit of type: "'+instr.buy_type+'"')
+    }
+    if(!building_status.buys_left){
+        throw new Error('Building cannot buy any more units this turn. Wait until next turn.')
+    }
+}
+function valid_buy_unit(gamestate, instr, player){
+    assert_keys_equal(instr,["type","building_coord","placement_coord","buy_type"])
+    assert_is_valid_coord(instr.building_coord,gamestate.map)
+    assert_is_valid_coord(instr.placement_coord,gamestate.map)
+    assert_empty(gamestate.map, instr.placement_coord)
+    assert_is_unit(gamestate.map, instr.building_coord)
+    assert_player_is(gamestate.map, instr.building_coord, player)
+    assert_money_enough(instr.buy_type, player, gamestate)
+    assert_building_can_build(gamestate,instr,player)
+    var BUY_RANGE = 1
+    assert_in_range(gamestate.map, instr.building_coord, instr.placement_coord, BUY_RANGE)
+}
 var validate_funcs = {
     "MOVE": valid_move,
     "BUILD": valid_build,
+    "BUY_UNIT": valid_buy_unit,
+    "END_TURN": valid_end_turn,
 }
 function validate_instruction(gamestate, instr, player){
     try{

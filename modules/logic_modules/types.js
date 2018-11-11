@@ -13,6 +13,7 @@ var default_stats = {
             "move_range": 0,
             "cost": 50,
             "buildable": true,
+            "income": 5
         }
     }
 }
