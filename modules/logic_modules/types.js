@@ -3,10 +3,12 @@ var default_stats = {
         "soldier": {
             "attack_range": 1,
             "move_range": 3,
+            "cost": 10,
         },
         "catapult": {
             "attack_range": 3,
             "move_range": 1,
+            "cost": 100,
         },
         "farm": {
             "attack_range": 0,
@@ -18,8 +20,10 @@ var default_stats = {
         "barracks": {
             "attack_range": 0,
             "move_range": 0,
+            "buys_per_turn": 2,
             "cost": 100,
             "buildable": true,
+            "can_make": ["soldier"],
         },
     }
 }

@@ -102,7 +102,7 @@ class ScriptButtonPannel extends BaseComponent {
         var initial_button_datas = [
             {
                 click_num:2,
-                js_file:"make_soldier(clicks)",
+                js_file:"buy_soldier(clicks)",
                 icon: "Soldier.png",
             },
             {
@@ -119,6 +119,11 @@ class ScriptButtonPannel extends BaseComponent {
                 click_num:1,
                 js_file:"make_armory(clicks)",
                 icon: "armory.png",
+            },
+            {
+                click_num:2,
+                js_file:"move_soldier(clicks)",
+                icon: "",
             }
         ]
         basediv.appendChild(this.interface_div)

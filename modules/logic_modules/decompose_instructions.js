@@ -1,8 +1,5 @@
 var create_utils = require('./create_utils.js')
 
-function set(map, coord, value){
-    map[coord.y][coord.x] = value
-}
 function at(map, coord){
     var res = map[coord.y][coord.x]
     return res
@@ -37,26 +34,61 @@ function next_player(player_state, active_player){
     var new_id = player_state.players_order[newidx]
     return new_id
 }
-function decomp_endturn(gamestate,instr,player){
-    var current_money = gamestate.players.player_info[player].money;
+function get_current_income(gamestate,instr,player){
+    var income = 0;
     gamestate.map.forEach(function(row){
         row.forEach(function(entry){
             if(entry.category === "unit" && entry.player === player){
                 var unit_stats = gamestate.stats.unit_types[entry.unit_type]
                 if(unit_stats.income){
-                    current_money += unit_stats.income
+                    income += unit_stats.income
                 }
             }
         })
     })
-    return [{
+    return income
+}
+function reset_entry(entry_stack,entry,coord,key,new_value){
+    if(entry.status[key] !== undefined && entry.status[key] !== new_value){
+        entry_stack.push({
+            type: "SET_STATUS",
+            status_key: key,
+            new_status: new_value,
+            coord: coord,
+        })
+    }
+}
+function all_status_resets(gamestate,instr,player){
+    var map = gamestate.map
+    var all_resets = []
+    for(var y = 0; y < map.length; y++){
+        for(var x = 0; x < map[y].length; x++){
+            var coord = {x:x,y:y}
+            var entry = at(map, coord)
+            if(entry.category === "unit"){
+                reset_entry(all_resets,entry,coord,"moved",false)
+                var buys_per_turn = gamestate.stats.unit_types[entry.unit_type].buys_per_turn
+                if(buys_per_turn){
+                    reset_entry(all_resets,entry,coord,"buys_left",buys_per_turn)
+                }
+            }
+        }
+    }
+    return all_resets
+}
+function decomp_endturn(gamestate,instr,player){
+    var status_resets = all_status_resets(gamestate,instr,player)
+    var money_entry = {
         type: "SET_MONEY",
         player: player,
-        amount: current_money,
-    },{
+        amount: gamestate.players.player_info[player].money + get_current_income(gamestate,instr,player),
+    }
+    var active_entry = {
         type: "SET_ACTIVE_PLAYER",
         player: next_player(gamestate.players,player),
-    }]
+    }
+    var total_list = status_resets.concat([money_entry,active_entry])
+    return total_list
 }
 function decomp_buy_unit(gamestate,instr,player){
     return [{

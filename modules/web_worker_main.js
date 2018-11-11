@@ -15,12 +15,21 @@ function make_farm(clicks){
         coord: clicks[0],
     })
 }
-function make_soldier(clicks){
+function move_soldier(clicks){
     console.log("made soldier at: "+JSON.stringify(clicks[0]))
     postMessage({
         type: "MOVE",
         start_coord: clicks[0],
         end_coord: clicks[1],
+    })
+}
+function buy_soldier(clicks){
+    console.log("made soldier at: "+JSON.stringify(clicks[0]))
+    postMessage({
+        type: "BUY_UNIT",
+        building_coord: clicks[0],
+        placement_coord: clicks[1],
+        buy_type: "soldier",
     })
 }
 
