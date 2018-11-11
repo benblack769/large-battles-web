@@ -153,13 +153,16 @@ main page style
 .game_script_box {
     width: 80px;
     height: 80px;
-    background-color: brown;
+    background-color: white;
     border-style: solid;
     border-width: 1px;
     pointer-events: auto;
+    /*background image set in javascript*/
+    background-repeat: no-repeat;
+    background-position: center;
 }
 .game_script_box_selected{
-    background-color: green;
+    background-color: #94FDF9;
 }
 .script_box_button {
     width: 40px;

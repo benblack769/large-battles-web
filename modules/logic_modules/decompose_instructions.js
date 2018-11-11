@@ -5,7 +5,7 @@ function set(map, coord, value){
 }
 function at(map, coord){
     var res = map[coord.y][coord.x]
-    return res ? res : {}
+    return res
 }
 function decomp_move(gamestate,instr,player){
     return [{
@@ -58,9 +58,26 @@ function decomp_endturn(gamestate,instr,player){
         player: next_player(gamestate.players,player),
     }]
 }
+function decomp_buy_unit(gamestate,instr,player){
+    return [{
+        type: "CREATE",
+        coord: instr.placement_coord,
+        data: create_utils.create_unit(instr.buy_type,player),
+    },{
+        type: "SET_MONEY",
+        player: player,
+        amount: gamestate.players.player_info[player].money - gamestate.stats.unit_types[instr.buy_type].cost,
+    }, {
+        type: "SET_STATUS",
+        status_key: "buys_left",
+        new_status: at(gamestate.map,instr.building_coord).status.buys_left - 1,
+        coord: instr.building_coord,
+    },]
+}
 var decomp_funcs = {
     "MOVE": decomp_move,
     "BUILD": decomp_build,
+    "BUY_UNIT": decomp_buy_unit,
     "END_TURN": decomp_endturn,
 }
 function decompose_instructions(gamestate,instr,player){

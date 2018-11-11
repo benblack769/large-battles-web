@@ -33,11 +33,21 @@ function place_initial_units(gamesize,player_ids){
     var all_messages = []
     for(var i = 0; i < num_players; i++){
         var cen = centers[i]
-        var data = create_utils.create_unit("soldier",player_ids[i])
+        var barracks = create_utils.create_unit("barracks",player_ids[i])
         all_messages.push({
             type: "CREATE",
-            data: data,
+            data: barracks,
             coord: cen,
+        })
+        var farm_coord = {
+            x: cen.x+1,
+            y: cen.y
+        }
+        var farm = create_utils.create_unit("farm",player_ids[i])
+        all_messages.push({
+            type: "CREATE",
+            data: farm,
+            coord: farm_coord,
         })
     }
     return all_messages

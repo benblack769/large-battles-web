@@ -14,7 +14,13 @@ var default_stats = {
             "cost": 50,
             "buildable": true,
             "income": 5
-        }
+        },
+        "barracks": {
+            "attack_range": 0,
+            "move_range": 0,
+            "cost": 100,
+            "buildable": true,
+        },
     }
 }
 var icons = {
@@ -22,7 +28,8 @@ var icons = {
     "unit_icons": {
         "soldier": "Soldier.png",
         "catapult": "Catapult.png",
-        "farm": "farm.png"
+        "farm": "farm.png",
+        "barracks": "barracks.png",
     },
 }
 

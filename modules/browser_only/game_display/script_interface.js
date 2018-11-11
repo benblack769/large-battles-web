@@ -103,18 +103,22 @@ class ScriptButtonPannel extends BaseComponent {
             {
                 click_num:2,
                 js_file:"make_soldier(clicks)",
+                icon: "Soldier.png",
             },
             {
                 click_num:1,
                 js_file:"make_farm(clicks)",
+                icon: "farm.png",
             },
             {
                 click_num:1,
                 js_file:"make_barracks(clicks)",
+                icon: "barracks.png",
             },
             {
                 click_num:1,
                 js_file:"make_armory(clicks)",
+                icon: "armory.png",
             }
         ]
         basediv.appendChild(this.interface_div)
@@ -204,6 +208,13 @@ class ScriptButton extends BaseComponent {
             className: "game_script_box",
             children: myChildren,
         })
+        var icon = this.state.data.icon
+        if(icon){
+            var background_src = document.getElementById(icon)
+            if(background_src && background_src.src){
+                el.style["background-image"] = 'url('+background_src.src+")"
+            }
+        }
         if(!this.state.editing){
             el.onclick = this.selectScript.bind(this)
         }
