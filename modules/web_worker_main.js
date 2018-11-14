@@ -7,24 +7,37 @@ function replace_exec_fn(js_str){
     console.log("replaced function with: "+js_str )
     myexec_fn = function(clicks){eval(js_str)}
 }
-function make_farm(clicks){
-    console.log("made farm at: "+clicks[0])
+function make_building(clicks,type){
+    console.log("made building at: "+clicks[0])
     postMessage({
         type: "BUILD",
-        building_type: "farm",
+        building_type: type,
         coord: clicks[0],
     })
 }
-function move_soldier(clicks){
-    console.log("made soldier at: "+JSON.stringify(clicks[0]))
+function make_farm(clicks){
+    make_building(clicks,"farm")
+}
+function make_armory(clicks){
+    make_building(clicks,"farm")
+}
+function make_armory(clicks){
+    make_building(clicks,"armory")
+}
+function move_barracks(clicks){
+    make_building(clicks,"barracks")
+}
+function buy_armor(clicks){
+    console.log("bought armor at: "+JSON.stringify(clicks[1]))
     postMessage({
-        type: "MOVE",
-        start_coord: clicks[0],
-        end_coord: clicks[1],
+        type: "BUY_ATTACHMENT",
+        building_coord: clicks[0],
+        equip_coord: clicks[1],
+        equip_type: "armor",
     })
 }
 function buy_soldier(clicks){
-    console.log("made soldier at: "+JSON.stringify(clicks[0]))
+    console.log("made soldier at: "+JSON.stringify(clicks[1]))
     postMessage({
         type: "BUY_UNIT",
         building_coord: clicks[0],

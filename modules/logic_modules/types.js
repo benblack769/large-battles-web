@@ -36,7 +36,7 @@ var default_stats = {
             "buys_per_turn": 1,
             "cost": 200,
             "buildable": true,
-            "can_equip": ["armor"],
+            "can_make_equip": ["armor"],
             "HP": 2,
         },
     },

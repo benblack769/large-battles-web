@@ -124,6 +124,11 @@ class ScriptButtonPannel extends BaseComponent {
                 click_num:2,
                 js_file:"move_soldier(clicks)",
                 icon: "",
+            },
+            {
+                click_num:2,
+                js_file:"buy_armor(clicks)",
+                icon: "",
             }
         ]
         basediv.appendChild(this.interface_div)

@@ -2,10 +2,10 @@ var signals = require("./game_display/global_signals.js")
 var example_player_state = {
     player_info: {
         "ben's player": {
-            money: 120,
+            money: 500,
         },
         "oragano's player": {
-            money: 120,
+            money: 500,
         }
     },
     players_order: [
