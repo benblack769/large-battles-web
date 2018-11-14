@@ -46,6 +46,7 @@ class ForegroundCanvas extends BaseComponent {
             case "REMOVE": this.removeChange(statechange.coord); break;
             case "CREATE": this.createChange(statechange.data,statechange.coord); break;
             case "MOVE": this.moveChange(statechange.start_coord,statechange.end_coord); break;
+            case "ADD_EQUIPMENT": this.onAddEquipment(statechange.equip_type,statechange.coord); break;
             //default: console.log("bad state change"); break;
         }
     }
@@ -55,6 +56,9 @@ class ForegroundCanvas extends BaseComponent {
     createChange(data, coord){
         console.log(data)
         display_board.draw_image(this.context,icons.unit_icons[data.unit_type],coord)
+    }
+    onAddEquipment(equip_type, coord){
+        display_board.draw_image(this.context,icons.attach_icons[equip_type],coord)
     }
     moveChange(start_coord, end_coord){
         display_board.copy_rect(this.context, start_coord, end_coord)

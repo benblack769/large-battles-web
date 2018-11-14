@@ -46,6 +46,15 @@ function buy_soldier(clicks){
     })
 }
 
+function move_soldier(clicks){
+    console.log("made soldier at: "+JSON.stringify(clicks[1]))
+    postMessage({
+        type: "MOVE",
+        start_coord: clicks[0],
+        end_coord: clicks[1],
+    })
+}
+
 onmessage = function(message){
     var message = message.data
     switch(message.type){

@@ -58,6 +58,9 @@ var icons = {
         "barracks": "barracks.png",
         "armory": "armory.png",
     },
+    "attach_icons": {
+        "armor": "armor.png"
+    }
 }
 function calc_stat(stats,unit_info,stat_name){
     var stat_val = stats.unit_types[unit_info.unit_type][stat_name]
