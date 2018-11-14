@@ -95,7 +95,7 @@ function decomp_buy_unit(gamestate,instr,player){
         type: "CREATE",
         coord: instr.placement_coord,
         data: create_utils.create_unit(instr.buy_type,player),
-    },{
+    }, {
         type: "SET_MONEY",
         player: player,
         amount: gamestate.players.player_info[player].money - gamestate.stats.unit_types[instr.buy_type].cost,
@@ -106,11 +106,28 @@ function decomp_buy_unit(gamestate,instr,player){
         coord: instr.building_coord,
     },]
 }
+function decomp_buy_attachment(gamestate,instr,player){
+    return [{
+           type: "SET_MONEY",
+           player: player,
+           amount: gamestate.players.player_info[player].money - gamestate.stats.attachment_types[instr.equip_type].cost,
+       }, {
+           type: "SET_STATUS",
+           status_key: "buys_left",
+           new_status: at(gamestate.map,instr.building_coord).status.buys_left - 1,
+           coord: instr.building_coord,
+       }, {
+           type: "ADD_EQUIPMENT",
+           equip_type: instr.equip_type,
+           coord: instr.equip_coord,
+       },]
+}
 var decomp_funcs = {
     "MOVE": decomp_move,
     "BUILD": decomp_build,
     "BUY_UNIT": decomp_buy_unit,
     "END_TURN": decomp_endturn,
+    "BUY_ATTACHMENT": decomp_buy_attachment,
 }
 function decompose_instructions(gamestate,instr,player){
     return decomp_funcs[instr.type](gamestate,instr,player)

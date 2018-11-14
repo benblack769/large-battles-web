@@ -1,8 +1,12 @@
 var test = require('tape')
-var validate = require('../validate_instruction.js').validate_instruction
+var a_validate = require('../validate_instruction.js').validate_instruction
 var init_game = require('../init_game.js')
 var create_utils = require('../create_utils.js')
-
+var validate = function(g,i,p){
+    var res = a_validate(g,i,p)
+    console.log(res ? res.message: "null")
+    return res
+}
 function make_stats(){
     return {
         "unit_types": {

@@ -25,11 +25,17 @@ function consume_money_change(game_state,instr){
     game_state.players.player_info[instr.player].money = instr.amount;
 }
 function consume_set_active_player(){
-    //this is a no-op because this functionality has to be handled elsewhere
+    //this is a no-op because this functionality has to be handled elsewhere,
+    //as gamestate does not hold active player information
+}
+function consume_add_equip(game_state,instr){
+    var target = at(game_state.map,instr.coord)
+    target.attachments.push(instr.equip_type)
 }
 var consume_funcs = {
     "MOVE": consume_move,
     "CREATE": consume_create,
+    "ADD_EQUIPMENT": consume_add_equip,
     "SET_STATUS": consume_status_change,
     "SET_MONEY": consume_money_change,
     "SET_ACTIVE_PLAYER": consume_set_active_player,

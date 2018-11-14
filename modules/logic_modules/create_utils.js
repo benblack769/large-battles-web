@@ -7,7 +7,8 @@ function create_unit(unit_type,player_id){
         "status": {
             "moved": true,
             "buys_left": 0,
-        }
+        },
+        "attachments": [],
     }
 }
 

@@ -1,4 +1,5 @@
 var pathing = require("./pathing.js")
+var calc_stat = require("./types.js").calc_stat
 
 function at(map, coord){
     return map[coord.y][coord.x]
@@ -46,11 +47,13 @@ function assert_hasnt_moved(unit){
 function assert_in_range(map,start_coord,end_coord,range){
     var is_possible = pathing.is_possible_move(map, start_coord, end_coord, range)
     if(!is_possible){
-        throw new Error('Square out of range. Remember that nothing can move through a unit')
+        var possible_moves = pathing.get_possible_moves(map, start_coord, range)
+        console.log(possible_moves)
+        throw new Error('Square out of range. Remember that nothing can move through a unit. Possible moves are: '+JSON.stringify(possible_moves))
     }
 }
 function assert_movement_range(gamestate, instr, unit){
-    var range = gamestate.stats.unit_types[unit.unit_type].move_range
+    var range = calc_stat(gamestate.stats,unit,"move_range")
     assert_in_range(gamestate.map, instr.start_coord, instr.end_coord, range)
 }
 /*function assert_active_player(gamestate, player){
@@ -76,6 +79,11 @@ function get_money(gamestate, player_id){
 function assert_money_enough(build_type, player_id, gamestate){
     if(gamestate.stats.unit_types[build_type].cost > get_money(gamestate,player_id)){
         throw new Error('Building costs more money than you have!!')
+    }
+}
+function assert_money_enough_equip(build_type, player_id, gamestate){
+    if(gamestate.stats.attachment_types[build_type].cost > get_money(gamestate,player_id)){
+        throw new Error('Equipment costs more money than you have!!')
     }
 }
 function assert_buildable(build_type, game_stats){
@@ -116,10 +124,46 @@ function valid_buy_unit(gamestate, instr, player){
     var BUY_RANGE = 1
     assert_in_range(gamestate.map, instr.building_coord, instr.placement_coord, BUY_RANGE)
 }
+function assert_building_can_equip(gamestate,instr,player){
+    var building = at(gamestate.map,instr.building_coord)
+    var building_stats = gamestate.stats.unit_types[building.unit_type]
+    var building_status = building.status
+    if(!building_stats.can_make_equip || !building_stats.can_make_equip.includes(instr.equip_type)){
+        throw new Error('Selected building of type: "'+building.unit_type+'" cannot make equipment of type: "'+instr.equip_type+'"')
+    }
+    if(!building_status.buys_left){
+        throw new Error('Building cannot buy any more equipment this turn. Wait until next turn.')
+    }
+}
+function assert_target_can_be_equipped(gamestate, instr){
+    var target = at(gamestate.map,instr.equip_coord)
+    var target_stats = gamestate.stats.unit_types[target.unit_type]
+    if(!target_stats.viable_attachments || !target_stats.viable_attachments.includes(instr.equip_type)){
+        throw new Error('Target unit: "'+target.unit_type+'" cannot equip equipment of type: "'+instr.equip_type+'"')
+    }
+    if(target.attachments.includes(instr.equip_type)){
+        throw new Error('Target unit already has equipment of type: "'+instr.equip_type+'"')
+    }
+}
+function valid_buy_attachment(gamestate, instr, player){
+    assert_keys_equal(instr,["type","building_coord","equip_coord","equip_type"])
+    assert_is_valid_coord(instr.building_coord,gamestate.map)
+    assert_is_valid_coord(instr.equip_coord,gamestate.map)
+    assert_is_unit(gamestate.map, instr.equip_coord)
+    assert_is_unit(gamestate.map, instr.building_coord)
+    assert_player_is(gamestate.map, instr.equip_coord, player)
+    assert_player_is(gamestate.map, instr.building_coord, player)
+    assert_money_enough_equip(instr.equip_type, player, gamestate)
+    assert_building_can_equip(gamestate,instr,player)
+    assert_target_can_be_equipped(gamestate,instr)
+    var EQUIP_RANGE = 1
+    assert_in_range(gamestate.map, instr.building_coord, instr.equip_coord, EQUIP_RANGE)
+}
 var validate_funcs = {
     "MOVE": valid_move,
     "BUILD": valid_build,
     "BUY_UNIT": valid_buy_unit,
+    "BUY_ATTACHMENT": valid_buy_attachment,
     "END_TURN": valid_end_turn,
 }
 function validate_instruction(gamestate, instr, player){

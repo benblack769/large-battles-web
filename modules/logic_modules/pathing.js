@@ -61,8 +61,10 @@ function coords_around(c){
         },
     ]
 }
-function get_possible_set(map,start,range){
+function get_possible_set(map,start,range,move_tos){
+    //move_tos are an array of coords which you can move to even if they are blocked on the map
     var hashable = JSON.stringify
+    var move_tos_set = move_tos === undefined ? new Set() : new Set(move_tos.map(hashable))
     var taken_coords = new Set()
     taken_coords.add(hashable(start))
     var cur_list = [start]
@@ -78,6 +80,9 @@ function get_possible_set(map,start,range){
                         next_list.push(nc)
                         taken_coords.add(hnc)
                     }
+                    else if(move_tos_set.has(hnc)){
+                        taken_coords.add(hnc)
+                    }
                 }
             }
         }
@@ -89,15 +94,15 @@ function get_possible_set(map,start,range){
 }
 function get_possible_moves(map,start,range){
     var taken = get_possible_set(map,start,range)
-    return Array.from(taken_coords).map((hc)=>JSON.parse(hc))
+    return Array.from(taken).map((hc)=>JSON.parse(hc))
 }
 function is_possible_move(map,start,target,range){
-    var taken = get_possible_set(map,start,range)
+    var taken = get_possible_set(map,start,range,[target])
     var htarget = JSON.stringify(target)
     return taken.has(htarget)
 }
 module.exports = {
-    //get_possible_moves: get_possible_moves,
+    get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
     is_possible_move: is_possible_move,
 }
