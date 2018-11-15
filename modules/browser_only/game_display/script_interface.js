@@ -211,8 +211,8 @@ class ScriptButton extends BaseComponent {
                 className: "script_box_button script_box_edit_button",
                 innerText: "Edit",
                 onclick: (function(){
-                    make_change_script_popup(myself.state.data.js_file,JSON.parse,function(js_code){
-                        myself.state.data.js_file = js_code
+                    make_change_script_popup(myself.state.data.json_data,JSON.parse,function(js_code){
+                        myself.state.data.json_data = js_code
                         if(myself.state.selected){
                             console.log(myself.state)
                             signals.selectedData.setState(myself.state.data)

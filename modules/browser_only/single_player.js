@@ -69,7 +69,7 @@ function init_signals(game_state){
         })
     })
     signals.selectedData.listen(function(data){
-        //console.log(data)
+        console.log(data)
         my_web_worker.postMessage({
             type: "REPLACE_FUNCTION",
             json_data: data.json_data,
