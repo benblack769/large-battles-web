@@ -32,14 +32,16 @@ function copy_rect(ctx,start_coord, end_coord){
     var imgData = ctx.getImageData(sc.x*sqr_size,sc.y*sqr_size,sqr_size,sqr_size);
     ctx.putImageData(imgData,ec.x*sqr_size,ec.y*sqr_size);
 }
-function draw_rect(ctx, coord, fillcolor, strokecolor){
-    ctx.fillStyle=fillcolor;
-    ctx.fillRect(coord.x*sqr_size,
-                coord.y*sqr_size,
-                sqr_size,
-                sqr_size);
+function stroke_rect(ctx, coord, strokecolor){
     ctx.strokeStyle=strokecolor;
     ctx.strokeRect(coord.x*sqr_size,
+    coord.y*sqr_size,
+    sqr_size,
+    sqr_size);
+}
+function fill_rect(ctx, coord, fillcolor){
+    ctx.fillStyle=fillcolor;
+    ctx.fillRect(coord.x*sqr_size,
                 coord.y*sqr_size,
                 sqr_size,
                 sqr_size);
@@ -73,9 +75,10 @@ module.exports = {
     draw_background: draw_background,
     get_game_pixel_size: get_game_pixel_size,
     get_game_coords_from_pixels: get_game_coords_from_pixels,
-    draw_rect: draw_rect,
     game_position_to_pix: game_position_to_pix,
     clear_rect: clear_rect,
     draw_image: draw_image,
     copy_rect: copy_rect,
+    stroke_rect: stroke_rect,
+    fill_rect: fill_rect,
 }

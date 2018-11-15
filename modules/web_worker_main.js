@@ -1,64 +1,25 @@
-
-var myexec_fn = function(clicks){
-    console.log("ran default exec, should not happen...")
-    console.log(clicks)
+function default_set_data(json_data){
+    self.set_data = json_data
+    if(self.on_set_fn){
+        //if set_fn is defined in library, call it too.
+        self.on_set_fn(json_data)
+    }
 }
-function replace_exec_fn(js_str){
-    console.log("replaced function with: "+js_str )
-    myexec_fn = function(clicks){eval(js_str)}
+self.click_handler = function(click){
+    console.log("default click activated. You need to set 'self.click_handler' in your library code")
 }
-function make_building(clicks,type){
-    console.log("made building at: "+clicks[0])
-    postMessage({
-        type: "BUILD",
-        building_type: type,
-        coord: clicks[0],
-    })
+self.set_data = {}
+self.globals = {}
+function replace_lib(js_code){
+    //console.log("replaced library with: "+js_code)
+    self.globals = {};
+    (new Function(js_code))()
 }
-function make_farm(clicks){
-    make_building(clicks,"farm")
-}
-function make_armory(clicks){
-    make_building(clicks,"farm")
-}
-function make_armory(clicks){
-    make_building(clicks,"armory")
-}
-function move_barracks(clicks){
-    make_building(clicks,"barracks")
-}
-function buy_armor(clicks){
-    console.log("bought armor at: "+JSON.stringify(clicks[1]))
-    postMessage({
-        type: "BUY_ATTACHMENT",
-        building_coord: clicks[0],
-        equip_coord: clicks[1],
-        equip_type: "armor",
-    })
-}
-function buy_soldier(clicks){
-    console.log("made soldier at: "+JSON.stringify(clicks[1]))
-    postMessage({
-        type: "BUY_UNIT",
-        building_coord: clicks[0],
-        placement_coord: clicks[1],
-        buy_type: "soldier",
-    })
-}
-
-function move_soldier(clicks){
-    console.log("made soldier at: "+JSON.stringify(clicks[1]))
-    postMessage({
-        type: "MOVE",
-        start_coord: clicks[0],
-        end_coord: clicks[1],
-    })
-}
-
 onmessage = function(message){
     var message = message.data
     switch(message.type){
-        case "REPLACE_FUNCTION": replace_exec_fn(message.js_str); break;
-        case "ACTIVATE_FUNCTION": myexec_fn(message.args); break;
+        case "REPLACE_FUNCTION": default_set_data(JSON.parse(message.json_data)); break;
+        case "REPLACE_LIBRARY": replace_lib(message.js_str); break;
+        case "CLICK_OCCURED": click_handler(message.coord); break;
     }
 }

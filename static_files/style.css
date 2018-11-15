@@ -176,6 +176,7 @@ main page style
     /*background image set in javascript*/
     background-repeat: no-repeat;
     background-position: center;
+    background-color: #bbbbbb;
 }
 .game_script_box_selected{
     background-color: #94FDF9;

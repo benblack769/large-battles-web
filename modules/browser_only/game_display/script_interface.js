@@ -12,9 +12,8 @@ var Signal = signals.Signal
 
 var edit_signal = new Signal()
 var stop_edit_signal = new Signal()
-signals.selectedData.listen(()=>signals.clear_clicks.fire())
-edit_signal.listen(()=>signals.clear_clicks.fire())
-signals.clickCycleFinished.listen(()=>signals.clear_clicks.fire())
+signals.selectedData.listen(()=>signals.clear_highlights.fire())
+edit_signal.listen(()=>signals.clear_highlights.fire())
 
 
 class LibPannel extends BaseComponent {
@@ -24,9 +23,6 @@ class LibPannel extends BaseComponent {
             className: "lib_pannel_container",
         })
         basediv.appendChild(this.interface_div)
-        this.state = {
-            js_lib: "",
-        }
         this.stop_edit()
         this.handle_signals()
     }
@@ -37,8 +33,8 @@ class LibPannel extends BaseComponent {
             className: "lib_edit_button",
             parent: this.interface_div,
             onclick: () => {
-                make_change_script_popup(this.state.js_lib,Function,(js_code) => {
-                    this.state.js_lib = js_code
+                make_change_script_popup(signals.libData.getState(),Function,(js_code) => {
+                    signals.libData.setState(js_code)
                 })
             }
         })
@@ -93,6 +89,9 @@ class EditOverlay extends BaseComponent {
         stop_edit_signal.fire()
     }
 }
+function pretty_print(obj){
+    return JSON.stringify(obj,null,2)
+}
 class ScriptButtonPannel extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
@@ -101,33 +100,44 @@ class ScriptButtonPannel extends BaseComponent {
         })
         var initial_button_datas = [
             {
-                click_num:2,
-                js_file:"buy_soldier(clicks)",
+                json_data: pretty_print({
+                    "type": "buy_unit",
+                    "unit_type": "soldier",
+                }),
                 icon: "Soldier.png",
             },
             {
-                click_num:1,
-                js_file:"make_farm(clicks)",
+                json_data: pretty_print({
+                    "type": "build",
+                    "unit_type": "farm",
+                }),
                 icon: "farm.png",
             },
             {
-                click_num:1,
-                js_file:"make_barracks(clicks)",
+                json_data: pretty_print({
+                    "type": "build",
+                    "unit_type": "barracks",
+                }),
                 icon: "barracks.png",
             },
             {
-                click_num:1,
-                js_file:"make_armory(clicks)",
+                json_data: pretty_print({
+                    "type": "build",
+                    "unit_type": "armory",
+                }),
                 icon: "armory.png",
             },
             {
-                click_num:2,
-                js_file:"move_soldier(clicks)",
+                json_data: pretty_print({
+                    "type": "move",
+                }),
                 icon: "",
             },
             {
-                click_num:2,
-                js_file:"buy_armor(clicks)",
+                json_data: pretty_print({
+                    "type": "buy_equipment",
+                    "equip_type": "armor"
+                }),
                 icon: "armor.png",
             }
         ]
@@ -157,6 +167,12 @@ class ScriptButton extends BaseComponent {
         this.mydiv = this.render()
         basediv.appendChild(this.mydiv)
         this.handle_signals()
+        signals.selectedData.listen((data)=>{
+            if(data === this.state.data){
+                this.state.selected = true;
+                this.changedState()
+            }
+        })
     }
     handle_signals(){
         edit_signal.listen(() => {
@@ -180,8 +196,6 @@ class ScriptButton extends BaseComponent {
     selectScript(){
         if(!this.state.selected){
             signals.selectedData.setState(this.state.data)
-            this.state.selected = true;
-            this.changedState()
         }
         //this.changeState(Object.assign({selected:true},this.state))
     }
@@ -197,7 +211,7 @@ class ScriptButton extends BaseComponent {
                 className: "script_box_button script_box_edit_button",
                 innerText: "Edit",
                 onclick: (function(){
-                    make_change_script_popup(myself.state.data.js_file,Function,function(js_code){
+                    make_change_script_popup(myself.state.data.js_file,JSON.parse,function(js_code){
                         myself.state.data.js_file = js_code
                         if(myself.state.selected){
                             console.log(myself.state)

@@ -93,72 +93,30 @@ class ClickInterfaceCanvas extends BaseComponent {
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
-        //display_board.draw_rect(this.context, {x:5,y:6}, "rgba(255,0,0,0.4)", "rgba(255,0,0,0.8)")
-        this.canvas.onclick = this.handleClick.bind(this)
-        this.state = {
-            click_stack: [],
-            color_cycle: [new Color(255,0,0),new Color(0,0,255),new Color(255,0,255)],
-            backup_color: new Color(128,128,128),
+        this.canvas.onclick = (event) => {
+            signals.clickOccurred.fire(event_to_coord(event))
         }
+        this.hover_coord = null
         this.canvas.onmousemove = (event) => {
             this.handleMove(event)
         }
-        this.handle_signals()
+        this.canvas.onmouseout = () => {
+            this.clearHover()
+        }
     }
     handleMove(moveevent){
         var xycoord = event_to_coord(moveevent)
-        var click_stack = this.state.click_stack
-
-        if(click_stack.length){
-            if(deep_equals(xycoord, click_stack[click_stack.length-1])){
-                return;
-            }
-            this.clearClicks()
-            click_stack.pop()
+        if(this.hover_coord && !deep_equals(xycoord,this.hover_coord)){
+            this.clearHover()
         }
-        click_stack.push(xycoord)
-        this.drawCoordStack()
+        this.hover_coord = xycoord
+        display_board.stroke_rect(this.context, xycoord, "black")
     }
-    drawCoordStack(){
-        var cs = this.state.click_stack
-        for(var i = 0; i < cs.length; i++){
-            this.drawCoord(cs[i],this.drawColor(i))
+    clearHover(){
+        if(this.hover_coord){
+            display_board.clear_rect(this.context,this.hover_coord)
+            this.hover_coord = null
         }
-    }
-    drawCoord(xycoord,thiscolor){
-        display_board.draw_rect(this.context, xycoord, thiscolor.toString(0.4), thiscolor.toString(0.8))
-    }
-    handleClick(clickevent){
-        var xycoord = event_to_coord(clickevent)
-        var click_stack = this.state.click_stack
-        this.clearClicks()
-        if(click_stack.length){
-            click_stack.pop()
-        }
-        click_stack.push(xycoord)
-        if(click_stack.length === signals.selectedData.getState().click_num){
-            signals.clickCycleFinished.fire(this.state.click_stack)
-            this.state.click_stack = []
-        }
-        else{
-            click_stack.push(xycoord)
-            this.drawCoordStack()
-        }
-    }
-    drawColor(num){
-        var colors = this.state.color_cycle
-        return colors.length > num ? colors[num] : this.state.backup_color
-    }
-    clearClicks(){
-        this.state.click_stack.forEach((coord) => {
-            display_board.clear_rect(this.context,coord)
-        })
-    }
-    handle_signals(){
-        signals.clear_clicks.listen(() => {
-            this.clearClicks()
-            this.state.click_stack = []
-        })
     }
 }
 function canvas_overlay_div(basediv){
@@ -167,6 +125,25 @@ function canvas_overlay_div(basediv){
     })
     basediv.appendChild(el)
     return el
+}
+class HighlightCanvas extends BaseComponent {
+    constructor(parent,basediv, gamesize){
+        super(parent,basediv)
+        this.canvas = create_canvas_of_size(gamesize)
+        this.context = this.canvas.getContext('2d')
+        basediv.appendChild(this.canvas)
+        signals.highlightCommand.listen(this.onHighlightCommand.bind(this))
+        signals.clear_highlights.listen(this.clear.bind(this))
+    }
+    clear(){
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+    onHighlightCommand(command){
+        this.clear()
+        command.draw_list.forEach((command)=>{
+            display_board.fill_rect(this.context, command.coord, command.color)
+        })
+    }
 }
 class GameBoard extends BaseComponent {
     constructor(parent, basediv, gamesize){
@@ -180,8 +157,8 @@ class GameBoard extends BaseComponent {
                 position: "absolute",
                 top: "80px",
                 left: "80px",
-                right: "-10px",
-                bottom: "-10px",
+                right: "0",
+                bottom: "0",
                 width: sizes.xsize+300+"px",
                 height: sizes.ysize+300+"px",
             }
@@ -201,6 +178,7 @@ class GameBoard extends BaseComponent {
         this.super_parent_div.appendChild(this.parent_div)
         this.background_canvas = new BackgroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
+        this.highlight_canvas = new HighlightCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.click_interface_canvas = new ClickInterfaceCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
     }
 }

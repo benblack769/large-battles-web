@@ -10,13 +10,17 @@ var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 
-var my_web_worker = new Worker("web_worker.js")
+var my_web_worker = new Worker("web_worker.js");
 
 function switch_to_single_player(){
     console.log("switched to single player")
     $(".page_level").hide()
     $("#single_player_page").show()
     window.scrollTo(80, 40);
+    document.body.style["background-color"] = "gray"
+}
+function switch_away_from_single_player(){
+    document.body.style["background-color"] = "white"
 }
 
 class GameInterface extends base_inter.BaseComponent {
@@ -30,45 +34,53 @@ class GameInterface extends base_inter.BaseComponent {
         return [this.gameboard, this.script_inter]
     }
 }
-function process_clicks(clicks, click_num){
-    my_web_worker.postMessage({
-        type: "ACTIVATE_FUNCTION",
-        args: clicks,
-    })
-}
 function deep_copy(obj){
     return JSON.parse(JSON.stringify(obj))
 }
 function process_instruction(game_state,instruction,player){
     //validate instruction
-    var error = validate.validate_instruction(game_state,instruction,player)
-    if(error){
-        console.log("ERROR "+error.name+": \n"+error.message)
-        return
+    if(instruction.type === "DRAW_RECTS"){
+        signals.highlightCommand.fire(instruction)
     }
-    console.log(instruction)
-    var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
-    instr_parts.forEach(function(part){
-        //change local game state
-        consume.consume_change(game_state,part)
-        //display instruction on canvas
-        signals.gameStateChange.fire(part)
-    })
-    //relay instruction to server
+    else{
+        var error = validate.validate_instruction(game_state,instruction,player)
+        if(error){
+            console.log("ERROR "+error.name+": \n"+error.message)
+            return
+        }
+        console.log(instruction)
+        var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
+        instr_parts.forEach(function(part){
+            //change local game state
+            consume.consume_change(game_state,part)
+            //display instruction on canvas
+            signals.gameStateChange.fire(part)
+        })
+    }
 }
 function init_signals(game_state){
-    signals.clickCycleFinished.listen(function(clicks){
-        process_clicks(clicks, signals.selectedData.getState().click_num)
-    })
     signals.ended_turn.listen(() => {
         process_instruction(game_state,{type:"END_TURN"},signals.myPlayer.getState())
     })
+    signals.clickOccurred.listen((coord) => {
+        my_web_worker.postMessage({
+            type: "CLICK_OCCURED",
+            coord: coord,
+        })
+    })
     signals.selectedData.listen(function(data){
-        console.log(data)
+        //console.log(data)
         my_web_worker.postMessage({
             type: "REPLACE_FUNCTION",
-            js_str: data.js_file,
+            json_data: data.json_data,
         })
+    })
+    signals.libData.listen(function(js_code){
+        my_web_worker.postMessage({
+            type: "REPLACE_LIBRARY",
+            js_str: js_code,
+        })
+        signals.selectedData.setState(signals.selectedData.getState())
     })
     signals.gameStateChange.listen(function(instr){
         if(instr.type === "SET_ACTIVE_PLAYER"){
@@ -76,6 +88,12 @@ function init_signals(game_state){
             signals.myPlayer.setState(signals.activePlayer.getState())
         }
     })
+}
+function init_web_worker(){
+    $.get("default_lib.js",function(data){
+        ///console.log(data)
+        signals.libData.setState(data)
+    },"text")
 }
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
@@ -105,14 +123,7 @@ function main_init(){
         signals.gameStateChange.fire(part)
         consume.consume_change(game_state,part)
     })
-
-    /*var obj = JSON.stringify({
-        hithere: 123,
-        bob: "green"
-    },null,4)
-    make_change_script_popup(obj,JSON.parse,function(res_val){
-        console.log(res_val)
-    })*/
+    init_web_worker()
 }
 function init_single_player(){
     load_images.on_load_all_images(types.get_all_sources(),main_init)
@@ -121,4 +132,5 @@ function init_single_player(){
 module.exports = {
     switch_to_single_player: switch_to_single_player,
     init_single_player: init_single_player,
+    switch_away_from_single_player: switch_away_from_single_player,
 }
