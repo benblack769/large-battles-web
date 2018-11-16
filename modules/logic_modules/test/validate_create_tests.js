@@ -108,6 +108,16 @@ test('validate_build_over', function (t) {
     t.true(validate(game,instr1,"p1"))
     t.end()
 })
+test('validate_build_type', function (t) {
+    var game = make_game_state()
+    var instr1 = {
+        type: "BUILD",
+        coord: {x:1,y:1},
+        building_type: "bad_build_type",
+    }
+    t.true(validate(game,instr1,"p1"))
+    t.end()
+})
 
 test('validate_money_build', function (t) {
     var game = make_game_state()
@@ -173,6 +183,10 @@ test('validate_equip_unit', function (t) {
     t.false(validate(game,instr,"p1"),"GOOD")
     at(game.map,instr.equip_coord).attachments.push("basic_attachment")
     t.true(validate(game,instr,"p1"),"ALREADY_HAS_ATTACHMENT")
+    at(game.map,instr.equip_coord).attachments = []
+    t.false(validate(game,instr,"p1"),"GOOD")
+    instr.equip_type = "bad_equip"
+    t.true(validate(game,instr,"p1"),"BAD_EQUIP_TYPE")
 
 
     t.end()

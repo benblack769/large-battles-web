@@ -27,54 +27,69 @@ function draw_list(cclist){
         draw_list: cclist,
     })
 }
-function is_valid_move(game_state,start,end){
-    var instr = {
-        type: "MOVE",
-        start_coord: start,
-        end_coord: end,
-    }
-    return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
-}
-function get_all_valid_moves_from(game_state,start,range){
-    return lib.coords_around(game_state,start,range).filter((coord)=>is_valid_move(game_state,start,coord))
-}
-class MoveHandler {
+class TwoClickHandler {
     constructor(){
         this.first_click = null
     }
     handleClick(click,game_state){
         if(!this.first_click){
-            this.first_click = click
-            var move_range = self.lib.get_move_range(game_state,click)
-            var possible_moves = get_all_valid_moves_from(game_state,click,move_range)
+            var move_range = this.getRange(game_state,click)
+            var possible_moves = this.get_all_valid_around(game_state,click,move_range)
             //console.log(possible_moves)
             draw_list(concat(
                 [to_item(click,"rgba(255,0,0,0.4)")],
                 coord_list_to_draws(possible_moves,"rgba(128,128,128,0.4)")
             ))
+            this.first_click = click
         }
         else{
-            exec_move([this.first_click,click])
+            this.execAction(click)
             clear_highlights()
             this.first_click = null
         }
     }
 }
-class BuyHandler {
+class MoveHandler extends TwoClickHandler {
+    getRange(game_state,click){
+        return self.lib.get_move_range(game_state,click)
+    }
+    execAction(click2){
+        exec_move([this.first_click,click2])
+    }
+    is_valid_move(game_state,start,end){
+        var instr = {
+            type: "MOVE",
+            start_coord: start,
+            end_coord: end,
+        }
+        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+    }
+    get_all_valid_around(game_state,start,range){
+        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_move(game_state,start,coord))
+    }
+}
+class BuyHandler extends TwoClickHandler {
     constructor(buy_type){
-        this.first_click = null
+        super()
         this.buy_type = buy_type
     }
-    handleClick(click){
-        if(!this.first_click){
-            this.first_click = click
-            draw_coord(click,"rgba(255,0,0,0.4)")
+    getRange(game_state,click){
+        return 1
+    }
+    execAction(click2){
+        exec_buy([this.first_click,click2],this.buy_type)
+    }
+    get_all_valid_around(game_state,start,range){
+        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_buy(game_state,start,coord))
+    }
+    is_valid_buy(game_state,start,end){
+        var instr = {
+            type: "BUY_UNIT",
+            building_coord: start,
+            placement_coord: end,
+            buy_type: this.buy_type,
         }
-        else{
-            exec_buy([this.first_click,click],this.buy_type)
-            clear_highlights()
-            this.first_click = null
-        }
+        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
     }
 }
 class BuildHandler {
@@ -85,21 +100,28 @@ class BuildHandler {
         make_building(click,this.buy_type)
     }
 }
-class AttachHandler {
+class AttachHandler extends TwoClickHandler {
     constructor(buy_type){
-        this.first_click = null
+        super()
         this.buy_type = buy_type
     }
-    handleClick(click){
-        if(!this.first_click){
-            this.first_click = click
-            draw_coord(click,"rgba(255,0,0,0.4)")
+    getRange(game_state,click){
+        return 1
+    }
+    execAction(click2){
+        exec_equip([this.first_click,click2],this.buy_type)
+    }
+    get_all_valid_around(game_state,start,range){
+        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_buy(game_state,start,coord))
+    }
+    is_valid_buy(game_state,start,end){
+        var instr = {
+            type: "BUY_ATTACHMENT",
+            building_coord: start,
+            equip_coord: end,
+            equip_type: this.buy_type,
         }
-        else{
-            exec_equip([this.first_click,click],this.buy_type)
-            clear_highlights()
-            this.first_click = null
-        }
+        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
     }
 }
 

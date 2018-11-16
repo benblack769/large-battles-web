@@ -93,6 +93,7 @@ function assert_buildable(build_type, game_stats){
 function valid_build(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_type","coord"])
     assert_is_valid_coord(instr.coord,gamestate.map)
+    assert_valid_unit_type(gamestate,instr.building_type)
     assert_empty(gamestate.map, instr.coord)
     assert_buildable(instr.building_type,gamestate.stats)
     assert_money_enough(instr.building_type, player, gamestate)
@@ -111,10 +112,16 @@ function assert_building_can_build(gamestate,instr,player){
         throw new Error('Building cannot buy any more units this turn. Wait until next turn.')
     }
 }
+function assert_valid_unit_type(gamestate, unit_type){
+    if(!(unit_type in gamestate.stats.unit_types)){
+        throw new Error('invalid unit name ' + unit_type)
+    }
+}
 function valid_buy_unit(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_coord","placement_coord","buy_type"])
     assert_is_valid_coord(instr.building_coord,gamestate.map)
     assert_is_valid_coord(instr.placement_coord,gamestate.map)
+    assert_valid_unit_type(gamestate,instr.buy_type)
     assert_empty(gamestate.map, instr.placement_coord)
     assert_is_unit(gamestate.map, instr.building_coord)
     assert_player_is(gamestate.map, instr.building_coord, player)
@@ -144,10 +151,16 @@ function assert_target_can_be_equipped(gamestate, instr){
         throw new Error('Target unit already has equipment of type: "'+instr.equip_type+'"')
     }
 }
+function assert_valid_attachment_type(gamestate,equip_name){
+    if(!(equip_name in gamestate.stats.attachment_types)){
+        throw new Error('invalid attachment name ' + equip_name)
+    }
+}
 function valid_buy_attachment(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_coord","equip_coord","equip_type"])
     assert_is_valid_coord(instr.building_coord,gamestate.map)
     assert_is_valid_coord(instr.equip_coord,gamestate.map)
+    assert_valid_attachment_type(gamestate,instr.equip_type)
     assert_is_unit(gamestate.map, instr.equip_coord)
     assert_is_unit(gamestate.map, instr.building_coord)
     assert_player_is(gamestate.map, instr.equip_coord, player)

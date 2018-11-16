@@ -46,6 +46,9 @@ function process_instruction(game_state,instruction,player){
         var error = validate.validate_instruction(game_state,instruction,player)
         if(error){
             console.log("ERROR "+error.name+": \n"+error.message)
+            if(error.name !== "Error"){
+                console.log(error)
+            }
             return
         }
         console.log(instruction)
@@ -101,8 +104,8 @@ function init_web_worker(){
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
     var gamesize = {
-        xsize: 90,
-        ysize: 60,
+        xsize: 30,
+        ysize: 20,
     }
     var mystate = player_utils.example_player_state
     var map = init_game.init_map(gamesize)
