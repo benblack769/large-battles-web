@@ -96,7 +96,17 @@ function get_possible_moves(map,start,range,move_tos){
     var taken = get_possible_set(map,start,range,move_tos)
     return Array.from(taken).map((hc)=>JSON.parse(hc))
 }
+function distance(c1,c2){
+    return Math.max(Math.abs(c1.x-c2.x),
+                    Math.abs(c1.y-c2.y))
+}
+function is_possible_move_false_positives(start,target,range){
+    return distance(start,target) <= range
+}
 function is_possible_move(map,start,target,range){
+    if (!is_possible_move_false_positives(start,target,range)){
+        return false
+    }
     var taken = get_possible_set(map,start,range,[target])
     var htarget = JSON.stringify(target)
     return taken.has(htarget)

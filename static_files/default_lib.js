@@ -27,6 +27,17 @@ function draw_list(cclist){
         draw_list: cclist,
     })
 }
+function is_valid_move(game_state,start,end){
+    var instr = {
+        type: "MOVE",
+        start_coord: start,
+        end_coord: end,
+    }
+    return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+}
+function get_all_valid_moves_from(game_state,start,range){
+    return lib.coords_around(game_state,start,range).filter((coord)=>is_valid_move(game_state,start,coord))
+}
 class MoveHandler {
     constructor(){
         this.first_click = null
@@ -35,7 +46,7 @@ class MoveHandler {
         if(!this.first_click){
             this.first_click = click
             var move_range = self.lib.get_move_range(game_state,click)
-            var possible_moves = self.lib.get_possible_moves(game_state.map,click,move_range)
+            var possible_moves = get_all_valid_moves_from(game_state,click,move_range)
             //console.log(possible_moves)
             draw_list(concat(
                 [to_item(click,"rgba(255,0,0,0.4)")],

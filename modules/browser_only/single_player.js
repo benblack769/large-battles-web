@@ -68,6 +68,7 @@ function init_signals(game_state){
             coord: coord,
             game_state: game_state,
             active_player: signals.activePlayer.getState(),
+            my_player: signals.myPlayer.getState(),
         })
     })
     signals.selectedData.listen(function(data){
@@ -100,8 +101,8 @@ function init_web_worker(){
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
     var gamesize = {
-        xsize: 30,
-        ysize: 20,
+        xsize: 90,
+        ysize: 60,
     }
     var mystate = player_utils.example_player_state
     var map = init_game.init_map(gamesize)

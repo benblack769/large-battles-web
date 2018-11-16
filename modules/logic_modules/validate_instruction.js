@@ -48,7 +48,6 @@ function assert_in_range(map,start_coord,end_coord,range){
     var is_possible = pathing.is_possible_move(map, start_coord, end_coord, range)
     if(!is_possible){
         var possible_moves = pathing.get_possible_moves(map, start_coord, range)
-        console.log(possible_moves)
         throw new Error('Square out of range. Remember that nothing can move through a unit. Possible moves are: '+JSON.stringify(possible_moves))
     }
 }
