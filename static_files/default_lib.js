@@ -1,13 +1,46 @@
 
-
+function coord_list_to_draws(clist,color){
+    return clist.map((coord)=>to_item(coord,color))
+}
+function concat(l1,l2){
+    return l1.concat(l2)
+}
+function to_item(coord,color){
+    return {
+        coord: coord,
+        color: color,
+    }
+}
+function clear_highlights(){
+    postMessage({
+        type: "DRAW_RECTS",
+        draw_list: []
+    })
+}
+function draw_coord(coord,color){
+    draw_list([to_item(coord,color)])
+}
+function draw_list(cclist){
+    console.log(cclist)
+    postMessage({
+        type: "DRAW_RECTS",
+        draw_list: cclist,
+    })
+}
 class MoveHandler {
     constructor(){
         this.first_click = null
     }
-    handleClick(click){
+    handleClick(click,game_state){
         if(!this.first_click){
             this.first_click = click
-            draw_coord(click,"rgba(255,0,0,0.4)")
+            var move_range = self.lib.get_move_range(game_state,click)
+            var possible_moves = self.lib.get_possible_moves(game_state.map,click,move_range)
+            //console.log(possible_moves)
+            draw_list(concat(
+                [to_item(click,"rgba(255,0,0,0.4)")],
+                coord_list_to_draws(possible_moves,"rgba(128,128,128,0.4)")
+            ))
         }
         else{
             exec_move([this.first_click,click])
@@ -59,23 +92,6 @@ class AttachHandler {
     }
 }
 
-function clear_highlights(){
-    postMessage({
-        type: "DRAW_RECTS",
-        draw_list: []
-    })
-}
-function draw_coord(coord,color){
-    postMessage({
-        type: "DRAW_RECTS",
-        draw_list: [
-            {
-                coord: coord,
-                color: color,
-            }
-        ]
-    })
-}
 
 function make_building(clicks,type){
     console.log("made building at: "+clicks)
@@ -122,6 +138,7 @@ function make_handler(data){
 self.on_set_fn = function(set_data){
     myhandler = make_handler(set_data)
 }
-self.click_handler = function(click){
-    myhandler.handleClick(click)
+self.click_handler = function(click,game_state,active_player){
+    console.log(game_state)
+    myhandler.handleClick(click,game_state)
 }

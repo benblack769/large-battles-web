@@ -66,6 +66,8 @@ function init_signals(game_state){
         my_web_worker.postMessage({
             type: "CLICK_OCCURED",
             coord: coord,
+            game_state: game_state,
+            active_player: signals.activePlayer.getState(),
         })
     })
     signals.selectedData.listen(function(data){

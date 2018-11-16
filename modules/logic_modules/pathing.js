@@ -92,8 +92,8 @@ function get_possible_set(map,start,range,move_tos){
     taken_coords.delete(hashable(start))
     return taken_coords
 }
-function get_possible_moves(map,start,range){
-    var taken = get_possible_set(map,start,range)
+function get_possible_moves(map,start,range,move_tos){
+    var taken = get_possible_set(map,start,range,move_tos)
     return Array.from(taken).map((hc)=>JSON.parse(hc))
 }
 function is_possible_move(map,start,target,range){
