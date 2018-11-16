@@ -46,7 +46,6 @@ img {
     right: 0;
     background: rgba(0,0,0,0.6);
     z-index: 50;
-    overflow: hidden;
 }
 .central_cancel_box {
     position: relative;
@@ -255,7 +254,6 @@ main page style
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: hidden;
 }
 .lib_edit_button {
     background: red;
@@ -286,4 +284,16 @@ main page style
 }
 .player_info_button:hover {
     background-color: blue;
+}
+.pannel_button {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    background-color: white;
+}
+.pannel_selector_container {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    z-index: 11;
 }

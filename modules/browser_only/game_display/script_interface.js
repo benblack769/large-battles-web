@@ -38,6 +38,16 @@ class LibPannel extends BaseComponent {
                 })
             }
         })
+        this.edit_lib_button = createDiv({
+            innerText: "Edit Layout",
+            className: "lib_edit_button",
+            parent: this.interface_div,
+            onclick: () => {
+                make_change_script_popup(pretty_print(signals.layoutChanged.getState()),JSON.parse,(js_code) => {
+                    signals.layoutChanged.setState(JSON.parse(js_code))
+                })
+            }
+        })
         this.edit_button = createDiv({
             innerText: "Stop Edit",
             className: "lib_edit_button",
@@ -62,12 +72,9 @@ class LibPannel extends BaseComponent {
 class ScriptInterface extends BaseComponent {
     constructor(parent, basediv){
         super(parent,basediv)
-        this.mybuttonpannel = new ScriptButtonPannel(this,basediv)
+        this.mybuttonpannel = new PannelSelector(this,basediv)
         this.libbuttonpannel = new LibPannel(this,basediv)
         this.edit_overlay = new EditOverlay(this,basediv)
-    }
-    children(){
-        return [this.mybuttonpannel,this.libbuttonpannel,this.edit_overlay]
     }
 }
 class EditOverlay extends BaseComponent {
@@ -92,73 +99,93 @@ class EditOverlay extends BaseComponent {
 function pretty_print(obj){
     return JSON.stringify(obj,null,2)
 }
-class ScriptButtonPannel extends BaseComponent {
+class PannelButton extends BaseComponent {
+    constructor(parent, basediv, pannel_id, pannel_select_signal){
+        super(parent, basediv)
+        this.pannel_id = pannel_id
+        this.button = createDiv({
+            className: "pannel_button",
+        })
+        basediv.appendChild(this.button)
+        this.button.onclick = (click)=>{
+            pannel_select_signal.fire(this.pannel_id)
+        }
+        pannel_select_signal.listen((pan_id)=>{
+            if(pan_id === this.pannel_id){
+                this.button.style["background-color"] = "#bbbbbb"
+            }
+            else{
+                this.button.style["background-color"] = "#ffffff"
+            }
+        })
+    }
+}
+class PannelSelector extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
-        this.interface_div = createDiv({
-            className: "script_container",
-        })
-        var initial_button_datas = [
-            {
-                json_data: pretty_print({
-                    "type": "buy_unit",
-                    "unit_type": "soldier",
-                }),
-                icon: "Soldier.png",
-            },
-            {
-                json_data: pretty_print({
-                    "type": "build",
-                    "unit_type": "farm",
-                }),
-                icon: "farm.png",
-            },
-            {
-                json_data: pretty_print({
-                    "type": "build",
-                    "unit_type": "barracks",
-                }),
-                icon: "barracks.png",
-            },
-            {
-                json_data: pretty_print({
-                    "type": "build",
-                    "unit_type": "armory",
-                }),
-                icon: "armory.png",
-            },
-            {
-                json_data: pretty_print({
-                    "type": "move",
-                }),
-                icon: "",
-            },
-            {
-                json_data: pretty_print({
-                    "type": "buy_equipment",
-                    "equip_type": "armor"
-                }),
-                icon: "armor.png",
+
+        this.pannels = []
+        signals.layoutChanged.listen((layout_data)=>{
+            this.pannel_selector = new Signal()
+            $(this.parent_div).empty()
+            this.selector_div = createDiv({
+                parent: basediv,
+                className: "pannel_selector_container",
+                id: "selector_div"
+            })
+            var pannel_buttons = []
+            for(var i = 0; i < layout_data.length; i++){
+                console.log(layout_data[i])
+                pannel_buttons.push(new PannelButton(this,this.selector_div,i,this.pannel_selector))
             }
-        ]
+            this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,signals.selectedData))
+            this.pannel_selector.listen((pannel_idx)=>{
+                $(".pannel_holder").hide()
+                var mypannel = this.pannels[pannel_idx]
+                $(mypannel.interface_div).show()
+                mypannel.pannel_select_data.fire(mypannel.mydata)
+            })
+            this.pannel_selector.fire(0)
+        })
+    }
+}
+class ScriptButtonPannel extends BaseComponent {
+    constructor(parent, basediv, pannel_data, out_signal){
+        super(parent, basediv)
+        this.interface_div = createDiv({
+            className: "pannel_holder"
+            //className: "script_container",
+        })
         basediv.appendChild(this.interface_div)
-        this.makeButtonsFromData(initial_button_datas)
-        this.buttons[0].selectScript()
+
+        this.pannel_select_data = new Signal()
+        this.buttons = []
+        this.makeButtonsFromData(pannel_data)
+        this.mydata = this.buttons[0].state.data
+        this.pannel_select_data.fire(this.buttons[0].state.data)
+        this.pannel_select_data.listen((data)=>out_signal.setState(data))
+        this.pannel_select_data.listen((newdata)=>{
+            this.mydata = newdata
+        })
+    }
+    deleteButtons(){
+        $(this.interface_div).empty()
+        this.buttons = []
     }
     makeButtonsFromData(init_data){
-        this.buttons = []
-        init_data.forEach((data) => {
-            this.buttons.push(new ScriptButton(this, this.interface_div, data))
+        var str_data = init_data.map(function(data){return{
+            icon: data.icon,
+            json_data: pretty_print(data.data),
+        }})
+        str_data.forEach((data) => {
+            this.buttons.push(new ScriptButton(this, this.interface_div, data, this.pannel_select_data))
         })
-    }
-    children(){
-        return this.buttons
     }
 }
 class ScriptButton extends BaseComponent {
-    constructor(parent, basediv, init_data){
+    constructor(parent, basediv, init_data, pannel_select_data){
         super(parent, basediv)
-
+        this.pannel_select_data = pannel_select_data
         this.state = {
             data: init_data,
             selected: false,
@@ -167,24 +194,27 @@ class ScriptButton extends BaseComponent {
         this.mydiv = this.render()
         basediv.appendChild(this.mydiv)
         this.handle_signals()
-        signals.selectedData.listen((data)=>{
-            if(data === this.state.data){
-                this.state.selected = true;
-                this.changedState()
-            }
-        })
     }
     handle_signals(){
-        edit_signal.listen(() => {
+        /*edit_signal.listen(() => {
             this.state.editing = true;
             this.changedState();
         })
         stop_edit_signal.listen(() => {
             this.state.editing = false;
             this.changedState();
-        })
-        signals.selectedData.listen(() => {
+        })*/
+        /*signals.selectedData.listen(() => {
             this.deselectScript();
+        })*/
+        this.pannel_select_data.listen((data)=>{
+            if(data === this.state.data){
+                this.state.selected = true;
+                this.changedState()
+            }
+            else{
+                this.deselectScript()
+            }
         })
     }
     deselectScript(){
@@ -195,7 +225,7 @@ class ScriptButton extends BaseComponent {
     }
     selectScript(){
         if(!this.state.selected){
-            signals.selectedData.setState(this.state.data)
+            this.pannel_select_data.fire(this.state.data)
         }
         //this.changeState(Object.assign({selected:true},this.state))
     }
@@ -215,7 +245,7 @@ class ScriptButton extends BaseComponent {
                         myself.state.data.json_data = js_code
                         if(myself.state.selected){
                             console.log(myself.state)
-                            signals.selectedData.setState(myself.state.data)
+                            myself.pannel_select_data.fire(myself.state.data)
                             myself.state.selected = true;
                             myself.changedState()
                         }

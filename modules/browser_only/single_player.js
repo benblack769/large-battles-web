@@ -86,7 +86,7 @@ function init_signals(game_state){
             type: "REPLACE_LIBRARY",
             js_str: js_code,
         })
-        signals.selectedData.setState(signals.selectedData.getState())
+        //signals.selectedData.setState(signals.selectedData.getState())
     })
     signals.gameStateChange.listen(function(instr){
         if(instr.type === "SET_ACTIVE_PLAYER"){
@@ -130,6 +130,7 @@ function main_init(){
         consume.consume_change(game_state,part)
     })
     init_web_worker()
+    $.get("default_layout.json",function(layout){signals.layoutChanged.setState(layout)},"json")
 }
 function init_single_player(){
     load_images.on_load_all_images(types.get_all_sources(),main_init)

@@ -12,5 +12,6 @@ module.exports = {
     myPlayer: new StateHolder(),
     gameStateChange: new Signal(),
     libData: new StateHolder(),
+    layoutChanged: new StateHolder(),
     highlightCommand: new Signal(),
 }
