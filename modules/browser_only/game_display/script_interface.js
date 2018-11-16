@@ -196,21 +196,10 @@ class ScriptButton extends BaseComponent {
         this.handle_signals()
     }
     handle_signals(){
-        /*edit_signal.listen(() => {
-            this.state.editing = true;
-            this.changedState();
-        })
-        stop_edit_signal.listen(() => {
-            this.state.editing = false;
-            this.changedState();
-        })*/
-        /*signals.selectedData.listen(() => {
-            this.deselectScript();
-        })*/
         this.pannel_select_data.listen((data)=>{
             if(data === this.state.data){
                 this.state.selected = true;
-                this.changedState()
+                this.mydiv.classList.add("game_script_box_selected")
             }
             else{
                 this.deselectScript()
@@ -220,7 +209,7 @@ class ScriptButton extends BaseComponent {
     deselectScript(){
         if(this.state.selected){
             this.state.selected = false;
-            this.changedState()
+            this.mydiv.classList.remove("game_script_box_selected")
         }
     }
     selectScript(){
@@ -229,38 +218,9 @@ class ScriptButton extends BaseComponent {
         }
         //this.changeState(Object.assign({selected:true},this.state))
     }
-    changedState(){
-        var newmydiv = this.render()
-        this.basediv.replaceChild(newmydiv,this.mydiv)
-        this.mydiv = newmydiv
-    }
     render(){
-        var myself = this
-        var myChildren = !this.state.editing ? [] :  [
-            createSpan({
-                className: "script_box_button script_box_edit_button",
-                innerText: "Edit",
-                onclick: (function(){
-                    make_change_script_popup(myself.state.data.json_data,JSON.parse,function(js_code){
-                        myself.state.data.json_data = js_code
-                        if(myself.state.selected){
-                            console.log(myself.state)
-                            myself.pannel_select_data.fire(myself.state.data)
-                            myself.state.selected = true;
-                            myself.changedState()
-                        }
-                    })
-                })
-            }),
-            document.createTextNode(" "),
-            createSpan({
-                className: "script_box_button script_box_delete_button",
-                innerText: "Delete",
-            })
-        ]
         var el = createDiv({
             className: "game_script_box",
-            children: myChildren,
         })
         var icon = this.state.data.icon
         if(icon){
@@ -269,12 +229,7 @@ class ScriptButton extends BaseComponent {
                 el.style["background-image"] = 'url('+background_src.src+")"
             }
         }
-        if(!this.state.editing){
-            el.onclick = this.selectScript.bind(this)
-        }
-        if(this.state.selected){
-            el.classList.add("game_script_box_selected")
-        }
+        el.onclick = this.selectScript.bind(this)
         return el;
     }
 }

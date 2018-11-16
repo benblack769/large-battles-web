@@ -148,7 +148,7 @@ main page style
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 5;
+    z-index: 20;
     background-color: rgba(100,100,100,0.5);
 }
 .script_container {
