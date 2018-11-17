@@ -107,28 +107,29 @@ function main_init(){
         xsize: 30,
         ysize: 20,
     }
-    var mystate = player_utils.example_player_state
-    var map = init_game.init_map(gamesize)
     var game_state = {
-        players: mystate,
-        map: map,
+        players: null,
+        map: null,
+        stats: null,
+    }
+    var player_order = player_utils.example_player_state.player_order
+    var init_instr = {
+        type: "GAME_STARTED",
+        game_size: gamesize,
+        initial_creations: init_game.place_initial_units(gamesize,player_order),
+        player_order: player_order,
+        initial_money: 500,
         stats: types.default_stats,
     }
     init_signals(game_state)
-    var init_units_messages = init_game.place_initial_units(gamesize,mystate.player_order)
+    //var init_units_messages = init_game.place_initial_units(gamesize,mystate.player_order)
 
     my_web_worker.onmessage = function(message){
         var message = message.data
         process_instruction(game_state,message,signals.myPlayer.getState())
     }
-    var base = new GameInterface(null, basediv, gamesize, mystate.player_order)
-    player_utils.init_player_interface(mystate,"ben's player","ben's player")
-    //init canvas positions
-    init_units_messages.forEach(function(part){
-        //display message on canvas
-        signals.gameStateChange.fire(part)
-        consume.consume_change(game_state,part)
-    })
+    var base = new GameInterface(null, basediv, gamesize, player_order)
+    process_instruction(game_state,init_instr,"__server")
     init_web_worker()
     $.get("default_layout.json",function(layout){signals.layoutChanged.setState(layout)},"json")
 }

@@ -49,11 +49,11 @@ function init_all(){
     signup_login.init_signup_login()
     rankings_page.init_rankings()
     live_connections.init_live_games()
-    //single_player.init_single_player()
-    multi_player.init_multi_player()
+    single_player.init_single_player()
+    //multi_player.init_multi_player()
 }
 
 window.onload = function(){
     init_all()
-    live_connections.switch_to_live_games()
+    single_player.switch_to_single_player()
 }
