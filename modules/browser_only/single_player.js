@@ -131,7 +131,10 @@ function main_init(){
     var base = new GameInterface(null, basediv, gamesize, player_order)
     process_instruction(game_state,init_instr,"__server")
     init_web_worker()
-    $.get("default_layout.json",function(layout){signals.layoutChanged.setState(layout)},"json")
+    var default_layout = document.getElementById("default_layout_src").innerHTML
+    console.log("default_layout")
+    console.log(default_layout)
+    signals.layoutChanged.setState(JSON.parse(default_layout))
 }
 function init_single_player(){
     load_images.on_load_all_images(types.get_all_sources(),main_init)
