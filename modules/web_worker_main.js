@@ -68,6 +68,7 @@ function replace_lib(js_code){
     //console.log("replaced library with: "+js_code)
     self.globals = {};
     (new Function(js_code))()
+    self.on_set_fn(self.set_data)
 }
 onmessage = function(message){
     var message = message.data

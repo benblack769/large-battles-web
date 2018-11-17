@@ -133,7 +133,7 @@ function main_init(){
     init_web_worker()
     var default_layout = document.getElementById("default_layout_src").innerHTML
     console.log("default_layout")
-    console.log(default_layout)
+    //console.log(default_layout)
     signals.layoutChanged.setState(JSON.parse(default_layout))
 }
 function init_single_player(){

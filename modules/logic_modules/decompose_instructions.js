@@ -48,6 +48,23 @@ function get_current_income(gamestate,instr,player){
     })
     return income
 }
+function all_units_on_board(gamestate){
+    var map = gamestate.map
+    var all_units = []
+    for(var y = 0; y < map.length; y++){
+        for(var x = 0; x < map[y].length; x++){
+            var coord = {x:x,y:y}
+            var entry = at(map, coord)
+            if(entry.category === "unit"){
+                all_units.push({
+                    coord: coord,
+                    unit: entry,
+                })
+            }
+        }
+    }
+    return all_units
+}
 function reset_entry(entry_stack,entry,coord,key,new_value){
     if(entry.status[key] !== undefined && entry.status[key] !== new_value){
         entry_stack.push({
@@ -58,26 +75,22 @@ function reset_entry(entry_stack,entry,coord,key,new_value){
         })
     }
 }
-function all_status_resets(gamestate,instr,player){
-    var map = gamestate.map
-    var all_resets = []
-    for(var y = 0; y < map.length; y++){
-        for(var x = 0; x < map[y].length; x++){
-            var coord = {x:x,y:y}
-            var entry = at(map, coord)
-            if(entry.category === "unit"){
-                reset_entry(all_resets,entry,coord,"moved",false)
-                var buys_per_turn = gamestate.stats.unit_types[entry.unit_type].buys_per_turn
-                if(buys_per_turn){
-                    reset_entry(all_resets,entry,coord,"buys_left",buys_per_turn)
-                }
-            }
-        }
+function reset_status(reset_stack,unit,coord,stats){
+    reset_entry(reset_stack,unit,coord,"moved",false)
+    var buys_per_turn = stats.unit_types[unit.unit_type].buys_per_turn
+    if(buys_per_turn){
+        reset_entry(reset_stack,unit,coord,"buys_left",buys_per_turn)
     }
+}
+function all_status_resets(gamestate){
+    var all_resets = []
+    all_units_on_board(gamestate).forEach(function(centry){
+        reset_status(all_resets,centry.unit,centry.coord,gamestate.stats)
+    })
     return all_resets
 }
 function decomp_endturn(gamestate,instr,player){
-    var status_resets = all_status_resets(gamestate,instr,player)
+    var status_resets = all_status_resets(gamestate)
     var money_entry = {
         type: "SET_MONEY",
         player: player,
@@ -128,6 +141,11 @@ function decomp_init_game(gamestate,instr,player){
            player: player,
            amount: instr.initial_money,
     }})
+
+    var all_resets = []
+    instr.initial_creations.forEach(function(centry){
+        reset_status(all_resets,centry.data,centry.coord,instr.stats)
+    })
     return [{
             type: "INIT_GAME_STATE",
             player_order: instr.player_order,
@@ -138,6 +156,7 @@ function decomp_init_game(gamestate,instr,player){
             player: instr.player_order[0],
         }].concat(money_setups)
           .concat(instr.initial_creations)
+          .concat(all_resets)
 }
 var decomp_funcs = {
     "MOVE": decomp_move,
