@@ -6,7 +6,7 @@ var signup_login = require("./browser_only/signup_login.js")
 var rankings_page = require("./browser_only/rankings_page.js")
 var live_connections = require("./browser_only/live_connections_page.js")
 var single_player = require("./browser_only/single_player.js")
-//var multi_player = require("./browser_only/multiplayer.js")
+var multi_player = require("./browser_only/multiplayer.js")
 
 var peer_con = null;
 
@@ -49,11 +49,11 @@ function init_all(){
     signup_login.init_signup_login()
     rankings_page.init_rankings()
     live_connections.init_live_games()
-    single_player.init_single_player()
-    //multi_player.init_multi_player()
+    //single_player.init_single_player()
+    multi_player.init_multi_player()
 }
 
 window.onload = function(){
     init_all()
-    single_player.switch_to_single_player()
+    live_connections.switch_to_live_games()
 }

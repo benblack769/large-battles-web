@@ -115,13 +115,13 @@ function main_init(){
         stats: types.default_stats,
     }
     init_signals(game_state)
-    var init_units_messages = init_game.place_initial_units(gamesize,mystate.players_order)
+    var init_units_messages = init_game.place_initial_units(gamesize,mystate.player_order)
 
     my_web_worker.onmessage = function(message){
         var message = message.data
         process_instruction(game_state,message,signals.myPlayer.getState())
     }
-    var base = new GameInterface(null, basediv, gamesize, mystate.players_order)
+    var base = new GameInterface(null, basediv, gamesize, mystate.player_order)
     player_utils.init_player_interface(mystate,"ben's player","ben's player")
     //init canvas positions
     init_units_messages.forEach(function(part){

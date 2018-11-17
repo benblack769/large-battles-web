@@ -8,11 +8,11 @@ var example_player_state = {
             money: 500,
         }
     },
-    players_order: [
+    player_order: [
         "ben's player",
         "oragano's player",
     ],
-    active_player: "ben's player",
+    //active_player: "ben's player",
 }
 function init_player_interface(state, active_player, myplayer){
     for(var id in state.player_info){
@@ -27,9 +27,9 @@ function init_player_interface(state, active_player, myplayer){
 }
 function next_player(player_state, active_player){
     var active_player = signals.activePlayer.getState()
-    var idx = player_state.players_order.indexOf(active_player)
-    var newidx = (idx + 1) % player_state.players_order.length
-    var new_id = player_state.players_order[newidx]
+    var idx = player_state.player_order.indexOf(active_player)
+    var newidx = (idx + 1) % player_state.player_order.length
+    var new_id = player_state.player_order[newidx]
     return new_id
 }
 module.exports = {

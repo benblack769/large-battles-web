@@ -74,8 +74,7 @@ onmessage = function(message){
     switch(message.type){
         case "REPLACE_FUNCTION": default_set_data(JSON.parse(message.json_data)); break;
         case "REPLACE_LIBRARY": replace_lib(message.js_str); break;
-        case "CLICK_OCCURED": message.game_state.active_player = message.active_player;
-                              message.game_state.my_player = message.my_player;
+        case "CLICK_OCCURED": message.game_state.my_player = message.my_player;
                               click_handler(message.coord, message.game_state); break;
     }
 }

@@ -64,7 +64,7 @@ def new_info():
             "error_message": "USERNAME_TOO_LONG",
         })
 
-    if not re.match(r'^[A-Za-z0-9_-]+$', response_data['username']):
+    if not re.match(r'^[A-Za-z0-9_-]+$', response_data['username']) or response_data['username'] == "__server":
         return json.dumps({
             "type": "registration_error",
             "error_message": "USERNAME_NOT_VALID",

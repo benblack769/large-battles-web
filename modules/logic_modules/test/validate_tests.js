@@ -31,10 +31,11 @@ function make_player_state(m1, m2){
                 money: m2,
             }
         },
-        players_order: [
+        player_order: [
             "p1",
             "p2",
         ],
+        active_player: "p1",
     }
 }
 
@@ -103,6 +104,7 @@ test('validate_move_emptiness', function (t) {
 })
 test('validate_hasnt_moved', function (t) {
     var game = make_game_state()
+    game.players.active_player = "p2"
     var instr1 = {
         type: "MOVE",
         start_coord: {x:1,y:1},
@@ -120,6 +122,7 @@ test('validate_move_player', function (t) {
         end_coord: {x:0,y:0},
     }
     t.false(validate(game,instr1,"p1"))
+    game.players.active_player = "p2"
     t.true(validate(game,instr1,"p2"))
     t.end()
 })
@@ -137,6 +140,7 @@ test('validate_move_path', function (t) {
         end_coord: {x:0,y:2},
     }
     t.true(validate(game,instr2,"p1"))
+    game.players.active_player = "p2"
     var instr3 = {
         type: "MOVE",
         start_coord: {x:4,y:5},

@@ -54,7 +54,7 @@ class ForegroundCanvas extends BaseComponent {
         display_board.clear_rect(this.context,coord)
     }
     createChange(data, coord){
-        console.log(data)
+        //console.log(data)
         display_board.draw_image(this.context,icons.unit_icons[data.unit_type],coord)
     }
     onAddEquipment(equip_type, coord){

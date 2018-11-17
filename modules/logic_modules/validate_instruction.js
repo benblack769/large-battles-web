@@ -55,6 +55,11 @@ function assert_movement_range(gamestate, instr, unit){
     var range = calc_stat(gamestate.stats,unit,"move_range")
     assert_in_range(gamestate.map, instr.start_coord, instr.end_coord, range)
 }
+function assert_active_player(gamestate, player){
+    if(gamestate.players.active_player !== player){
+        throw new Error('You are not the active player and so you can make no moves. Active player is: '+gamestate.players.active_player)
+    }
+}
 /*function assert_active_player(gamestate, player){
     if(gamestate.players.active_player !== player){
         throw new Error('You are not the current active player, so you cannot execute instructions')
@@ -67,6 +72,7 @@ function valid_move(gamestate, instr, player){
     assert_empty(gamestate.map, instr.end_coord)
     assert_is_unit(gamestate.map, instr.start_coord)
     assert_player_is(gamestate.map, instr.start_coord, player)
+    assert_active_player(gamestate,player)
     assert_actual_move(instr.start_coord,instr.end_coord)
     var unit = at(gamestate.map, instr.start_coord)
     assert_hasnt_moved(unit)
@@ -94,12 +100,14 @@ function valid_build(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_type","coord"])
     assert_is_valid_coord(instr.coord,gamestate.map)
     assert_valid_unit_type(gamestate,instr.building_type)
+    assert_active_player(gamestate,player)
     assert_empty(gamestate.map, instr.coord)
     assert_buildable(instr.building_type,gamestate.stats)
     assert_money_enough(instr.building_type, player, gamestate)
 }
 function valid_end_turn(gamestate, instr, player){
     assert_keys_equal(instr,["type"])
+    assert_active_player(gamestate,player)
 }
 function assert_building_can_build(gamestate,instr,player){
     var building = at(gamestate.map,instr.building_coord)
@@ -121,6 +129,7 @@ function valid_buy_unit(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_coord","placement_coord","buy_type"])
     assert_is_valid_coord(instr.building_coord,gamestate.map)
     assert_is_valid_coord(instr.placement_coord,gamestate.map)
+    assert_active_player(gamestate,player)
     assert_valid_unit_type(gamestate,instr.buy_type)
     assert_empty(gamestate.map, instr.placement_coord)
     assert_is_unit(gamestate.map, instr.building_coord)
@@ -160,6 +169,7 @@ function valid_buy_attachment(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_coord","equip_coord","equip_type"])
     assert_is_valid_coord(instr.building_coord,gamestate.map)
     assert_is_valid_coord(instr.equip_coord,gamestate.map)
+    assert_active_player(gamestate,player)
     assert_valid_attachment_type(gamestate,instr.equip_type)
     assert_is_unit(gamestate.map, instr.equip_coord)
     assert_is_unit(gamestate.map, instr.building_coord)
@@ -171,12 +181,21 @@ function valid_buy_attachment(gamestate, instr, player){
     var EQUIP_RANGE = 1
     assert_in_range(gamestate.map, instr.building_coord, instr.equip_coord, EQUIP_RANGE)
 }
+function assert_server_player(player){
+    if(player !== "__server"){
+        throw new Error('Only the server can use this special instruction.')
+    }
+}
+function validate_game_start(gamestate,instr,player){
+    assert_server_player(player)
+}
 var validate_funcs = {
     "MOVE": valid_move,
     "BUILD": valid_build,
     "BUY_UNIT": valid_buy_unit,
     "BUY_ATTACHMENT": valid_buy_attachment,
     "END_TURN": valid_end_turn,
+    "GAME_STARTED": validate_game_start,
 }
 function validate_instruction(gamestate, instr, player){
     try{

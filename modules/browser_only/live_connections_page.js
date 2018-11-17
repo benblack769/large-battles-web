@@ -41,7 +41,7 @@ function accept_button(){
     return button
 }
 function add_username_to_request_table(username){
-    console.log("added name: " + username)
+    //console.log("added name: " + username)
     var table = document.getElementById("waiting_games_table_body")
     var row = add_row(username)
     table.appendChild(row)
@@ -54,7 +54,7 @@ function add_username_to_request_table(username){
     }
 }
 function add_username_to_accept_table(username){
-    console.log("added name: " + username)
+    //console.log("added name: " + username)
     var table = document.getElementById("requested_games_table_body")
     var row = add_row(username)
     table.appendChild(row)
@@ -65,7 +65,7 @@ function add_username_to_accept_table(username){
     }
 }
 function remove_username_from_table(username){
-    console.log("removed name: " + username)
+    //console.log("removed name: " + username)
     $("#__waiting_user"+username).remove()
 }
 function request_connection(username){
@@ -108,8 +108,8 @@ function remove_username_from_all(username){
     }
 }
 function process_message(msg){
-    console.log("received message of type: " + msg.type)
-    console.log(msg)
+    //console.log("received message of type: " + msg.type)
+    //console.log(msg)
     switch(msg.type){
         case "waiting_clients": add_all_waiting(msg.client_list); break;
         case "add_waiting_username": add_username_to_request_table(msg.username); break;

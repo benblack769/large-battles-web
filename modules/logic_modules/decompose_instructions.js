@@ -29,9 +29,9 @@ function decomp_build(gamestate,instr,player){
     }]
 }
 function next_player(player_state, active_player){
-    var idx = player_state.players_order.indexOf(active_player)
-    var newidx = (idx + 1) % player_state.players_order.length
-    var new_id = player_state.players_order[newidx]
+    var idx = player_state.player_order.indexOf(active_player)
+    var newidx = (idx + 1) % player_state.player_order.length
+    var new_id = player_state.player_order[newidx]
     return new_id
 }
 function get_current_income(gamestate,instr,player){
@@ -122,12 +122,30 @@ function decomp_buy_attachment(gamestate,instr,player){
            coord: instr.equip_coord,
        },]
 }
+function decomp_init_game(gamestate,instr,player){
+    var money_setups = instr.player_order.map(function(player){return{
+           type: "SET_MONEY",
+           player: player,
+           amount: instr.initial_money,
+    }})
+    return [{
+            type: "INIT_GAME_STATE",
+            player_order: instr.player_order,
+            stats: instr.stats,
+            game_size: instr.game_size,
+        },{
+            type: "SET_ACTIVE_PLAYER",
+            player: instr.player_order[0],
+        }].concat(money_setups)
+          .concat(instr.initial_creations)
+}
 var decomp_funcs = {
     "MOVE": decomp_move,
     "BUILD": decomp_build,
     "BUY_UNIT": decomp_buy_unit,
     "END_TURN": decomp_endturn,
     "BUY_ATTACHMENT": decomp_buy_attachment,
+    "GAME_STARTED": decomp_init_game,
 }
 function decompose_instructions(gamestate,instr,player){
     return decomp_funcs[instr.type](gamestate,instr,player)

@@ -1,4 +1,5 @@
 var create_utils = require('./create_utils.js')
+var init_game = require('./init_game.js')
 
 function at(map, coord){
     return map[coord.y][coord.x]
@@ -24,13 +25,24 @@ function consume_status_change(game_state,instr){
 function consume_money_change(game_state,instr){
     game_state.players.player_info[instr.player].money = instr.amount;
 }
-function consume_set_active_player(){
-    //this is a no-op because this functionality has to be handled elsewhere,
-    //as gamestate does not hold active player information
+function consume_set_active_player(game_state,instr){
+    game_state.players.active_player = instr.player
 }
 function consume_add_equip(game_state,instr){
     var target = at(game_state.map,instr.coord)
     target.attachments.push(instr.equip_type)
+}
+function init_game_state(game_state,instr){
+    game_state.map = init_game.init_map(instr.game_size)
+    game_state.stats = instr.stats
+    var player_info = {}
+    instr.player_order.forEach(function(player){
+        player_info[player] = {}
+    })
+    game_state.players = {
+        player_order: instr.player_order,
+        player_info: player_info,
+    }
 }
 var consume_funcs = {
     "MOVE": consume_move,
@@ -39,6 +51,7 @@ var consume_funcs = {
     "SET_STATUS": consume_status_change,
     "SET_MONEY": consume_money_change,
     "SET_ACTIVE_PLAYER": consume_set_active_player,
+    "INIT_GAME_STATE": init_game_state,
 }
 function consume_change(gamestate, instr){
     consume_funcs[instr.type](gamestate,instr)
