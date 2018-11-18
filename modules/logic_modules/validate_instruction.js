@@ -28,6 +28,11 @@ function assert_actual_move(sc,ec){
         throw new Error('zero position moves invalid')
     }
 }
+function assert_actual_attack(sc,ec){
+    if(deep_equals(sc,ec)){
+        throw new Error('units cannot attack themselves')
+    }
+}
 function assert_is_unit(map, coord){
     if(at(map,coord).category !== "unit"){
         throw new Error('Coordinate should be unit, was '+at(map,coord).category)
@@ -41,7 +46,7 @@ function assert_is_valid_coord(coord, map){
 }
 function assert_hasnt_moved(unit){
     if(unit.status.moved){
-        throw new Error('tried to move unit twice in single turn')
+        throw new Error('tried to move unit twice in a single turn')
     }
 }
 function assert_in_range(map,start_coord,end_coord,range){
@@ -77,6 +82,30 @@ function valid_move(gamestate, instr, player){
     var unit = at(gamestate.map, instr.start_coord)
     assert_hasnt_moved(unit)
     assert_movement_range(gamestate, instr, unit)
+}
+function assert_hasnt_attacked(unit){
+    if(unit.status.attacked){
+        throw new Error('tried to use unit to attack twice in a single turn')
+    }
+}
+function assert_is_possible_attack(gamestate, instr, unit){
+    var range = calc_stat(gamestate.stats,unit,"attack_range")
+    if(!pathing.is_possible_attack(gamestate.map,instr.source_coord,instr.target_coord,range)){
+        throw new Error('Cannot attack target. Remember that attacks can only occur in strait lines and that attacking through a unit is not possible.')
+    }
+}
+function valid_attack(gamestate,instr,player){
+    assert_keys_equal(instr,["type","source_coord","target_coord"])
+    assert_is_valid_coord(instr.source_coord,gamestate.map)
+    assert_is_valid_coord(instr.target_coord,gamestate.map)
+    assert_is_unit(gamestate.map, instr.source_coord)
+    assert_is_unit(gamestate.map, instr.target_coord)
+    assert_player_is(gamestate.map, instr.source_coord, player)
+    assert_active_player(gamestate,player)
+    assert_actual_attack(instr.source_coord,instr.target_coord)
+    var unit = at(gamestate.map, instr.source_coord)
+    assert_hasnt_attacked(unit)
+    assert_is_possible_attack(gamestate, instr, unit)
 }
 function get_money(gamestate, player_id){
     return gamestate.players.player_info[player_id].money
@@ -191,6 +220,7 @@ function validate_game_start(gamestate,instr,player){
 }
 var validate_funcs = {
     "MOVE": valid_move,
+    "ATTACK": valid_attack,
     "BUILD": valid_build,
     "BUY_UNIT": valid_buy_unit,
     "BUY_ATTACHMENT": valid_buy_attachment,

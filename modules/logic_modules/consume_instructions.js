@@ -44,8 +44,12 @@ function init_game_state(game_state,instr){
         player_info: player_info,
     }
 }
+function consume_destroy(game_state,instr){
+    set(game_state.map,instr.coord,create_utils.create_empty())
+}
 var consume_funcs = {
     "MOVE": consume_move,
+    "DESTROY_UNIT": consume_destroy,
     "CREATE": consume_create,
     "ADD_EQUIPMENT": consume_add_equip,
     "SET_STATUS": consume_status_change,

@@ -11,11 +11,9 @@ function make_stats(){
     return {
         "unit_types": {
             "fastunit": {
-                "attack_range": 1,
                 "move_range": 3,
             },
             "rangedunit": {
-                "attack_range": 3,
                 "move_range": 1,
             },
         },
@@ -23,14 +21,6 @@ function make_stats(){
 }
 function make_player_state(m1, m2){
     return {
-        player_info: {
-            "p1": {
-                money: m1,
-            },
-            "p2": {
-                money: m2,
-            }
-        },
         player_order: [
             "p1",
             "p2",

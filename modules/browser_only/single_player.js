@@ -104,8 +104,8 @@ function init_web_worker(){
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
     var gamesize = {
-        xsize: 30,
-        ysize: 20,
+        xsize: 15,
+        ysize: 10,
     }
     var game_state = {
         players: null,

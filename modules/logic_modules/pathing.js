@@ -1,28 +1,3 @@
-/*var PF = require('pathfinding');
-
-function map_to_taken(map){
-    return map.map((row)=>row.map(cell=> (cell.category !== "empty")))
-}
-function at(map, coord){
-    return map[coord.y][coord.x]
-}
-function set(map, coord, arg){
-    map[coord.y][coord.x] = arg
-}
-function is_possible_move(map,start,target,range){
-    var taken_matrix = map_to_taken(map)
-
-    //Pathing API requires both start and target to be walkable
-    set(taken_matrix,start,false)
-    set(taken_matrix,target,false)
-
-    var grid = new PF.Grid(taken_matrix);
-    var finder = new PF.BestFirstFinder();
-
-    var path = finder.findPath(start.x,start.y,target.x,target.y,grid)
-    console.log(path)
-    return path.length <= range+1
-}*/
 function coords_around(c){
     var x = c.x
     var y = c.y
@@ -111,8 +86,42 @@ function is_possible_move(map,start,target,range){
     var htarget = JSON.stringify(target)
     return taken.has(htarget)
 }
+function is_possible_attack(map, start, target, range){
+    if(start.x - target.x === 0){
+        var x = start.x
+        var min_y = Math.min(start.y,target.y)
+        var max_y = Math.max(start.y,target.y)
+        if(max_y - min_y > range){
+            return false
+        }
+        for(var y = min_y+1; y <= max_y-1; y++){
+            if(map[y][x].category !== "empty"){
+                return false
+            }
+        }
+        return true
+    }
+    else if(start.y - target.y === 0){
+        var y = start.y
+        var min_x = Math.min(start.x,target.x)
+        var max_x = Math.max(start.x,target.x)
+        if(max_x - min_x > range){
+            return false
+        }
+        for(var x = min_x+1; x <= max_x-1; x++){
+            if(map[y][x].category !== "empty"){
+                return false
+            }
+        }
+        return true
+    }
+    else{
+        return false
+    }
+}
 module.exports = {
     get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
     is_possible_move: is_possible_move,
+    is_possible_attack: is_possible_attack,
 }

@@ -3,48 +3,53 @@ var default_stats = {
         "soldier": {
             "attack_range": 1,
             "move_range": 3,
+            "attack_strength": 2,
             "cost": 10,
-            "HP": 1,
+            "max_HP": 2,
+            "attack_strength": 2,
             "viable_attachments": ["armor"],
         },
-        "catapult": {
+        /*"catapult": {
             "attack_range": 3,
             "move_range": 1,
             "cost": 100,
-            "HP": 1,
-        },
+            "max_HP": 1,
+        },*/
         "farm": {
             "attack_range": 0,
             "move_range": 0,
+            "max_HP": 2,
             "cost": 50,
             "buildable": true,
             "income": 5,
-            "HP": 1,
+            "max_HP": 1,
         },
         "barracks": {
             "attack_range": 0,
             "move_range": 0,
+            "max_HP": 4,
             "buys_per_turn": 2,
             "cost": 100,
             "buildable": true,
             "can_make": ["soldier"],
-            "HP": 2,
+            "max_HP": 2,
         },
         "armory": {
             "attack_range": 0,
             "move_range": 0,
+            "max_HP": 4,
             "buys_per_turn": 1,
             "cost": 200,
             "buildable": true,
             "can_make_equip": ["armor"],
-            "HP": 2,
+            "max_HP": 2,
         },
     },
     "attachment_types": {
         "armor": {
             "cost": 30,
             "stat_alt": {
-                "HP": 1,
+                "max_HP": 2,
             }
         }
     }

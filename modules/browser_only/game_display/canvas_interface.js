@@ -43,7 +43,7 @@ class ForegroundCanvas extends BaseComponent {
     }
     onGameStateChange(statechange){
         switch(statechange.type){
-            case "REMOVE": this.removeChange(statechange.coord); break;
+            case "DESTROY_UNIT": this.removeChange(statechange.coord); break;
             case "CREATE": this.createChange(statechange.data,statechange.coord); break;
             case "MOVE": this.moveChange(statechange.start_coord,statechange.end_coord); break;
             case "ADD_EQUIPMENT": this.onAddEquipment(statechange.equip_type,statechange.coord); break;

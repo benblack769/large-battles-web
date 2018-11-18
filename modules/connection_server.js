@@ -14,7 +14,7 @@ function add_waiting(client_id){
         client.send(JSON.stringify({
             "type": "add_waiting_username",
             "username": client_id,
-        }))
+        }),function(){})
     })
 }
 function remove_waiting(client_id){

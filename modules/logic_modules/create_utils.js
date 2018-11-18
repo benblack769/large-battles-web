@@ -6,6 +6,8 @@ function create_unit(unit_type,player_id){
         "unit_type": unit_type,
         "status": {
             "moved": true,
+            "attacked": true,
+            "HP": 0,
             "buys_left": 0,
         },
         "attachments": [],

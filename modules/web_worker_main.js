@@ -43,6 +43,7 @@ function coords_around(game_state,center,range){
 self.lib = {
     get_possible_moves: pathing.get_possible_moves,
     get_move_range: get_stat_fn("move_range"),
+    get_attack_range: get_stat_fn("attack_range"),
     is_empty: is_empty,
     at: at,
     all_coords: all_coords,

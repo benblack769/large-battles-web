@@ -1,4 +1,5 @@
 var create_utils = require('./create_utils.js')
+var types = require('./types.js')
 
 function at(map, coord){
     var res = map[coord.y][coord.x]
@@ -16,6 +17,36 @@ function decomp_move(gamestate,instr,player){
         new_status: true,
         coord: instr.end_coord,
     }]
+}
+function decomp_attack(gamestate,instr,player){
+    var decomp_list = [{
+        type: "SET_STATUS",
+        status_key: "attacked",
+        new_status: true,
+        coord: instr.source_coord,
+    }]
+    var source_unit = at(gamestate.map, instr.target_coord)
+    var source_unit_attack = types.calc_stat(gamestate.stats,source_unit,"attack_strength")
+    var target_unit = at(gamestate.map, instr.target_coord)
+    var new_hp = target_unit.status.HP - source_unit_attack
+    console.log("new_hp")
+    console.log(new_hp)
+    if(new_hp <= 0){
+        console.log(new_hp)
+        decomp_list.push({
+            type: "DESTROY_UNIT",
+            coord: instr.target_coord,
+        })
+    }
+    else{
+        decomp_list.push({
+            type: "SET_STATUS",
+            status_key: "HP",
+            new_status: new_hp,
+            coord: instr.target_coord,
+        })
+    }
+    return decomp_list
 }
 function decomp_build(gamestate,instr,player){
     return [{
@@ -77,10 +108,12 @@ function reset_entry(entry_stack,entry,coord,key,new_value){
 }
 function reset_status(reset_stack,unit,coord,stats){
     reset_entry(reset_stack,unit,coord,"moved",false)
+    reset_entry(reset_stack,unit,coord,"attacked",false)
     var buys_per_turn = stats.unit_types[unit.unit_type].buys_per_turn
     if(buys_per_turn){
         reset_entry(reset_stack,unit,coord,"buys_left",buys_per_turn)
     }
+    reset_entry(reset_stack,unit,coord,"HP",types.calc_stat(stats,unit,"max_HP"))
 }
 function all_status_resets(gamestate){
     var all_resets = []
@@ -160,6 +193,7 @@ function decomp_init_game(gamestate,instr,player){
 }
 var decomp_funcs = {
     "MOVE": decomp_move,
+    "ATTACK": decomp_attack,
     "BUILD": decomp_build,
     "BUY_UNIT": decomp_buy_unit,
     "END_TURN": decomp_endturn,

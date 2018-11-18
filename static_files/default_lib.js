@@ -124,6 +124,30 @@ class AttachHandler extends TwoClickHandler {
         return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
     }
 }
+class AttackHandler extends TwoClickHandler {
+    getRange(game_state,click){
+        return self.lib.get_attack_range(game_state,click)
+    }
+    execAction(click2){
+        postMessage({
+            type: "ATTACK",
+            source_coord: this.first_click,
+            target_coord: click2,
+        })
+    }
+    is_valid_attack(game_state,start,end){
+        var instr = {
+            type: "ATTACK",
+            source_coord: start,
+            target_coord: end,
+        }
+        console.log(self.lib.validate_instruction(game_state,instr,game_state.my_player))
+        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+    }
+    get_all_valid_around(game_state,start,range){
+        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_attack(game_state,start,coord))
+    }
+}
 
 
 function make_building(clicks,type){
@@ -164,6 +188,7 @@ function make_handler(data){
         case "build": return new BuildHandler(data.unit_type);
         case "buy_equipment": return new AttachHandler(data.equip_type);
         case "move": return new MoveHandler();
+        case "attack": return new AttackHandler();
         default: console.log("bad data type"); break;
     }
 }
