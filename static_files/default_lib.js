@@ -141,7 +141,6 @@ class AttackHandler extends TwoClickHandler {
             source_coord: start,
             target_coord: end,
         }
-        console.log(self.lib.validate_instruction(game_state,instr,game_state.my_player))
         return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
     }
     get_all_valid_around(game_state,start,range){
@@ -197,6 +196,6 @@ self.on_set_fn = function(set_data){
     myhandler = make_handler(set_data)
 }
 self.click_handler = function(click,game_state,active_player){
-    console.log(game_state)
+    //console.log(game_state)
     myhandler.handleClick(click,game_state)
 }

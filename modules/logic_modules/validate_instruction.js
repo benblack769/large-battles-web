@@ -23,6 +23,11 @@ function assert_player_is(map, coord, player){
         throw new Error('Targeted player other than self')
     }
 }
+function assert_player_is_not(map, coord, player){
+    if(at(map, coord).player === player){
+        throw new Error('Cannot attack yourself')
+    }
+}
 function assert_actual_move(sc,ec){
     if(deep_equals(sc,ec)){
         throw new Error('zero position moves invalid')
@@ -101,6 +106,7 @@ function valid_attack(gamestate,instr,player){
     assert_is_unit(gamestate.map, instr.source_coord)
     assert_is_unit(gamestate.map, instr.target_coord)
     assert_player_is(gamestate.map, instr.source_coord, player)
+    assert_player_is_not(gamestate.map, instr.target_coord, player)
     assert_active_player(gamestate,player)
     assert_actual_attack(instr.source_coord,instr.target_coord)
     var unit = at(gamestate.map, instr.source_coord)
