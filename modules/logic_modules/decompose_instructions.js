@@ -29,8 +29,6 @@ function decomp_attack(gamestate,instr,player){
     var source_unit_attack = types.calc_stat(gamestate.stats,source_unit,"attack_strength")
     var target_unit = at(gamestate.map, instr.target_coord)
     var new_hp = target_unit.status.HP - source_unit_attack
-    console.log("new_hp")
-    console.log(new_hp)
     if(new_hp <= 0){
         console.log(new_hp)
         decomp_list.push({

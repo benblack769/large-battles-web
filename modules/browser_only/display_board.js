@@ -58,20 +58,7 @@ function draw_background(context, xsize, ysize){
         }
     }
 }
-function draw_game(game_data){
-    for(var y = 0; y < game_data.length; y++){
-        for(var x = 0; x < game_data[y].length; x++){
-            draw_square(x,y,game_data[y][x])
-        }
-    }
-}
-function init_canvas(){
-    canvas = document.getElementById("myCanvas");
-    context = canvas.getContext("2d");
-}
 module.exports = {
-    init_canvas:init_canvas,
-    draw_game: draw_game,
     draw_background: draw_background,
     get_game_pixel_size: get_game_pixel_size,
     get_game_coords_from_pixels: get_game_coords_from_pixels,

@@ -1,4 +1,3 @@
-var get_serv_inf = require("./browser_only/get_server_info.js")
 var load_images = require("./browser_only/load_images.js")
 var display_board = require("./browser_only/display_board.js")
 
