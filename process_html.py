@@ -1,6 +1,7 @@
 import base64
 from jinja2 import Template
 import sys
+import os
 import urllib2
 
 def encodebase64(filename):
@@ -18,7 +19,7 @@ def make_data_url_favicon(filename):
 	prefix = 'data:image/x-icon;base64,'
 	return prefix + encodebase64(filename)
 
-def render_template(folder):
+def render_template():
     src_file = "template.tmpl"
     dest_file = "index.html"
     template = Template(get_local_file(src_file))
@@ -28,16 +29,23 @@ def render_template(folder):
         make_data_url_png=make_data_url_png,
         make_data_url_favicon=make_data_url_favicon,
     )
-    open(dest_file,'w').write(result)
+    save_file(result,dest_file)
 
 def get_local_file(filename):
     return open(filename).read()
 
+def save_file(data,filename):
+    open(filename,'w').write(data)
+
 def get_remote_file(url):
-    response = urllib2.urlopen(url)
-    html = response.read()
-    return html
+    basename = url.split("/")[-1]
+    if os.path.exists(basename):
+        return get_local_file(basename)
+    else:
+        response = urllib2.urlopen(url)
+        html = response.read()
+        save_file(html,basename)
+        return html
 
 if __name__ == "__main__":
-    path = sys.argv[1]
-    render_template(path)
+    render_template()

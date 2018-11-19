@@ -8,3 +8,6 @@ bundle.min.js
 __pycache__
 *.pyc
 static_files/index.html
+*.gz
+*.min.js
+*.min.css
