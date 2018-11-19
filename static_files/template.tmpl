@@ -1,111 +1,20 @@
 <!DOCTYPE html>
 <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.min.js" crossorigin="anonymous"></script>
+    <script> {{get_remote_file("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js")}}</script>
+    <script> {{get_remote_file("https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.min.js")}}</script>
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.min.css" rel="stylesheet" type="text/css" />
+    <style>
+    {{get_remote_file("https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.min.css")}}
+    {{get_local_file("style.css")}}
+    </style>
 
-    <script src="bundle.js" charset="utf-8"></script>
-    <script id="default_layout_src" type="application/json">
-    [[
-        {
-            "data": {
-                "type": "buy_unit",
-                "unit_type": "soldier"
-            },
-            "icon": "Soldier.png"
-        },
-        {
-            "data": {
-                "type": "build",
-                "unit_type": "farm"
-            },
-            "icon": "farm.png"
-        },
-        {
-            "data": {
-                "type": "build",
-                "unit_type": "barracks"
-            },
-            "icon": "barracks.png"
-        },
-        {
-            "data": {
-                "type": "build",
-                "unit_type": "armory"
-            },
-            "icon": "armory.png"
-        },
-        {
-            "data": {
-                "type": "move"
-            },
-            "icon": ""
-        },
-        {
-            "data": {
-                "type": "attack"
-            },
-            "icon": ""
-        },
-        {
-            "data": {
-                "type": "buy_equipment",
-                "equip_type": "armor"
-            },
-            "icon": "armor.png"
-        }
-    ],
-    [
-        {
-            "data": {
-                "type": "buy_unit",
-                "unit_type": "soldier"
-            },
-            "icon": "farm.png"
-        },
-        {
-            "data": {
-                "type": "build",
-                "unit_type": "farm"
-            },
-            "icon": "farm.png"
-        },
-        {
-            "data": {
-                "type": "build",
-                "unit_type": "barracks"
-            },
-            "icon": "farm.png"
-        },
-        {
-            "data": {
-                "type": "build",
-                "unit_type": "armory"
-            },
-            "icon": "armory.png"
-        },
-        {
-            "data": {
-                "type": "move"
-            },
-            "icon": ""
-        },
-        {
-            "data": {
-                "type": "buy_equipment",
-                "equip_type": "armor"
-            },
-            "icon": "armor.png"
-        }
-    ]
-    ]
-    </script>
+    <script id="default_layout_src" type="application/json">{{get_local_file("default_layout.json")}}</script>
+    <script id="default_lib_src" type="application/jsworker">{{get_local_file("default_lib.js")}}</script>
+    <script id="web_worker_src" type="application/jsworker">{{get_local_file("web_worker.js")}}</script>
+    <script charset="utf-8">{{get_local_file("bundle.js")}}</script>
 
     <!--<script src="htmlify.js" charset="utf-8"></script>-->
-    <link href="style.css" rel="stylesheet" type="text/css" />
-
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="{{make_data_url_favicon("favicon.ico")}}" type="image/x-icon" />
 
     <title>Script Wars</title>
 </head>
@@ -257,12 +166,12 @@
     </div>
 </div>
 <div id="canvas_images" hidden>
-    <img id="Background.bmp" src="images/Background.bmp"/>
-    <img id="Catapult.png" src="images/Catapult.png"/>
-    <img id="Soldier.png" src="images/Soldier.png"/>
-    <img id="farm.png" src="images/farm.png"/>
-    <img id="barracks.png" src="images/barracks.png"/>
-    <img id="armory.png" src="images/armory.png"/>
-    <img id="armor.png" src="images/armor.png"/>
+    <img id="Background.png" src="{{make_data_url_png("images/Background.png")}}"/>
+    <img id="Catapult.png" src="{{make_data_url_png("images/Catapult.png")}}"/>
+    <img id="Soldier.png" src="{{make_data_url_png("images/Soldier.png")}}"/>
+    <img id="farm.png" src="{{make_data_url_png("images/farm.png")}}"/>
+    <img id="barracks.png" src="{{make_data_url_png("images/barracks.png")}}"/>
+    <img id="armory.png" src="{{make_data_url_png("images/armory.png")}}"/>
+    <img id="armor.png" src="{{make_data_url_png("images/armor.png")}}"/>
 </div>
 </body>

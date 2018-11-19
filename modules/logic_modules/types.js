@@ -55,7 +55,7 @@ var default_stats = {
     }
 }
 var icons = {
-    "background_icon": "Background.bmp",
+    "background_icon": "Background.png",
     "unit_icons": {
         "soldier": "Soldier.png",
         "catapult": "Catapult.png",

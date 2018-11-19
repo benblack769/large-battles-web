@@ -7,3 +7,4 @@ bundle.min.js
 *.sqlite
 __pycache__
 *.pyc
+static_files/index.html

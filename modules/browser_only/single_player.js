@@ -10,7 +10,14 @@ var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 
-var my_web_worker = new Worker("web_worker.js");
+function make_worker(){
+    var data = document.getElementById("web_worker_src").innerHTML
+    var blob = new Blob([data], { type: "text/javascript" })
+    var url = window.URL.createObjectURL(blob)
+    return new Worker(url)
+}
+var my_web_worker = make_worker();
+
 
 function switch_to_single_player(){
     console.log("switched to single player")
@@ -96,10 +103,8 @@ function init_signals(game_state){
     })
 }
 function init_web_worker(){
-    $.get("default_lib.js",function(data){
-        ///console.log(data)
-        signals.libData.setState(data)
-    },"text")
+    var lib_data = document.getElementById("default_lib_src").innerHTML
+    signals.libData.setState(lib_data)
 }
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")

@@ -1,0 +1,94 @@
+
+[[
+    {
+        "data": {
+            "type": "buy_unit",
+            "unit_type": "soldier"
+        },
+        "icon": "Soldier.png"
+    },
+    {
+        "data": {
+            "type": "build",
+            "unit_type": "farm"
+        },
+        "icon": "farm.png"
+    },
+    {
+        "data": {
+            "type": "build",
+            "unit_type": "barracks"
+        },
+        "icon": "barracks.png"
+    },
+    {
+        "data": {
+            "type": "build",
+            "unit_type": "armory"
+        },
+        "icon": "armory.png"
+    },
+    {
+        "data": {
+            "type": "move"
+        },
+        "icon": ""
+    },
+    {
+        "data": {
+            "type": "attack"
+        },
+        "icon": ""
+    },
+    {
+        "data": {
+            "type": "buy_equipment",
+            "equip_type": "armor"
+        },
+        "icon": "armor.png"
+    }
+],
+[
+    {
+        "data": {
+            "type": "buy_unit",
+            "unit_type": "soldier"
+        },
+        "icon": "farm.png"
+    },
+    {
+        "data": {
+            "type": "build",
+            "unit_type": "farm"
+        },
+        "icon": "farm.png"
+    },
+    {
+        "data": {
+            "type": "build",
+            "unit_type": "barracks"
+        },
+        "icon": "farm.png"
+    },
+    {
+        "data": {
+            "type": "build",
+            "unit_type": "armory"
+        },
+        "icon": "armory.png"
+    },
+    {
+        "data": {
+            "type": "move"
+        },
+        "icon": ""
+    },
+    {
+        "data": {
+            "type": "buy_equipment",
+            "equip_type": "armor"
+        },
+        "icon": "armor.png"
+    }
+]
+]

@@ -11,7 +11,13 @@ var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 var signup_login = require("./signup_login.js")
 
-var my_web_worker = new Worker("web_worker.js");
+function make_worker(){
+    var data = document.getElementById("web_worker_src").innerHTML
+    var blob = new Blob([data], { type: "text/javascript" })
+    var url = window.URL.createObjectURL(blob)
+    return new Worker(url)
+}
+var my_web_worker = make_worker();
 var server_socket = null
 
 function switch_to_multi_player(){
