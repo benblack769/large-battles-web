@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from flask import Flask, render_template, request, redirect, make_response
 
 from minhttp import db, app
@@ -7,19 +5,8 @@ from minhttp import schema
 import json
 import re
 import sys
+from flask_sqlalchemy import SQLAlchemy
 
-
-@app.route('/add_info')
-def add_info():
-    return render_template("add_info.html")
-
-
-@app.route('/')
-@app.route('/index.html')
-def get_info():
-    all_users = schema.User.query.all()
-
-    return render_template('home.html',all_users=all_users)
 
 @app.after_request
 def add_header(response):#
@@ -29,28 +16,24 @@ def add_header(response):#
 
 
 def score(user):
-    return user.wins / (1.0 + user.losses)
+    return user['wins'] / (1.0 + user['losses'])
 
-def sort_users(all_users):
-    sortable = []
-    for user in all_users:
-        sortable.append((score(user),user))
-    sortable.sort(reverse=True)
-    strip_rankings = [user[1] for user in sortable]
-    return strip_rankings
+def get_user_record(user):
+    win_records = [r.win_record for r in user.game_user_records]
+    wins = sum([record == "victory" for record in win_records])
+    losses = sum([record == "defeat" for record in win_records])
 
-def strip_password(user):
     return {
         "username": user.username,
-        "wins": user.wins,
-        "losses": user.losses,
+        "wins": wins,
+        "losses": losses,
     }
 
 @app.route('/rank_users', methods=['GET'])
 def get_users_ranks():
     all_users = schema.User.query.all()
-    sorted_users = sort_users(all_users)
-    stripped_users = [strip_password(user) for user in sorted_users]
+    stripped_users = [get_user_record(user) for user in all_users]
+    stripped_users.sort(reverse=True,key=score)
     return json.dumps(stripped_users)
 
 
@@ -80,10 +63,6 @@ def new_info():
     db_entry = schema.User(
         username=response_data['username'],
         password=response_data['password'],
-        wins=0,
-        losses=0,
-        ties=0,
-        disconnected=0
     )
     print(response_data)
     db.session.add(db_entry)

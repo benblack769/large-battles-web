@@ -1,4 +1,3 @@
-var load_images = require("./browser_only/load_images.js")
 var display_board = require("./browser_only/display_board.js")
 
 var signup_login = require("./browser_only/signup_login.js")
@@ -48,11 +47,11 @@ function init_all(){
     signup_login.init_signup_login()
     rankings_page.init_rankings()
     live_connections.init_live_games()
-    single_player.init_single_player()
+    //single_player.init_single_player()
     //multi_player.init_multi_player()
 }
 
 window.onload = function(){
     init_all()
-    single_player.switch_to_single_player()
+    live_connections.switch_to_live_games()
 }

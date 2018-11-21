@@ -77,14 +77,29 @@ function calc_stat(stats,unit_info,stat_name){
     })
     return stat_val
 }
-function get_all_sources(){
-    var unit_icons = Object.values(icons.unit_icons)
-    var base_icons = [icons.background_icon]
-    return unit_icons.concat(base_icons)
+function get_cost(stats,unit){
+    var basecost = calc_stat(stats,unit,"cost")
+    var attach_cost = 0;
+    unit.attachments.forEach(function(attachname){
+        var attachcost = stats.attachment_types[attachname].cost
+        attach_cost += attachcost
+    })
+    return basecost+attach_cost
+}
+function get_player_cost(stats,map,player){
+    var player_cost = 0;
+    map.forEach(function(row){
+        row.forEach(function(cell){
+            if(cell.player === player){
+                player_cost += get_cost(stats,cell)
+            }
+        })
+    })
+    return player_cost
 }
 module.exports = {
     default_stats: default_stats,
     calc_stat: calc_stat,
     icons: icons,
-    get_all_sources: get_all_sources,
+    get_player_cost: get_player_cost,
 }

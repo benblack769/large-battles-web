@@ -11,25 +11,35 @@ def recreate_db():
     os.system("python init_db.py")
 
 def add_test_data():
-    db.session.add(schema.User(
+    user1 = schema.User(
         username="user1",
         password="password",
-        wins=6,
-        losses=3,
-        ties=1,
-        disconnected=1
-    ))
-    db.session.add(schema.User(
+    )
+    user2 = schema.User(
         username="user2",
         password="1234",
-        wins=8,
-        losses=5,
-        ties=2,
-        disconnected=0
-    ))
-
+    )
+    db.session.add(user1)
+    db.session.add(user2)
+    record1 = schema.GameRecord()
+    db.session.add(record1)
+    u1r1 = schema.GameUserRecord(
+        user=user1,
+        full_record=record1,
+        win_record="victory",
+    )
+    u2r1 = schema.GameUserRecord(
+        user=user2,
+        full_record=record1,
+        win_record="defeat",
+    )
+    db.session.add(u2r1)
 
     db.session.commit()
+
+
+    print([record.win_record for record in u2r1.full_record.game_user_records])
+
 
 if __name__ == "__main__":
     recreate_db()

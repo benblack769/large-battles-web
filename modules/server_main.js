@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+var request = require('request')
 var init_game = require("./logic_modules/init_game.js")
 var decompose_instr = require("./logic_modules/decompose_instructions.js").decompose_instructions
 var consume_instr = require("./logic_modules/consume_instructions.js").consume_change
@@ -25,10 +26,62 @@ console.log('listening on port: '+port_num)
 const wss = new WebSocket.Server({
     port: port_num,
 })
+
+function make_results(p1_res,p2_res){
+    return [
+        {
+            username:player1_username,
+            winrecord:p1_res,
+        },
+        {
+            username:player2_username,
+            winrecord:p2_res,
+        }
+    ]
+}
+function make_winner_results(win_name){
+    if(win_name === player1_username){
+        return make_results("victory","defeat")
+    }
+    else if(win_name === player2_username){
+        return make_results("defeat","victory")
+    }
+    else{
+        throw new Error("bad winner")
+    }
+}
+function log_game_result(results){
+    var req_options = {
+        uri: 'http://localhost:8804/log_game_result',
+        method: 'POST',
+        json: {
+            "game_id": unique_game_id,
+            "results": results,
+        }
+    };
+
+    request(req_options, function (error, response, body) {
+        if(error){
+            console.log(error)
+        }
+        else if (response.statusCode != 200) {
+            console.log("log reqeust status"+response.statusCode)
+            console.log(body)
+        }
+        else{
+            console.log("successfully logged results")
+            console.log(results)
+        }
+        safe_process_exit()
+    });
+}
 function consume_player_instr(game_state,instr,player){
     var instr_parts = decompose_instr(game_state,instr,player)
     instr_parts.forEach(function(part){
         consume_instr(game_state,part)
+        if(part.type === "VICTORY"){
+            log_game_result(make_winner_results(part.win_player))
+        }
     })
 }
 function disperse_instruction(game_state,instr,player){
@@ -97,10 +150,10 @@ function verify_player(player_credentials){
     }
 }
 function game_disconnected(){
+    log_game_result(make_results("disconnect","disconnect"))
+}
+function safe_process_exit(){
     Object.values(player_sockets).forEach(function(socket){
-        socket.send(JSON.stringify({
-            type:"GAME_DISCONNECTED",
-        }))
         socket.close()
     })
     process.exit()
@@ -132,9 +185,6 @@ wss.on('connection', function (socket, req) {
               console.log("bad credential connection closed")
               socket.close()
           }
-      }
-      else{
-          console.log("bad message parsed" + data)
       }
   })
 });

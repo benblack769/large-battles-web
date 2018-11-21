@@ -1,4 +1,3 @@
-var load_images = require("./load_images.js")
 var types = require("../logic_modules/types.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
@@ -108,6 +107,7 @@ function init_web_worker(){
 }
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
+    basediv.innerHTML = ""
     var gamesize = {
         xsize: 15,
         ysize: 10,
@@ -137,12 +137,10 @@ function main_init(){
     process_instruction(game_state,init_instr,"__server")
     init_web_worker()
     var default_layout = document.getElementById("default_layout_src").innerHTML
-    console.log("default_layout")
-    //console.log(default_layout)
     signals.layoutChanged.setState(JSON.parse(default_layout))
 }
 function init_single_player(){
-    load_images.on_load_all_images(types.get_all_sources(),main_init)
+    //main_init()
 }
 
 module.exports = {

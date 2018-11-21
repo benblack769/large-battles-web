@@ -2,6 +2,7 @@ var WebSocketServer = require('ws').Server;
 var request = require('request');
 var child_process = require('child_process');
 var client_info = require('./server_only/game_request_status.js').ClientInfo;
+var fs = require('fs')
 
 var listen_port = 9003;
 var wss = new WebSocketServer({ port: listen_port });
@@ -81,7 +82,7 @@ function send_error(socket,errname){
     })
 }
 function get_unused_port(){
-    return 9005
+    return 9009
 }
 function get_unique_game_id(){
     return 12123
@@ -98,10 +99,16 @@ function start_game(cl1,cl2){
         cl1.password,
         cl2.password,
     ]
-    child_process.spawn("node",args,{
-        detached: true,
-        stdio: 'ignore',
+    var proc = child_process.spawn("node",args,{
+        //detached: true,
+        //stdio: 'ignore',
     })
+    var logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+    proc.stdout.pipe(logStream);
+    proc.stderr.pipe(logStream);
+
+    console.log("started server")
+    console.log(args)
     cl1.socket.send(JSON.stringify({
         "type":"game_started",
         "username": cl2.username,

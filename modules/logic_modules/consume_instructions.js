@@ -47,7 +47,11 @@ function init_game_state(game_state,instr){
 function consume_destroy(game_state,instr){
     set(game_state.map,instr.coord,create_utils.create_empty())
 }
+function on_victory(){
+    // a no-op because this functionality needs to be handled elsewhere.
+}
 var consume_funcs = {
+    "VICTORY": on_victory,
     "MOVE": consume_move,
     "DESTROY_UNIT": consume_destroy,
     "CREATE": consume_create,

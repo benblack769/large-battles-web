@@ -815,16 +815,31 @@ function calc_stat(stats,unit_info,stat_name){
     })
     return stat_val
 }
-function get_all_sources(){
-    var unit_icons = Object.values(icons.unit_icons)
-    var base_icons = [icons.background_icon]
-    return unit_icons.concat(base_icons)
+function get_cost(stats,unit){
+    var basecost = calc_stat(stats,unit,"cost")
+    var attach_cost = 0;
+    unit.attachments.forEach(function(attachname){
+        var attachcost = stats.attachment_types[attachname].cost
+        attach_cost += attachcost
+    })
+    return basecost+attach_cost
+}
+function get_player_cost(stats,map,player){
+    var player_cost = 0;
+    map.forEach(function(row){
+        row.forEach(function(cell){
+            if(cell.player === player){
+                player_cost += get_cost(stats,cell)
+            }
+        })
+    })
+    return player_cost
 }
 module.exports = {
     default_stats: default_stats,
     calc_stat: calc_stat,
     icons: icons,
-    get_all_sources: get_all_sources,
+    get_player_cost: get_player_cost,
 }
 
 },{}],3:[function(require,module,exports){
@@ -1225,6 +1240,7 @@ function draw_background(context, xsize, ysize){
     var background_image = document.getElementById(type_info.icons.background_icon)
     for(var y = 0; y < ysize; y++){
         for(var x = 0; x < xsize; x++){
+            //stroke_rect(context,{x:x,y:y},"black")
             context.drawImage(background_image,x*sqr_size,y*sqr_size)
         }
     }
@@ -1241,7 +1257,7 @@ module.exports = {
     fill_rect: fill_rect,
 }
 
-},{"../logic_modules/types.js":23}],2:[function(require,module,exports){
+},{"../logic_modules/types.js":22}],2:[function(require,module,exports){
 function createEL(name,methods){
     var el = document.createElement(name)
     if(methods.style){
@@ -1477,7 +1493,7 @@ module.exports = {
     GameBoard: GameBoard,
 }
 
-},{"../../logic_modules/types.js":23,"../display_board.js":1,"./base_component.js":2,"./global_signals.js":5}],4:[function(require,module,exports){
+},{"../../logic_modules/types.js":22,"../display_board.js":1,"./base_component.js":2,"./global_signals.js":5}],4:[function(require,module,exports){
 
 function make_change_script_popup(current_value, verifier, callback){
     $("#global_text_popup").show()
@@ -1523,7 +1539,7 @@ module.exports = {
     highlightCommand: new Signal(),
 }
 
-},{"../../logic_modules/signals.js":22}],6:[function(require,module,exports){
+},{"../../logic_modules/signals.js":21}],6:[function(require,module,exports){
 var basecomp = require("./base_component.js")
 var signals = require("./global_signals.js")
 var player_utils = require("../player_utils.js")
@@ -1844,9 +1860,10 @@ module.exports = {
     PlayerInfoPannel: PlayerInfoPannel,
 }
 
-},{"../player_utils.js":10,"./base_component.js":2,"./change_script.js":4,"./global_signals.js":5}],7:[function(require,module,exports){
+},{"../player_utils.js":9,"./base_component.js":2,"./change_script.js":4,"./global_signals.js":5}],7:[function(require,module,exports){
 var url_info = require("./url_info.js")
 var login_info = require("./signup_login.js")
+var multiplayer = require("./multiplayer.js")
 
 var socket = null;
 
@@ -1944,6 +1961,8 @@ function add_all_waiting(waiting_list){
 }
 function game_started(game_info){
     console.log(game_info)
+    var url = "ws://localhost:"+game_info.port
+    multiplayer.setup_multiplayer_connection(url)
 }
 function remove_username_from_all(username){
     remove_username_from_table(username)
@@ -1953,6 +1972,10 @@ function remove_username_from_all(username){
             $("#game_starting_username").text() === username)){
         reset_page()
     }
+}
+function error_message_popup(err_msg){
+    $("#error_message_live_games").show()
+    $("#error_message_lg").text(err_msg)
 }
 function process_message(msg){
     //console.log("received message of type: " + msg.type)
@@ -1969,7 +1992,7 @@ function process_message(msg){
         case "acceptance_successful": request_accepted(msg.username); break;
         case "request_successful": break;
         case "waiting_successful": break;
-        case "error": reset_page(); break;
+        case "error": error_message_popup(msg.message); break;
     }
 }
 function reset_page(){
@@ -1986,6 +2009,7 @@ function switch_to_live_games(){
     $("#main_live_game_page").show()
     $("#request_issued_live_games").hide()
     $("#waiting_for_game_live_games").hide()
+    $("#error_message_live_games").hide()
 
     on_init_socket(function(){
         if(login_info.is_logged_in()){
@@ -2032,35 +2056,7 @@ module.exports = {
     switch_away_from_live_games: switch_away_from_live_games,
 }
 
-},{"./signup_login.js":12,"./url_info.js":14}],8:[function(require,module,exports){
-function imgLoaded(imgElement) {
-  return imgElement.complete && imgElement.naturalHeight !== 0;
-}
-function on_load_all_images(image_sources, function_to_call){
-    // calls function when all images are loaded
-    var inc_counter = 0;
-    image_sources.forEach(function(source){
-        var image = document.getElementById(source)
-        function image_loaded(){
-            inc_counter++;
-            if(inc_counter == image_sources.length){
-                function_to_call()
-            }
-        }
-        if(imgLoaded(image)){
-            image_loaded()
-        }
-        else{
-            image.addEventListener( 'load', image_loaded)
-        }
-    })
-}
-module.exports = {
-    on_load_all_images: on_load_all_images,
-}
-
-},{}],9:[function(require,module,exports){
-var load_images = require("./load_images.js")
+},{"./multiplayer.js":8,"./signup_login.js":11,"./url_info.js":13}],8:[function(require,module,exports){
 var types = require("../logic_modules/types.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
@@ -2107,10 +2103,13 @@ class GameInterface extends base_inter.BaseComponent {
 function init_game_interface(game_state,started_instr){
     init_web_worker(game_state)
     var basediv = document.getElementById("single_page_game_overlay")
+    basediv.innerHTML = ""
     var base = new GameInterface(null, basediv, started_instr.game_size, started_instr.player_order)
-    $.get("default_layout.json",function(layout){signals.layoutChanged.setState(layout)},"json")
     var creds = signup_login.get_credentials()
     signals.myPlayer.setState(creds.username)
+    switch_to_multi_player()
+    var default_layout = document.getElementById("default_layout_src").innerHTML
+    signals.layoutChanged.setState(JSON.parse(default_layout))
 }
 function validate_websocket_instruction(game_state,instr,player){
     var error = validate.validate_instruction(game_state,instr,player)
@@ -2181,10 +2180,8 @@ function init_signals(game_state){
     })
 }
 function init_web_worker(game_state){
-    $.get("default_lib.js",function(data){
-        ///console.log(data)
-        signals.libData.setState(data)
-    },"text")
+    var lib_data = document.getElementById("default_lib_src").innerHTML
+    signals.libData.setState(lib_data)
 
     my_web_worker.onmessage = function(message){
         var message = message.data
@@ -2234,11 +2231,8 @@ function setup_multiplayer_connection(server_url){
     init_signals(game_state)
 }
 function init_multi_player(){
-    load_images.on_load_all_images(types.get_all_sources(),function(){
-        setup_multiplayer_connection("ws://localhost:9008")
-    })
-}
 
+}
 module.exports = {
     switch_to_multi_player: switch_to_multi_player,
     setup_multiplayer_connection: setup_multiplayer_connection,
@@ -2246,7 +2240,7 @@ module.exports = {
     switch_away_from_multi_player: switch_away_from_multi_player,
 }
 
-},{"../logic_modules/consume_instructions.js":16,"../logic_modules/decompose_instructions.js":19,"../logic_modules/init_game.js":20,"../logic_modules/types.js":23,"../logic_modules/validate_instruction.js":24,"./game_display/base_component.js":2,"./game_display/canvas_interface.js":3,"./game_display/global_signals.js":5,"./game_display/script_interface.js":6,"./load_images.js":8,"./player_utils.js":10,"./signup_login.js":12}],10:[function(require,module,exports){
+},{"../logic_modules/consume_instructions.js":15,"../logic_modules/decompose_instructions.js":18,"../logic_modules/init_game.js":19,"../logic_modules/types.js":22,"../logic_modules/validate_instruction.js":23,"./game_display/base_component.js":2,"./game_display/canvas_interface.js":3,"./game_display/global_signals.js":5,"./game_display/script_interface.js":6,"./player_utils.js":9,"./signup_login.js":11}],9:[function(require,module,exports){
 var signals = require("./game_display/global_signals.js")
 var example_player_state = {
     player_info: {
@@ -2287,7 +2281,7 @@ module.exports = {
     init_player_interface: init_player_interface,
 }
 
-},{"./game_display/global_signals.js":5}],11:[function(require,module,exports){
+},{"./game_display/global_signals.js":5}],10:[function(require,module,exports){
 var url_info = require("./url_info.js")
 
 function init_rankings(){
@@ -2326,7 +2320,7 @@ module.exports = {
     init_rankings: init_rankings,
 }
 
-},{"./url_info.js":14}],12:[function(require,module,exports){
+},{"./url_info.js":13}],11:[function(require,module,exports){
 var url_info = require("./url_info.js")
 
 function is_logged_in(){
@@ -2478,8 +2472,7 @@ module.exports = {
     get_credentials: get_credentials,
 }
 
-},{"./url_info.js":14}],13:[function(require,module,exports){
-var load_images = require("./load_images.js")
+},{"./url_info.js":13}],12:[function(require,module,exports){
 var types = require("../logic_modules/types.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
@@ -2589,6 +2582,7 @@ function init_web_worker(){
 }
 function main_init(){
     var basediv = document.getElementById("single_page_game_overlay")
+    basediv.innerHTML = ""
     var gamesize = {
         xsize: 15,
         ysize: 10,
@@ -2618,12 +2612,10 @@ function main_init(){
     process_instruction(game_state,init_instr,"__server")
     init_web_worker()
     var default_layout = document.getElementById("default_layout_src").innerHTML
-    console.log("default_layout")
-    //console.log(default_layout)
     signals.layoutChanged.setState(JSON.parse(default_layout))
 }
 function init_single_player(){
-    load_images.on_load_all_images(types.get_all_sources(),main_init)
+    //main_init()
 }
 
 module.exports = {
@@ -2632,7 +2624,7 @@ module.exports = {
     switch_away_from_single_player: switch_away_from_single_player,
 }
 
-},{"../logic_modules/consume_instructions.js":16,"../logic_modules/decompose_instructions.js":19,"../logic_modules/init_game.js":20,"../logic_modules/types.js":23,"../logic_modules/validate_instruction.js":24,"./game_display/base_component.js":2,"./game_display/canvas_interface.js":3,"./game_display/global_signals.js":5,"./game_display/script_interface.js":6,"./load_images.js":8,"./player_utils.js":10}],14:[function(require,module,exports){
+},{"../logic_modules/consume_instructions.js":15,"../logic_modules/decompose_instructions.js":18,"../logic_modules/init_game.js":19,"../logic_modules/types.js":22,"../logic_modules/validate_instruction.js":23,"./game_display/base_component.js":2,"./game_display/canvas_interface.js":3,"./game_display/global_signals.js":5,"./game_display/script_interface.js":6,"./player_utils.js":9}],13:[function(require,module,exports){
 function http_url(url, port, extension){
     return  url + ":" + port + extension
 }
@@ -2642,8 +2634,7 @@ module.exports = {
     user_server_full_url: "http://localhost:8803",//"ec2-35-165-130-155.us-west-2.compute.amazonaws.com",
 }
 
-},{}],15:[function(require,module,exports){
-var load_images = require("./browser_only/load_images.js")
+},{}],14:[function(require,module,exports){
 var display_board = require("./browser_only/display_board.js")
 
 var signup_login = require("./browser_only/signup_login.js")
@@ -2693,16 +2684,16 @@ function init_all(){
     signup_login.init_signup_login()
     rankings_page.init_rankings()
     live_connections.init_live_games()
-    single_player.init_single_player()
+    //single_player.init_single_player()
     //multi_player.init_multi_player()
 }
 
 window.onload = function(){
     init_all()
-    single_player.switch_to_single_player()
+    live_connections.switch_to_live_games()
 }
 
-},{"./browser_only/display_board.js":1,"./browser_only/live_connections_page.js":7,"./browser_only/load_images.js":8,"./browser_only/multiplayer.js":9,"./browser_only/rankings_page.js":11,"./browser_only/signup_login.js":12,"./browser_only/single_player.js":13}],16:[function(require,module,exports){
+},{"./browser_only/display_board.js":1,"./browser_only/live_connections_page.js":7,"./browser_only/multiplayer.js":8,"./browser_only/rankings_page.js":10,"./browser_only/signup_login.js":11,"./browser_only/single_player.js":12}],15:[function(require,module,exports){
 var create_utils = require('./create_utils.js')
 var init_game = require('./init_game.js')
 
@@ -2752,7 +2743,11 @@ function init_game_state(game_state,instr){
 function consume_destroy(game_state,instr){
     set(game_state.map,instr.coord,create_utils.create_empty())
 }
+function on_victory(){
+    // a no-op because this functionality needs to be handled elsewhere.
+}
 var consume_funcs = {
+    "VICTORY": on_victory,
     "MOVE": consume_move,
     "DESTROY_UNIT": consume_destroy,
     "CREATE": consume_create,
@@ -2770,7 +2765,7 @@ module.exports = {
     consume_change: consume_change,
 }
 
-},{"./create_utils.js":18,"./init_game.js":20}],17:[function(require,module,exports){
+},{"./create_utils.js":17,"./init_game.js":19}],16:[function(require,module,exports){
 function make_coord(x,y){
     return {
         x: x,
@@ -2810,7 +2805,7 @@ module.exports = {
     make_coord: make_coord,
 }
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 
 function create_unit(unit_type,player_id){
     return {
@@ -2837,7 +2832,7 @@ module.exports = {
     create_empty: create_empty,
 }
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var create_utils = require('./create_utils.js')
 var types = require('./types.js')
 
@@ -2960,7 +2955,38 @@ function all_status_resets(gamestate){
     })
     return all_resets
 }
+function winning_player(gamestate){
+    //player wins if they have WIN_RATIO times more value of assets than their opponent,
+    //or they have no physical assets, only cash
+    var WIN_RATIO = 5
+    var players_money = gamestate.players.player_order.map(function(player){
+        var player_assets = types.get_player_cost(gamestate.stats,gamestate.map,player)
+        var player_money = gamestate.players.player_info[player].money + player_assets
+
+        //if player has no assets, then they are also lost, no matter how much cash
+        if(player_assets === 0){
+            player_money = 0
+        }
+        return {player:player,money:player_money}
+    })
+    players_money.sort(function(a,b){
+        return b.money - a.money
+    })
+    if(players_money[0].money > players_money[1].money*WIN_RATIO){
+        return players_money[0].player
+    }
+    else{
+        return null
+    }
+}
 function decomp_endturn(gamestate,instr,player){
+    var win_player = winning_player(gamestate)
+    if(win_player !== null){
+        return [{
+            type: "VICTORY",
+            win_player: player,
+        }]
+    }
     var status_resets = all_status_resets(gamestate)
     var money_entry = {
         type: "SET_MONEY",
@@ -3045,7 +3071,7 @@ module.exports = {
     decompose_instructions: decompose_instructions,
 }
 
-},{"./create_utils.js":18,"./types.js":23}],20:[function(require,module,exports){
+},{"./create_utils.js":17,"./types.js":22}],19:[function(require,module,exports){
 var CMath = require('./coord_engine.js').CMath
 var create_utils = require("./create_utils.js")
 
@@ -3105,7 +3131,7 @@ module.exports = {
     place_initial_units: place_initial_units,
 }
 
-},{"./coord_engine.js":17,"./create_utils.js":18}],21:[function(require,module,exports){
+},{"./coord_engine.js":16,"./create_utils.js":17}],20:[function(require,module,exports){
 function coords_around(c){
     var x = c.x
     var y = c.y
@@ -3234,7 +3260,7 @@ module.exports = {
     is_possible_attack: is_possible_attack,
 }
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 class Signal {
     constructor(initial_state){
         this.listeners = []
@@ -3280,7 +3306,7 @@ module.exports = {
     StateHolder: StateHolder,
 }
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var default_stats = {
     "unit_types": {
         "soldier": {
@@ -3360,19 +3386,34 @@ function calc_stat(stats,unit_info,stat_name){
     })
     return stat_val
 }
-function get_all_sources(){
-    var unit_icons = Object.values(icons.unit_icons)
-    var base_icons = [icons.background_icon]
-    return unit_icons.concat(base_icons)
+function get_cost(stats,unit){
+    var basecost = calc_stat(stats,unit,"cost")
+    var attach_cost = 0;
+    unit.attachments.forEach(function(attachname){
+        var attachcost = stats.attachment_types[attachname].cost
+        attach_cost += attachcost
+    })
+    return basecost+attach_cost
+}
+function get_player_cost(stats,map,player){
+    var player_cost = 0;
+    map.forEach(function(row){
+        row.forEach(function(cell){
+            if(cell.player === player){
+                player_cost += get_cost(stats,cell)
+            }
+        })
+    })
+    return player_cost
 }
 module.exports = {
     default_stats: default_stats,
     calc_stat: calc_stat,
     icons: icons,
-    get_all_sources: get_all_sources,
+    get_player_cost: get_player_cost,
 }
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var pathing = require("./pathing.js")
 var calc_stat = require("./types.js").calc_stat
 
@@ -3627,7 +3668,7 @@ module.exports = {
     validate_instruction: validate_instruction,
 }
 
-},{"./pathing.js":21,"./types.js":23}]},{},[15]);
+},{"./pathing.js":20,"./types.js":22}]},{},[14]);
 </script>
 
     <link rel="icon" href="data:image/x-icon;base64,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AP/m7w//vcA+/3N2iP8lL9D/AA3y/wAN8v8ADvH/AA7x/wAP6/8AEdL/AByi/wAtbP8AOUf/ADpH/wAta/8AHKH/ABHU/wAP7f8AD/L/AAzx7QAO7Z/9/QCd4OYK66KxJ/9SZ0f/GCtf/wAQaf8AF2X/ACNe/wAjW/8AHlz/ABth/wAXZP8AF2b/ABhl/wAbYv8AHGH/ABxg/wEfYP8CJF//Aihe/wIrXP8AK1n/ACtX/wArVP8AKlT/AB1c/wAUY/8OIl//QlJM/5GbLf/h4A7///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/+O4Q/8y7Q/99a5P/KB7h/wAA//8AAP//AAD//wAA//8AAP7/AADj/wAKrv8AHHP/ACpK/wAqSv8AHXL/AAus/wAA5P8AAP//AAD//wAA/e0AAP2f/f0AneboCeusuyP/Y3pA/y1FVf8RLVz/ETJZ/xQ9VP8TPVL/EjpS/xM3Vf8UNVj/FTVZ/xU2Wf8WOFb/FjlW/xc6VP8aPlT/HEJT/xxEUv8YQ1L/Dz5T/wU2VP8AMFT/ACxW/wAfXf8AFWT/DCRf/z1US/+OnCv/4OEO////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//fvEP/JvUH/eW2R/yce4f8AAP//AAD//wAA//8AAP//AAD9/wAC3v8AEaj/ACNt/wAxRP8AMUT/ACRs/wASpf8AA9//AAD//wAA//8AAP3tAAD9n/39AJ3p7Qfrw9Ea/4+lLv9ogDz/Um5A/1FwP/9VeDz/VXk7/1V5O/9WeDv/Vng7/1d5PP9XeTz/WHo7/1h6O/9afDr/X4A5/2KDN/9ggTj/U3c8/zpjRP8dS07+CDlV/wAvWv8AIWH/ABhm/wYoX/82V0n/h54p/9riDf///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/x8A//wsA+/3RyjP8lJNv/AAD//wAA//8AAP//AAD//wAC9v8ADNT/AB2c/wAwYv8APTr/AD06/wAwYf8AHpr/AA3V/wAC+P8AAP//AAD97QAA/Z/9/QCd8/YE6+PqDf/J1Rf/tsMd/6m5H/+puR//q70d/6u+Hf+rvh3/rL8c/62/HP+uwBz/rsAc/6/BHP+vwRz/sMIc/7TFGv+1xhn/rL4d/5GoJf5lhDX+M1xG/g8+U/4AL1v+ACNh/wAeZP4KMVz+PF9G/oyiJ/7c4wz///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/8PAO/8HBPf9zc4v/JCTZ/wAA//8AAP//AAD//wAA//8AAvb/AA3V/wAenv8AMGX/AD0//wA8P/8AMGT/AB6c/wAN1v8AA/j/AAD//wAA/e0AAP2f/f0Anfj7Aev5+wP/8/cG/+/yB//q7gj/6+4I/+vvB//r7wf/6+8H/+zxBv/u8gb/8fQF//P1Bf/09wT/9fgE//P2BP/u8gb/4ugJ/8nUEv+gtCD+aIUz/i5WRv0HN1b+AC5b/gUtXf8QNFr+K09O/l57Ov6ktR/+5OoJ////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//DwDv/Bwj3/c3OK/yQk2f8AAP//AAD//wAA//8AAP//AAD6/wAH3/8AFrD/ACeB/wAwYv8ALmP/ACKD/wATsv8ABuH/AAD7/wAA//8AAP3tAAD9n/z8AJ38/ADr//8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/8/AD+6u4G/s3WEP6ltx7+epQt/kZsP/4ZRk79ADJX/QM0WP4cRFP+PV5H/meBN/6WqCX/x9IU//DzBf///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/w8Q7/wcI9/3Nziv8kJNn/AAD//wAA//8AAP//AAD//wAA/P8AAuz/AAzO/wAXr/8AHZv/ABqd/wAQs/8AB9H/AADw/wAA/v8AAP//AAD87QAA/J/8/ACd/PwA6///AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/5+gL/8/YE/+7xBv/k6gj/0NgP/rG/Gf6MoSb+ZII0/kNoQf4lUkv+FEJQ/RE/Uf0iTk3+SWxB/nqSL/6quR7+ztYR/+fsCP/6+wL///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/8PEO/8HBPf9zc4r/JCXZ/wAA//8AAv7/Agb7/wMI+f8DCPf/AgXz/wEG6f8BCtz/AQ3T/wIN1P8DC93/Awjo/wMH9v8DBv3/AQP+/wEB++0AAPyf/PwAnfz8AOv//wD///8A////AP///wD///8A////AP///wD///8A//7+AP/w8wX/2uEM/sfSEv65xhf/pbYe/4ieKf5nhjP9Smw9/TRaQ/0pVEn+K1ZK/jZeRv5GakD+W3w4/oKbK/6zwhn+3eML/vL0BP/6+wL//v4A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//DwD//Avz//cnGM/yUm2P8AA/3/AAv5/woc7P8OIub/DSDn/woW7v8FCvX/AwX2/wQI9P8IEfH/DRvr/w8g5/8OIOz/Cxn1/wUO+v8CBPntAAD8n/z8AJ38/ADr//8A////AP///wD///8A////AP///wD///8A//v8Af/p7gf/y9UR/6W2Hv6EnCn+bYky/1Z3O/8/ZUP+LFRH/SRNSf0qUkb9PmRC/l1+OP5+liz+lagl/qW2Hv7AzBX+4ecK/vn6Af7//wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/v7hH/vrxB/3Bvjv8lKNb/AQz4/wQg7P8XQNP/IE7I/x9Jy/8WNNz/DBjx/wYJ/P8JD/v/Eibu/xxA2v8hTc7/IErT/xg54/8MIPT/BAj37QAA/Z/8/ACd/PwA6///AP///wD///8A//7/AP/3+AL/8vUE/+7yBv/f5gv/wM0V/perIv5sijH9SWs9/TJaR/4mUE3+IU1O/iVQTP4zWkX9T3E7/XeRLf6kth7+zdYR/9/lC//l6gn/7/IG//r7Af///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/7+0S/725RP9vbJD/JirV/wQY8f8MN93/JWW6/zF7qf8wc6//I1LG/xEo5f8JEvX/DRzw/xw/2f8saLz/NHus/zF2tv8kWtD/FDHs/wYQ9u0AAP2f/PwAnf39AOv//wD///8A////AP/s8Qb/0toO/r7KFv6xwhv/nbMi/3+aK/5efzb+QWU//S9VRv0oUkr+MFlJ/kJnQ/5XeDv+b4ox/pClJf64xhf+4OYK/v79AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/+7sEv+7t0b/bmqS/yYr1f8FH+z/EkfT/y5/qf89mZX/PI+b/ytnt/8VNNr/Cxns/xAm5P8iUsf/N4Oj/0Cbk/88k6L/LW/E/xg86P8IE/btAAD9n/z8AJ39/QDr//8A////AP/u8gb/xtES/pquIv1zjy/9XX03/ktwPv45Y0T+L1lH/i9WRf07X0L9T3I8/W6KM/6Moij+pbcg/7fFGP7M1hH+5eoJ//r6Av///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/u7BL/u7dG/25pkv8lKtX/BR/s/xJH0/8tfqr/PJmW/zuOnP8rZrf/FTTZ/wsa6/8QJuL/IlLF/zeDo/8/mpP/O5Oi/yxuxP8XPOj/BhP37QAA/Z/9/QCd+vsC6/T3Bf/k6gv/wc0W/4yhJf5XdjX9L1NC/RpBS/4PNlP+CjRW/hM+Uv4uVEf9WXk5/YuiKP22xBn+09sP/uXqCf/u8Qb/9fcE//z9Af///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/7uwS/7y5Rf9uapH/JCjX/wIW8v8LNt7/I2S8/zB6rP8vcq//IlHF/xEq4P8IFe7/DR/n/xtB0P8saLX/Mnup/y91t/8jWNP/Ei/v/wQM+e0AAP2f/f0AnfD2BevY4hL/sMAh/4KWL/9Oazz/JUxG/gszT/4BJVX/ABtc/wAcX/8LMFj/MldJ/nKOMf6zxBn+5ekJ/vf4A//9/QH///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/+/vEP+/vUD/cnCM/ygr0/8BDvf/Ax7t/xU+1v8dTMz/HkfN/xUz2v8LGuv/BQ30/wgU7/8RKeD/G0HQ/yBNyf8eStT/GDnn/w4h9/8GC/ftAwL6n/39AJ3j6wjrtMcg/3WOOf9CW0z/HDtX/wcyWv4AL1z+ASle/wAcZP8AF2b/CSpe/zVXSf5/miz+zdkQ/vz8AP7//wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/y8g3/x8c4/4B/fv83OMb/CA30/wAJ+/8GGPD/DCDr/w0e6v8JFu//BQv2/wIG+f8DCPf/BxHx/wwc6v8NIen/DR/w/w0a/P8PF/v/Exbt7RYW5Z/9/QCd2uYK65iyKf9Ma0r/GzZk/wMhcP8AL3L/CEBx/wpBcf8EL3P/ACBy/wgqZP8zVUr/g50p/9fhC////wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/9/cI/9TVK/+Yl2b/U1Or/xwd4f8CBfr/AAT+/wIG+/8DBvv/AgX7/wEC/f8AAf3/AQL8/wEE/P8CBvv/Agf7/wQI/v8NDv//Hh7w/zAw0e07O72f/f0AndXgCuuPqir/PmJP/wwvb/8AJYT/Bj+N/xhbkP8ZXo//DEmL/wEygP8JM2n/NVhJ/4WdJv/Z4Qr///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//v7BP/l5hr/uLdH/3x8g/8/P7//FBLr/wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8EAf3/Ghf0/z060P9dW6LtcHOFn/39AJ3d4gfrn7Ui/1J1Rv8cSmv/CEGN/xJWo/8ib7D/I3Cx/xZepP8NSYv/Gklo/0ZqQ/+TpiD/3eMI////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/+/gH/9PQM/9fXKf+oqFf/bGyS/zUzyf8RDu7/AgD+/wAA//8AAP//AAD//wAA//8AAP//AAD//wAA/v8AAPj/ExDq/zk20P9pZ5//j45r7aioSp/9/QCd6usE68HOFP+FoTL/T3xZ/yppiP8fa7D/HnPJ/x5yyv8gbbL/K2qK/0h2Wv92kzL/tMAU/+jrBf///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//39A//v7xH/0dEu/6CgX/9oZ5b/OTjG/xwa4/8KCfX/AAD//wAA//8AAP//AAD//wAA+P8DA+z/EhHa/zg3vf9rapX/oKBh/8DAMe3V1ROf/f0Anfb3Aevk6gf/v88d/5CxQf9cknb/NX2o/x1yyf8dccn/NHyp/1qRd/+Kq0H/tccb/9ziBv/29wH///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD//PwD/+3tEv/NzTL/oKBf/3Fwjv9JSbX/JyfW/w0N7/8AAP7/AAD//wAA/f8HB+//GxvY/zk5uf9sa5H/oqJk/9LSN//o6BPt9PQAn/39AJ39/ADr+/0A/+zxDP/N3yj/l7tV/2Kahf8/hKP/P4Sh/2GZf/+Uuk3/x9oe/+fuBP/5+gD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/7+wT/7e0S/9HRL/+srFL/hYV4/15enP8+Prv/KirV/yQk5P8nJ+r/Njbl/1BQ0P90dLD/paWH/9PTYf/z80D/+/sr7f39IJ/8/ACd/f0A6///AP/+/gT/8PgU/8neMv+fwlP/ga5n/4GtY/+ewUj/x90i/+v0Bf/8/gD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//z8A//v7xD/2dkk/729Pv+fn1n/h4d2/3d3l/9ycrb/dHTR/4GB3v+Vldn/sLDD/9PTpv/x8Y3///95//39be39/Wif/PwAnf38AOv//wD///8B////B//t9RT/1uUj/8XZK//F2Sj/1eUc/+v0D//8/wr///8O////EP///w////8N////CP///wP///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD//f0C//T0B//n5xL/19ci/8vLPf/Dw2X/wMCS/8HBwP/IyN//0tLp/+Dg4f/y8tP////H////v//9/brt/Py6n/z8AJ38/ADr//8A////AP///wH//f4E//b5CP/x9gn/8fYN//b5F//9/iX///80////Pv///0L///9A////N////yf///8V////Bf///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/+/sB//f3EP/09C7/8fFc//DwkP/x8cP/8vLm//b29//6+vb//v7z////8P///+7//Pzp7fz87J/8/ACd/PwA6///AP///wD///8A////AP///wD///8D////GP///zr///9g////f////43///+R////jv///3z///9e////Ov///xn///8F////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8B////C////yT///9M////fv///7D////Y////8v////////////////////////////v7/e38/P2f/PwAnfz8AOv//wD///8A////AP///wD///8A////Ev///z7///90////pf///8r////b////3f///9v////F////n////23///89////Gv///wf///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////CP///yX///9S////hf///7f////d////8v////v////////////////////////////7+/3t/Pz9n/z8AJ38/ADr//8A////AP///wD///8A////Av///yr///9r////rv///93////6////////////////////9f///9X///+l////cP///z////8d////CP///wH///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///xP///9G////hf///77////n/////P//////////////////////////////////////+/v77fz8/J/8/ACd/PwA6///AP///wD///8A////AP///wr///9A////jv///9P////3///////////////////////////////0////0////6X///9w////Qf///xv///8G////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8c////X////6n////g/////P////////////////////////////////////////////v7++38/Pyf/PwAnfz8AOv//wD///8A////Af///wT///8b////Wv///6z////r//////////////////////////////////////////L////U////o////2z///81////Dv///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////JP///3L////B////8v/////////////////////////////////////////////////7+/3t/Pz9n/z8AJ38/ADr//8A////AP///wb///8V////OP///3n////F////+P/////////////////////////////////////////+////8v///8z///+U////UP///xf///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///yf///96////yv////f/////////////////////////////////////////////////+/v97fz8/Z/8/ACd/PwA6///AP///wL///8S////M////2T///+i////2/////z////////////////////////////////////////////////////o////tf///2r///8h////AP///wD///8A////AP///wD///8A////AP///wD///8A////Af///wX///8J////Dv///w////8Q////D////wz///8I////BP///wH///8A////AP///wD///8A////AP///wD///8l////dv///8T////z//////////////////////////////////////////7////5//v78e38/Oyf/PwAnfz8AOv//wD///8H////Iv///1b///+U////zP///+/////+////////////////////////////////////////////////////9P///8j///96////J////wD///8A////AP///wD///8A////AP///wD///8A////BP///w3///8c////LP///zr///9A////Qv///0D///82////J////xf///8K////Av///wD///8A////AP///wD///8A////H////2b///+y////5v/////////////////////////////////////////2////4v/7+8rt/Py4n/z8AJ38/ADr//8A////C////zH///92////v/////D////8/////v////////////////////////////////////////////////////j////N////fv///yn///8A////AP///wD///8A////AP///wD///8A////Av///w////8n////SP///2j///+C////jv///5H///+O////fP///17///88////Hv///wr///8B////AP///wD///8A////AP///xb///9N////kf///8n////w/////v/////////////////////////8////5P///7f/+/uG7fz8a5/8/ACd/PwA6///AP///w3///84////hP///9H////////////////////////////////////////////////////////////////////y////w////3T///8l////AP///wD///8A////AP///wD///8A////AP///wb///8g////TP///4D///+s////zP///9v////d////2////8X///+e////bP///zv///8W////A////wD///8A////AP///wD///8N////M////2n///+f////0v////H/////////////////////////9P///8n///+E//v7Qu38/CKf/PwAnfz8AOv//wD///8L////NP///3v////G////+P/////////////////////////////////////////////////////////7////3////6r///9g////Hf///wD///8A////AP///wD///8A////AP///wD///8L////Nv///3f///+3////4v////r////////////////////1////1v///57///9e////Jv///wf///8A////AP///wD///8A////Bv///xr///89////bP///6P////T////9v///////////////////+P///+o////Wv/7+xbt/PwAn/z8AJ38/ADr//8A////CP///yf///9g////ov///9j////z///////////////////////////////////////////////9////6P///7////+H////R////xT///8A////AP///wD///8A////AP///wD///8A////EP///0j///+W////2f////r///////////////////////////////f////F////fP///zX///8M////AP///wD///8A////AP///wH///8I////G////zz///9u////pf///9j////2//////////H////E////hf///z//+/sK7fz8AJ/8/ACc/PwA6v//AP///wP///8W////O////23///+l////0/////P////////////////////////////////////9////6v///8T///+Q////W////yv///8K////AP///wD///8A////AP///wD///8A////AP///xL///9N////oP///+L/////////////////////////////////////////3P///5H///9C////EP///wD///8A////AP///wD///8A////AP///wb///8Y////PP///2z///+h////xv///9L///+/////kf///1v///8p//v7COz8/ACe/PwAnfz8AOv//wD///8B////Cv///x3///89////bf///6L////T////8///////////////////////////////6v///8X///+S////Xv///zP///8U////BP///wD///8A////AP///wD///8A////AP///wD///8P////Q////47////Q////9P///////////////////////////////////+L///+Y////SP///xP///8A////AP///wD///8A////AP///wD///8A////BP///xj///85////YP///3z///+F////dv///1b///8y////Ff/7+wTt/PwAn/r6AKP8/ADy//8A////AP///wL///8J////GP///zn///9q////ov///87////p////7/////H////v////4v///8H///+R////XP///zD///8U////Bv///wD///8A////AP///wD///8A////AP///wD///8A////Cf///y7///9n////pf///9P////y///////////////////////////////e////k////0X///8S////AP///wD///8A////AP///wD///8A////AP///wD///8F////FP///yj///82////Ov///zL///8j////E////wf/+/sB9Pr6AKX6+gCp+/sA+f//AP///wD///8A////AP///wT///8W////Ov///2n///+U////sv///73////B////vf///6v///+I////Wv///y////8Q////BP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wT///8Y////Pf///2////+j////0/////L////////////////////8////z////4T///87////Dv///wD///8A////AP///wD///8A////AP///wD///8A////AP///wP///8I////DP///w3///8L////B////wP///8B//z8APr+/gCr+voAqfv7APn//wD///8A////AP///wD///8A////A////xb///8y////Tv///2T///9v////c////2////9g////R////yr///8Q////Af///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8B////CP///xj///86////av///6T////W////+P/////////7////5v///67///9p////K////wn///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/8/AD6/v4Aq/z8AJX8/ADd+/sA7fv7AO37+wDt/PwA6/z8AOv8/ADr/PwE6/z8Duv8/Bbr/Pwf6/z8I+v8/Cfr/Pwj6/z8Huv8/BTr/PwJ6/z8Auv8/ADr/PwA6/z8AOv8/ADr/PwA6/z8AOv8/ADr/PwA6/z8AOv8/ADr/PwA6/z8AOv8/AHr/PwF6/z8Fev8/Dzr/Px46/z8tOv8/Obr/Pz26/z86+v8/MXr/PyJ6/z8Tuv8/B7r/PwF6/z8AOv8/ADr/PwA6/z8AOv8/ADr/PwA6/z8AOv8/ADr/PwA6/z8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Ov///wD///8A////AP///wD///8A////AP///wD/op9f/wAA//8AAP//AAD//wARwP8ANk3/ADZN/wASv/8AAP//AAD92P39ANfq7wn/2N4P/9jgDv/Y4A7/2eEN/9viDf/b4w3/2uIN/9jgDv+XrCT+IExN/QAvXP8AKV/+aIY1/v//AP///wD///8A////AP///wD///8A////AP+goF7/AAD9/wAA//8AAP//ABLB/wA2U/8ANVT/ABLA/wAA//8AAP3Y/f0A1///AP///wD///8A////AP///wD///8A////AP/o7Af+nbAh/kZsQP4DNlf9GkdR/nWNMv7I0xP///8A////AP///wD///8A////AP///wD///8A/6ChXf8AAP7/AAD//wAA//8AAur/ABO//wANw/8AAO3/AAD//wAA+9j9/QDX//8A////AP///wD///8A/+7xBv+1xBn+jaMn/1JzPP0mUEr9L1lI/mF/N/6Moyj+5+wI/v//AP///wD///8A////AP///wD///8A////AP///wD/np1h/wMH+P8MI+f/FjbY/wsY8P8DA///ECLw/xY03f8MHfL/AAD72P39ANf//wD//v8A/+TpCf/Y4A7/kqgl/j9kQf0bSFD+KlRL/lp7OP23xRj+//8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP+blmb/BxPx/yFhvv89k5j/HUbO/wgT8f8rZ7n/PZOZ/yBQ2v8AAPvY/f0A1///AP/L1RL+XXw3/SpUSf4ZR1D+O2FD/YefKv3J0xP/4ucK//r7Av///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/5uWZv8HEvH/IWG//zyTmf8dRs3/CBTv/ytnt/88k5n/H0/b/wAA/dj9/QDXqb0k/0RfRP8HNFH+AB9a/wAeYP9VeDz+6u4H/v//AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/oqFd/wsP8P8KIer/FjTb/woZ7P8DB/j/DyXk/xY02/8QIff/CQnz2P39ANdegz7/ABd3/w5JfP8TTnv/ACNy/1N1Of///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP/Hxzj/Q0K7/wAA//8AAP//AAD//wAA/v8AAP//AAD//xoX9/9RUavY/fsA14agK/8XUXj/JnO3/yZ0uP8ZU3j/dY8r////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//LyDv+kpFr/Ly7P/wcG+P8AAP//AAD//wAA+f8NDOf/Z2ai/7u7N9j9/QDX6e4H/5i5Sv8tebT/LXiz/5a4Sf/m6wT///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/+7uEf+lpVr/UFCt/w8P7P8AAPv/ICDe/2pqlf/V1T7/+fkH2P39ANf//wD/8PgT/6/LQf+vyzr/7/cD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//PzDP/Kyi//qKhj/6Cgsv+xseT/2NjH////pP/9/ZnY/f0A1///AP///wD///8A////E////0v///9h////W////zD///8D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////CP///0r///+0////+P////////////39/dj9/QDX//8A////AP///wv///95////3//////////1////pf///zv///8H////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///9S////wv////7//////////////////f392P39ANf//wD///8A////I////8v////////////////////1////pf///zz///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///5X////8///////////////////////9/f3Y/f0A1///AP///xT///9l////7//////////////////////////x////hP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////q/////////////////////////////39/dj9/QDX//8A////Q////83////5//////////////////////////////+u////AP///wD///8A////AP///wP///8g////UP///2H///9b////MP///wr///8A////AP///wD///+C////8P///////////////////+L//f2e2P39ANf//wD///9Y////9f//////////////////////////////+////5b///8A////AP///wD///8A////E////4H////h//////////X///+l////MP///wD///8A////AP///zv///+j////9v/////////+////lf/9/QDY/f0A1///AP///zH///+o////9f/////////////////////////F////VP///wD///8A////AP///wD///8k////zP////////////////////b///9b////AP///wD///8A////B////zn///+o////9P///83///9Q//39ANj9/QDX//8A////Cv///zj///+k////9///////////////x////1v///8U////AP///wD///8A////AP///xr///+j////9f///////////////////2r///8A////AP///wD///8A////A////zH///9Z////RP///xT//f0A2P39AOj//wD///8A////AP///zj///+E////nv///5b///9U////Df///wD///8A////AP///wD///8A////B////zr///+k////9//////////l////Tv///wD///8A////AP///wD///8A////AP///wD///8A////AP/9/QDp/v4Atf39ANf9/QDX/f0A1/39ANf9/QDX/f0A1/39ANf9/QDX/f0A1/39ANf9/QDX/f0A1/39ANf9/QDX/f0A1/39ANf9/ULX/f3D1/3989f9/ZfX/f0n1/39ANf9/QDX/f0A1/39ANf9/QDX/f0A1/39ANf9/QDX/f0A1/7+ALYoAAAAGAAAADAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wcA/wD/AP9zjwD+c48A/gD/AP//BwD/AP8A/3OPAP5zjwD+AP8A/wD/AP8A/wD/AP8A/wD///8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD//wcA/wD/AP//BwD/AP8A/wD/AP//BwD/AP8A//8HAP8A/wD/AP8A/wD/AP8A/wD/AP8A/3OPAP4A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AAD9/wAA/f8A/wD/AP8A/wD/AP8AAP3/AAD9/wD/AP8A/wD/AP8A/wAA/f8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP///wD/AP8A/wD/AP8A/wD/AP8A/wD/AAD9/wAA/f8A/wD/AP8A/wD/AP8AAP3/AAD9/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/c48A/gD/AP8A/wD/AP8A/wD/AP8A/wD/AAD9/wAA/f+Wlpb/AP8A/wD/AP8AAP3/AAD9/zJ6qv8A/wD/AP8A/wD/AP8A/wD/AP///wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AAD9/wD/AP8A/wD/MXmq/jF5qv6Wlpb/lpaW/xm7Vv4yeqr/Mnqq/5aWlv+Wlpb/AP8A/wD/AP8A/wD/c48A/gD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/F7dY+xusZvoANFr/lpaW/wD/AP8XvVT9F71U/QA0Wv+Wlpb/lpaW/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD7BP8A/wD///8A/wA0Wv8ANFr/ADRa/wA0Wv8ANFr/ADRa/wA0Wv8ANFr/ADRa/wA0Wv///wD///8A////AP///wD///8A////AP8AAP3/AAD9/wAA/f8ANFr/ADRa/wAA/f8AAP3///8A/wA0Wv8ANFr/ADRa/wA0Wv8ANFr/ADRa/wA0Wv8ANFr/ADRa/wA0Wv///wD///8A////AP///wD///8A////AP8AAP3/AAD9/wAA/f8ANFr/ADRa/wAA/f8AAP3///8A////AP///wD///8A////AP///wD///8A////AP8yXEn9ADRa/w9AVP7//wD///8A////AP///wD///8A////AP8AAP3/AAD9/wAA/f8ANFr/ADRa/wAA/f8AAP3///8A////AP///wD///8A////AP///wD/mq4j/RtJT/4CNVj+T3I+/f//AP///wD///8A////AP///wD///8A////AP8AAP3/AAD9/wAA/f8AAP3/AAD9/wAA/f8AAP3///8A////AP///wD///8A/3GNMf0MPFX+DDxV/nGNMf3//wD///8A////AP///wD///8A////AP///wD///8A////AP8AAP3/Mnqq/zJ6qv8AAP3/Mnqq/zJ6qv8AAP3///8A////AP9Pcj79AjVY/htJT/6ariP9//8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP8AAP3/Mnqq/zJ6qv8AAP3/Mnqq/zJ6qv8AAP3///8A/wA0Wv8ANFr/ADRa/wA0Wv///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP8gIN3/AAD9/wAA/f8AAP3/AAD9/wAA/f8hIdz///8A/wA0Wv8yeqr/Mnqq/wA0Wv///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP+vr1D/AAD9/wAA/f8AAP3/AAD9/wAA/f+vr1D///8A////AP8yeqr/Mnqq////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/r69Q/zAwzf8AAP3/MDDN/6+vUP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///4D///////////////////8A////AP///wD///+A//////////////+A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////gP////////////////////////8A////AP///wD/////////////////////////gP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//////////////////////////////8A////AP///4D//////////////////////////////wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A//////////////////////////////8A////AP///////////////////////////////////wD///8A////AP///wD///+A//////////////+A////AP///wD///8A////gP///////////////////wD///8A////AP///4D/////////////////////////gP///wD///8A////AP///wD/////////////////////////AP///wD///8A////AP///4D/////////gP///wD///8A////AP///wD///+A//////////////+A////AP///wD///8A////AP///wD///+A////////////////////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////gP////////+A////AP///wD///8A////AP///wD///8A////AP///wD/KAAAABAAAAAgAAAAAQAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKNwANxrogDtOsQA7Y6DAO1soQDtbZMA7QX9AO0A/QDtFOk/7RTpP+0A/QDtAP0A7QD9AO0A/QDtAP0A7QD9ANw2JKTzL6A2/wX/AP8uXH7/M1l4/yHnAP8AyT3/AMk6/xLzAP8T8wD/AP8A/wL/Ff8K/Fr/AP8A/wD/AP8A/QDzAAD97RSXgv8A/wD/ADzH/wAl5/8A/wv/APIL/wDxHf8A/z3/AP8A/wD/AP8K9QX/KNYW/gDwD/8AxTz/AP0A7RBUxOxzfq3/Wc5O/xGOi/8+Wcf/brB0/xX/C/8A/wr/FtY9/gD/AP8A/wD/AP8A/wD/AP8A/wX/ANQz/wD9AO1GukbqF05v/zt5Z/8Do0P+CWtb/lFRg/9DkF//O+YI/1/1AP9V/wD/Vf8A/xzGOP8AqlX/ALkq/wDBJf8AplftsrwW7Q03V/8LOlP/ETlU/xlFTv8IPFH/ABFm/7CyIv///wD///8A////AP9bSbP/AAD//wAahf8AGo3/AAD97ff3Au3w8wb/9fgD//r7Av+/zBb/NFpI/iNEU/7J1BP///8A////AP///wD/VVSp/wAA//8AFbD/ABG4/wAA/e39/QDt//8A/9rhDP5xjDH+SGxA/ougKf7e5gv///8A////AP///wD///8A/1Zapf8WStD/ECTr/yJR0v8LIebt2+UK7V98N/8JL1b+b4oy/ujtCP///wD///8A////AP///wD///8A////AP9XWqX/EkbU/xAn4/8gUcz/CiDn7aGyHe0AQ5P/AkGQ/7TCF////wD///8A////AP///wD///8A////AP///wD/p6ZY/wQA/f8AAP//AAD5/1lXk+339wHtm8FZ/5a9TP/5+gD///8A////AP///wD///8A////AP///wD///8A////AP+qqlH/VVW+/4iI0P/x8WTt/f0A7f//AP///2j///+p////Rf///wD///8A////AP///wD///8A////AP///wD///8P////qv///////f397f39AO3//yf////6/////////+f///8y////AP///wD///8A////AP///wD///8A////WP////////////39/e39/QDt//+Y////////////////////WP///wD///8D////eP///6r///9E////AP///zL////o///////9/ZHt/f0A8///Sf///+z/////////u////xr///8A////C////+T/////////s////wD///8A////Sv///5X//f0R8/39ANz9/QDt/f0z7f39W+39/Rbt/f0A7f39AO39/QDt/f1N7f396e39/YHt/f0A7f39AO39/QDt/f0A7f39ANwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="image/x-icon" />
@@ -3739,6 +3780,17 @@ module.exports = {
                 <div class="central_cancel_message horizontal-center">
                     <span>Game starting. Waiting for server to start game with: </span>
                     <span id="game_starting_username"></span>
+                </div>
+                <div class="central_cancel_button_holder">
+                    <span class="central_cancel_button">Cancel</span>
+                </div>
+            </div>
+        </div>
+        <div id="error_message_live_games" class="gray_page_overlay">
+            <div class="central_cancel_box">
+                <div class="central_cancel_message horizontal-center">
+                    <span> Error with request: </span>
+                    <span id="error_message_lg"></span>
                 </div>
                 <div class="central_cancel_button_holder">
                     <span class="central_cancel_button">Cancel</span>

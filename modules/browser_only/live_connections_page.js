@@ -1,5 +1,6 @@
 var url_info = require("./url_info.js")
 var login_info = require("./signup_login.js")
+var multiplayer = require("./multiplayer.js")
 
 var socket = null;
 
@@ -97,6 +98,8 @@ function add_all_waiting(waiting_list){
 }
 function game_started(game_info){
     console.log(game_info)
+    var url = "ws://localhost:"+game_info.port
+    multiplayer.setup_multiplayer_connection(url)
 }
 function remove_username_from_all(username){
     remove_username_from_table(username)
@@ -106,6 +109,10 @@ function remove_username_from_all(username){
             $("#game_starting_username").text() === username)){
         reset_page()
     }
+}
+function error_message_popup(err_msg){
+    $("#error_message_live_games").show()
+    $("#error_message_lg").text(err_msg)
 }
 function process_message(msg){
     //console.log("received message of type: " + msg.type)
@@ -122,7 +129,7 @@ function process_message(msg){
         case "acceptance_successful": request_accepted(msg.username); break;
         case "request_successful": break;
         case "waiting_successful": break;
-        case "error": reset_page(); break;
+        case "error": error_message_popup(msg.message); break;
     }
 }
 function reset_page(){
@@ -139,6 +146,7 @@ function switch_to_live_games(){
     $("#main_live_game_page").show()
     $("#request_issued_live_games").hide()
     $("#waiting_for_game_live_games").hide()
+    $("#error_message_live_games").hide()
 
     on_init_socket(function(){
         if(login_info.is_logged_in()){

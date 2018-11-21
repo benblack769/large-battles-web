@@ -120,7 +120,38 @@ function all_status_resets(gamestate){
     })
     return all_resets
 }
+function winning_player(gamestate){
+    //player wins if they have WIN_RATIO times more value of assets than their opponent,
+    //or they have no physical assets, only cash
+    var WIN_RATIO = 5
+    var players_money = gamestate.players.player_order.map(function(player){
+        var player_assets = types.get_player_cost(gamestate.stats,gamestate.map,player)
+        var player_money = gamestate.players.player_info[player].money + player_assets
+
+        //if player has no assets, then they are also lost, no matter how much cash
+        if(player_assets === 0){
+            player_money = 0
+        }
+        return {player:player,money:player_money}
+    })
+    players_money.sort(function(a,b){
+        return b.money - a.money
+    })
+    if(players_money[0].money > players_money[1].money*WIN_RATIO){
+        return players_money[0].player
+    }
+    else{
+        return null
+    }
+}
 function decomp_endturn(gamestate,instr,player){
+    var win_player = winning_player(gamestate)
+    if(win_player !== null){
+        return [{
+            type: "VICTORY",
+            win_player: player,
+        }]
+    }
     var status_resets = all_status_resets(gamestate)
     var money_entry = {
         type: "SET_MONEY",

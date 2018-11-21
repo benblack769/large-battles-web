@@ -11,3 +11,4 @@ static_files/index.html
 *.gz
 *.min.js
 *.min.css
+*.log

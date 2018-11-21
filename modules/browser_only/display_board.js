@@ -54,6 +54,7 @@ function draw_background(context, xsize, ysize){
     var background_image = document.getElementById(type_info.icons.background_icon)
     for(var y = 0; y < ysize; y++){
         for(var x = 0; x < xsize; x++){
+            //stroke_rect(context,{x:x,y:y},"black")
             context.drawImage(background_image,x*sqr_size,y*sqr_size)
         }
     }

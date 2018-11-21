@@ -1,4 +1,3 @@
-var load_images = require("./load_images.js")
 var types = require("../logic_modules/types.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
@@ -45,10 +44,13 @@ class GameInterface extends base_inter.BaseComponent {
 function init_game_interface(game_state,started_instr){
     init_web_worker(game_state)
     var basediv = document.getElementById("single_page_game_overlay")
+    basediv.innerHTML = ""
     var base = new GameInterface(null, basediv, started_instr.game_size, started_instr.player_order)
-    $.get("default_layout.json",function(layout){signals.layoutChanged.setState(layout)},"json")
     var creds = signup_login.get_credentials()
     signals.myPlayer.setState(creds.username)
+    switch_to_multi_player()
+    var default_layout = document.getElementById("default_layout_src").innerHTML
+    signals.layoutChanged.setState(JSON.parse(default_layout))
 }
 function validate_websocket_instruction(game_state,instr,player){
     var error = validate.validate_instruction(game_state,instr,player)
@@ -119,10 +121,8 @@ function init_signals(game_state){
     })
 }
 function init_web_worker(game_state){
-    $.get("default_lib.js",function(data){
-        ///console.log(data)
-        signals.libData.setState(data)
-    },"text")
+    var lib_data = document.getElementById("default_lib_src").innerHTML
+    signals.libData.setState(lib_data)
 
     my_web_worker.onmessage = function(message){
         var message = message.data
@@ -172,11 +172,8 @@ function setup_multiplayer_connection(server_url){
     init_signals(game_state)
 }
 function init_multi_player(){
-    load_images.on_load_all_images(types.get_all_sources(),function(){
-        setup_multiplayer_connection("ws://localhost:9008")
-    })
-}
 
+}
 module.exports = {
     switch_to_multi_player: switch_to_multi_player,
     setup_multiplayer_connection: setup_multiplayer_connection,
