@@ -1,13 +1,14 @@
 var url_info = require("./url_info.js")
 var login_info = require("./signup_login.js")
 var multiplayer = require("./multiplayer.js")
+var single_player = require("./single_player.js")
+var game_page = require("./game_page.js")
 
 var socket = null;
 
 function add_cell(row, cell_data){
     var cell = document.createElement("th")
     cell.innerText = (cell_data)
-    cell.class = "live_tab_col1"
     row.appendChild(cell)
 }
 function add_row(username, button){
@@ -18,7 +19,6 @@ function add_row(username, button){
 }
 function add_button(row,button){
     var res = document.createElement("th")
-    res.class = "live_tab_col2"
     res.appendChild(button)
     row.appendChild(res)
 }
@@ -172,6 +172,9 @@ function switch_away_from_live_games(){
 }
 function init_live_games(){
     $(".central_cancel_button").click(reset_page)
+    $("#self_play_game_button").click(function(){
+        single_player.create_single_player()
+    })
 }
 
 function on_init_socket(socket_opened_callback){

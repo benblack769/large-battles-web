@@ -9,48 +9,17 @@ var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 var signup_login = require("./signup_login.js")
+var game_page = require("./game_page.js")
 
-function make_worker(){
-    var data = document.getElementById("web_worker_src").innerHTML
-    var blob = new Blob([data], { type: "text/javascript" })
-    var url = window.URL.createObjectURL(blob)
-    return new Worker(url)
-}
-var my_web_worker = make_worker();
 var server_socket = null
 
-function switch_to_multi_player(){
-    console.log("switched to single player")
-    $(".page_level").hide()
-    $("#single_player_page").show()
-    window.scrollTo(80, 40);
-    document.body.style["background-color"] = "gray"
-}
-function switch_away_from_multi_player(){
-    document.body.style["background-color"] = "white"
-}
-
-class GameInterface extends base_inter.BaseComponent {
-    constructor(parent,basediv,gamesize,init_player_state){
-        super(parent,basediv)
-        this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize)
-        this.script_inter = new script_inter.ScriptInterface(this,(basediv))
-        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state)
-    }
-    children(){
-        return [this.gameboard, this.script_inter]
-    }
-}
 function init_game_interface(game_state,started_instr){
+    init_signals(game_state)
     init_web_worker(game_state)
-    var basediv = document.getElementById("single_page_game_overlay")
-    basediv.innerHTML = ""
-    var base = new GameInterface(null, basediv, started_instr.game_size, started_instr.player_order)
+    game_page.init_html_ui(started_instr.game_size,started_instr.player_order)
     var creds = signup_login.get_credentials()
     signals.myPlayer.setState(creds.username)
-    switch_to_multi_player()
-    var default_layout = document.getElementById("default_layout_src").innerHTML
-    signals.layoutChanged.setState(JSON.parse(default_layout))
+    game_page.switch_to_game_page()
 }
 function validate_websocket_instruction(game_state,instr,player){
     var error = validate.validate_instruction(game_state,instr,player)
@@ -63,15 +32,11 @@ function validate_websocket_instruction(game_state,instr,player){
     }
     return true
 }
-function process_instruction(game_state,instruction,player){
+function process_instruction_backend(game_state,instruction,player){
     //validate instruction
     var error = validate.validate_instruction(game_state,instruction,player)
     if(error){
-        console.log("ERROR "+error.name+": \n"+error.message)
-        if(error.name !== "Error"){
-            console.log(error)
-        }
-        return
+        console.log("SERVER SENT PAGE MESSAGE!!!"+error.name+": \n"+error.message)
     }
     if(instruction.type === "GAME_STARTED"){
         init_game_interface(game_state,instruction)
@@ -86,61 +51,29 @@ function process_instruction(game_state,instruction,player){
     })
 }
 function send_instruction(instr){
+    console.log("sent instr:")
+    console.log(JSON.stringify(instr,null,2))
     server_socket.send(JSON.stringify(instr))
 }
 function init_signals(game_state){
+    signals.clear_all_signals()
+    game_page.init_signals(game_state)
     signals.ended_turn.listen(() => {
         send_instruction({type:"END_TURN"})
     })
-    signals.clickOccurred.listen((coord) => {
-        my_web_worker.postMessage({
-            type: "CLICK_OCCURED",
-            coord: coord,
-            game_state: game_state,
-            my_player: signals.myPlayer.getState(),
-        })
-    })
-    signals.selectedData.listen(function(data){
-        console.log(data)
-        my_web_worker.postMessage({
-            type: "REPLACE_FUNCTION",
-            json_data: data.json_data,
-        })
-    })
-    signals.libData.listen(function(js_code){
-        my_web_worker.postMessage({
-            type: "REPLACE_LIBRARY",
-            js_str: js_code,
-        })
-        //signals.selectedData.setState(signals.selectedData.getState())
-    })
-    signals.gameStateChange.listen(function(instr){
-        if(instr.type === "SET_ACTIVE_PLAYER"){
-            signals.activePlayer.setState(instr.player)
-        }
-    })
 }
 function init_web_worker(game_state){
-    var lib_data = document.getElementById("default_lib_src").innerHTML
-    signals.libData.setState(lib_data)
-
-    my_web_worker.onmessage = function(message){
-        var message = message.data
-
-        if(message.type === "DRAW_RECTS"){
-            signals.highlightCommand.fire(message)
-        }
-        else{
-            if(validate_websocket_instruction(game_state,message,signals.myPlayer.getState())){
-                send_instruction(message)
-            }
-        }
-    }
+    game_page.init_web_worker()
+    game_page.set_worker_callback(function(message){
+        game_page.process_message_frontend(game_state,message,signals.myPlayer.getState(),function(g,message,p){
+            send_instruction(message)
+        })
+    })
 }
 function on_server_message(data,game_state){
     switch(data.type){
         case "ERROR_MSG": console.log("server error:");console.log(data); break;
-        case "VALIDATED_INSTR": process_instruction(game_state,data.instr,data.player); break;
+        case "VALIDATED_INSTR": process_instruction_backend(game_state,data.instr,data.player); break;
         case "GAME_DISCONNECTED": break;
     }
 }
@@ -169,14 +102,7 @@ function setup_multiplayer_connection(server_url){
             on_server_message(data,game_state)
         }
     }
-    init_signals(game_state)
-}
-function init_multi_player(){
-
 }
 module.exports = {
-    switch_to_multi_player: switch_to_multi_player,
     setup_multiplayer_connection: setup_multiplayer_connection,
-    init_multi_player: init_multi_player,
-    switch_away_from_multi_player: switch_away_from_multi_player,
 }
