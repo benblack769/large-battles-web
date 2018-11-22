@@ -37,8 +37,7 @@ def add_test_data():
 
     db.session.commit()
 
-
-    print([record.win_record for record in u2r1.full_record.game_user_records])
+    #print([record.win_record for record in u2r1.full_record.game_user_records])
 
 
 if __name__ == "__main__":

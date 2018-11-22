@@ -3,6 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-import minhttp.config
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///user-info.sqlite"
 
 db = SQLAlchemy(app)
