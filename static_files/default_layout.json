@@ -1,12 +1,5 @@
-
-[[
-    {
-        "data": {
-            "type": "buy_unit",
-            "unit_type": "soldier"
-        },
-        "icon": "Soldier.png"
-    },
+[
+[
     {
         "data": {
             "type": "build",
@@ -27,18 +20,15 @@
             "unit_type": "armory"
         },
         "icon": "armory.png"
-    },
+    }
+],
+[
     {
         "data": {
-            "type": "move"
+            "type": "buy_unit",
+            "unit_type": "soldier"
         },
-        "icon": ""
-    },
-    {
-        "data": {
-            "type": "attack"
-        },
-        "icon": ""
+        "icon": "Soldier.png"
     },
     {
         "data": {
@@ -51,44 +41,15 @@
 [
     {
         "data": {
-            "type": "buy_unit",
-            "unit_type": "soldier"
-        },
-        "icon": "farm.png"
-    },
-    {
-        "data": {
-            "type": "build",
-            "unit_type": "farm"
-        },
-        "icon": "farm.png"
-    },
-    {
-        "data": {
-            "type": "build",
-            "unit_type": "barracks"
-        },
-        "icon": "farm.png"
-    },
-    {
-        "data": {
-            "type": "build",
-            "unit_type": "armory"
-        },
-        "icon": "armory.png"
-    },
-    {
-        "data": {
             "type": "move"
         },
-        "icon": ""
+        "text": "Move"
     },
     {
         "data": {
-            "type": "buy_equipment",
-            "equip_type": "armor"
+            "type": "attack"
         },
-        "icon": "armor.png"
+        "text": "Attack"
     }
 ]
 ]

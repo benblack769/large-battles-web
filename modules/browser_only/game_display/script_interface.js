@@ -175,6 +175,7 @@ class ScriptButtonPannel extends BaseComponent {
     makeButtonsFromData(init_data){
         var str_data = init_data.map(function(data){return{
             icon: data.icon,
+            text: data.text,
             json_data: pretty_print(data.data),
         }})
         str_data.forEach((data) => {
@@ -228,6 +229,10 @@ class ScriptButton extends BaseComponent {
             if(background_src && background_src.src){
                 el.style["background-image"] = 'url('+background_src.src+")"
             }
+        }
+        var text = this.state.data.text
+        if(text){
+            el.innerText = text
         }
         el.onclick = this.selectScript.bind(this)
         return el;

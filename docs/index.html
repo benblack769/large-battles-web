@@ -177,6 +177,8 @@ main page style
 .game_script_box {
     width: 80px;
     height: 80px;
+    line-height: 80px;/*crnters text vertically*/
+    text-align: center;
     background-color: white;
     border-style: solid;
     border-width: 1px;
@@ -309,15 +311,8 @@ main page style
 
     </style>
 
-    <script id="default_layout_src" type="application/json">
-[[
-    {
-        "data": {
-            "type": "buy_unit",
-            "unit_type": "soldier"
-        },
-        "icon": "Soldier.png"
-    },
+    <script id="default_layout_src" type="application/json">[
+[
     {
         "data": {
             "type": "build",
@@ -338,18 +333,15 @@ main page style
             "unit_type": "armory"
         },
         "icon": "armory.png"
-    },
+    }
+],
+[
     {
         "data": {
-            "type": "move"
+            "type": "buy_unit",
+            "unit_type": "soldier"
         },
-        "icon": ""
-    },
-    {
-        "data": {
-            "type": "attack"
-        },
-        "icon": ""
+        "icon": "Soldier.png"
     },
     {
         "data": {
@@ -362,44 +354,15 @@ main page style
 [
     {
         "data": {
-            "type": "buy_unit",
-            "unit_type": "soldier"
-        },
-        "icon": "farm.png"
-    },
-    {
-        "data": {
-            "type": "build",
-            "unit_type": "farm"
-        },
-        "icon": "farm.png"
-    },
-    {
-        "data": {
-            "type": "build",
-            "unit_type": "barracks"
-        },
-        "icon": "farm.png"
-    },
-    {
-        "data": {
-            "type": "build",
-            "unit_type": "armory"
-        },
-        "icon": "armory.png"
-    },
-    {
-        "data": {
             "type": "move"
         },
-        "icon": ""
+        "text": "Move"
     },
     {
         "data": {
-            "type": "buy_equipment",
-            "equip_type": "armor"
+            "type": "attack"
         },
-        "icon": "armor.png"
+        "text": "Attack"
     }
 ]
 ]
@@ -1731,6 +1694,7 @@ class ScriptButtonPannel extends BaseComponent {
     makeButtonsFromData(init_data){
         var str_data = init_data.map(function(data){return{
             icon: data.icon,
+            text: data.text,
             json_data: pretty_print(data.data),
         }})
         str_data.forEach((data) => {
@@ -1784,6 +1748,10 @@ class ScriptButton extends BaseComponent {
             if(background_src && background_src.src){
                 el.style["background-image"] = 'url('+background_src.src+")"
             }
+        }
+        var text = this.state.data.text
+        if(text){
+            el.innerText = text
         }
         el.onclick = this.selectScript.bind(this)
         return el;
