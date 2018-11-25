@@ -7,307 +7,7 @@
 
     <style>
     .dynatable-active-page:hover,th a,th a:hover{color:#fff}th{background:#006a72}th a:hover{text-decoration:underline}.dynatable-search{float:right;margin-bottom:10px}.dynatable-pagination-links{float:right}.dynatable-record-count{display:block;padding:5px 0}.dynatable-pagination-links li,.dynatable-pagination-links span{display:inline-block}.dynatable-page-break,.dynatable-page-link{display:block;padding:5px 7px}.dynatable-page-link{cursor:pointer}.dynatable-active-page,.dynatable-disabled-page{cursor:text}.dynatable-active-page:hover,.dynatable-disabled-page:hover{text-decoration:none}.dynatable-active-page{background:#006a72;border-radius:5px;color:#fff}.dynatable-disabled-page,.dynatable-disabled-page:hover{background:0 0;color:#999}
-    table {
-    border-collapse: collapse;
-}
-
-table, th, td {
-    border: 1px solid black;
-}
-
-/*override bad dynatable background style for th*/
-th {
-  background: #ffffff;
-}
-.dynatable-head {
-  background: #006a72;
-}
-/*Disable smooth scaling*/
-canvas{
-  image-rendering: -moz-crisp-edges;
-  image-rendering: -webkit-crisp-edges;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}
-img {
-    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
-    image-rendering: -moz-crisp-edges;          /* Firefox                        */
-    image-rendering: -o-crisp-edges;            /* Opera                          */
-    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
-    image-rendering: pixelated; /* Chrome */
-    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
-    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
-}
-/*fix live table widths so that updates don't jitter widths*/
-.live_table_col1 {
-    width: 150px;
-}
-.live_table_col2 {
-    width: 110px;
-}
-
-/*make gray cancel overlays for game requests*/
-.gray_page_overlay {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 50;
-}
-.central_cancel_box {
-    position: relative;
-    top: 50%;
-    -webkit-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-    /* size of box on larger screens*/
-    height: 200px;
-    width: 300px;
-    margin: auto;
-    /*differentiates popup background slightly from normal background*/
-    background: rgba(0,0,0,0.5);
-    /* border around box on large screens
-     * pattern:  _ _ blur spread color*/
-    box-shadow: 0 0 10px 10px rgba(0,0,0,0.2);
-    overflow: hidden;
-
-    z-index: 500;
-}
-.horizontal-center{
-    width: 100%;
-    margin: auto;
-}
-.central_cancel_message{
-    height: 50%;
-    font-size: 1.3em;
-    color: white;
-    padding: 0.9em;
-}
-.central_cancel_button_holder{
-    width: 100%;
-    text-align: center;
-}
-.central_cancel_button{
-    font-size: 1.3em;
-    background-color: #000000;
-    margin: auto;
-    border-style: solid;
-    border-color: rgb(100,100,100);
-    padding: 0.2em;
-    color: white;
-}
-.central_cancel_button:active{
-    background-color: #222222;
-}
-
-
-/*
-navigation bar style
-*/
-.navbar {
-    overflow: hidden;
-    background-color: #333;
-    position: fixed; /* Set the navbar to fixed position */
-    top: 0; /* Position the navbar at the top of the page */
-    height: 45px;
-    left: 0;
-    right: 0;
-    z-index: 10000;
-}
-
-/* Links inside the navbar */
-.menu_entry {
-    float: left;
-    display: block;
-    color: #f2f2f2;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-.username_display {
-    float: left;
-    display: block;
-    color: #f2f2f2;
-    text-align: center;
-    font-family: Arial;
-    padding: 14px 6px;
-    text-decoration: none;
-}
-#profile{
-    float: right;
-}
-.menu_entry:hover {
-    background: #ddd;
-    color: black;
-}
-/*
-main page style
-*/
-#main_page_view {
-    margin-top: 45px; /* Add a top margin to avoid content overlay */
-}
-
-/* Main game css */
-
-.game_overlay {
-    position: fixed;
-    top: 45px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 20;
-    background-color: rgba(100,100,100,0.5);
-}
-.script_container {
-    position: fixed;
-    top: 45px;
-    left: 0;
-    z-index: 10;
-}
-.lib_pannel_container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    width: 100px;
-    text-align: center;
-}
-.game_script_box {
-    width: 80px;
-    height: 80px;
-    line-height: 80px;/*crnters text vertically*/
-    text-align: center;
-    background-color: white;
-    border-style: solid;
-    border-width: 1px;
-    pointer-events: auto;
-    /*background image set in javascript*/
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #bbbbbb;
-}
-.game_script_box_selected{
-    background-color: #94FDF9;
-}
-.script_box_button {
-    width: 40px;
-    height: 15px;
-    font-size: 10px;
-}
-.script_box_button:active {
-    color: red;
-    text-decoration: underline;
-}
-.script_box_button:hover {
-    text-decoration: underline;
-}
-
-.central_text_edit_box {
-    position: relative;
-    top: 50%;
-    -webkit-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-    /* size of box on larger screens*/
-    height: 400px;
-    width: 600px;
-    margin: auto;
-    /*differentiates popup background slightly from normal background*/
-    background: rgba(0,0,0,0.5);
-    /* border around box on large screens
-     * pattern:  _ _ blur spread color*/
-    box-shadow: 0 0 10px 10px rgba(0,0,0,0.2);
-    overflow: hidden;
-
-    z-index: 500;
-}
-.central_text_edit {
-    height: 80%;
-    font-size: 1.3em;
-    color: white;
-    padding: 0.9em;
-
-}
-.central_text_edit_button_holder {
-    width: 100%;
-    text-align: center;
-}
-.text_edit_button {
-    font-size: 1.3em;
-    background-color: #000000;
-    margin: auto;
-    border-style: solid;
-    border-color: rgb(100,100,100);
-    padding: 0.2em;
-    color: white;
-}
-.text_edit_button:active{
-    background-color: #222222;
-}
-.text_edit_textarea_style{
-    white-space: nowrap;
-    wrap="off";
-    resize: none;
-}
-#text_edit_textarea {
-    width: 500px;
-    height: 250px;
-}
-#text_edit_error_textarea{
-    width: 500px;
-    height: 50px;
-}
-.canvas_holder {
-    position:absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-.lib_edit_button {
-    background: red;
-}
-.lib_edit_button:hover {
-    background: blue;
-}
-.player_info_bar {
-    position: fixed;
-    top: 45px;
-    right: 0;
-    z-index: 2;
-    text-align: center;
-}
-.player_status_dot {
-  height: 25px;
-  width: 25px;
-  background-color: #bbb;
-  border-radius: 50%;
-  display: inline-block;
-}
-.player_info_table{
-    background-color: white;
-}
-.player_info_button {
-    width: 100%;
-    background-color: red;
-}
-.player_info_button:hover {
-    background-color: blue;
-}
-.pannel_button {
-    width: 30px;
-    height: 30px;
-    display: inline-block;
-    background-color: white;
-}
-.pannel_selector_container {
-    position: fixed;
-    top: 45px;
-    left: 0;
-    z-index: 11;
-}
+    table{border-collapse:collapse}table,th,td{border:1px solid black}th{background:#fff}.dynatable-head{background:#006a72}canvas{image-rendering:-moz-crisp-edges;image-rendering:-webkit-crisp-edges;image-rendering:pixelated;image-rendering:crisp-edges}img{image-rendering:optimizeSpeed;image-rendering:-moz-crisp-edges;image-rendering:-o-crisp-edges;image-rendering:-webkit-optimize-contrast;image-rendering:pixelated;image-rendering:optimize-contrast;-ms-interpolation-mode:nearest-neighbor}.live_table_col1{width:150px}.live_table_col2{width:110px}.gray_page_overlay{position:fixed;top:0;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);z-index:50}.central_cancel_box{position:relative;top:50%;-webkit-transform:translateY(-50%);-ms-transform:translateY(-50%);transform:translateY(-50%);height:200px;width:300px;margin:auto;background:rgba(0,0,0,0.5);box-shadow:0 0 10px 10px rgba(0,0,0,0.2);overflow:hidden;z-index:500}.horizontal-center{width:100%;margin:auto}.central_cancel_message{height:50%;font-size:1.3em;color:white;padding:.9em}.central_cancel_button_holder{width:100%;text-align:center}.central_cancel_button{font-size:1.3em;background-color:#000;margin:auto;border-style:solid;border-color:#646464;padding:.2em;color:white}.central_cancel_button:active{background-color:#222}.navbar{overflow:hidden;background-color:#333;position:fixed;top:0;height:45px;left:0;right:0;z-index:10000}.menu_entry{float:left;display:block;color:#f2f2f2;text-align:center;padding:14px 16px;text-decoration:none}.username_display{float:left;display:block;color:#f2f2f2;text-align:center;font-family:Arial;padding:14px 6px;text-decoration:none}#profile{float:right}.menu_entry:hover{background:#ddd;color:black}#main_page_view{margin-top:45px}.game_overlay{position:fixed;top:45px;bottom:0;left:0;right:0;z-index:20;background-color:rgba(100,100,100,0.5)}.script_container{position:fixed;top:45px;left:0;z-index:10}.lib_pannel_container{position:fixed;bottom:0;left:0;z-index:100;width:100px;text-align:center}.game_script_box{width:80px;height:80px;line-height:80px;text-align:center;background-color:white;border-style:solid;border-width:1px;pointer-events:auto;background-repeat:no-repeat;background-position:center;background-color:#bbb}.game_script_box_selected{background-color:#94fdf9}.script_box_button{width:40px;height:15px;font-size:10px}.script_box_button:active{color:red;text-decoration:underline}.script_box_button:hover{text-decoration:underline}.central_text_edit_box{position:relative;top:50%;-webkit-transform:translateY(-50%);-ms-transform:translateY(-50%);transform:translateY(-50%);height:400px;width:600px;margin:auto;background:rgba(0,0,0,0.5);box-shadow:0 0 10px 10px rgba(0,0,0,0.2);overflow:hidden;z-index:500}.central_text_edit{height:80%;font-size:1.3em;color:white;padding:.9em}.central_text_edit_button_holder{width:100%;text-align:center}.text_edit_button{font-size:1.3em;background-color:#000;margin:auto;border-style:solid;border-color:#646464;padding:.2em;color:white}.text_edit_button:active{background-color:#222}.text_edit_textarea_style{white-space:nowrap;wrap="off";resize:none}#text_edit_textarea{width:500px;height:250px}#text_edit_error_textarea{width:500px;height:50px}.canvas_holder{position:absolute;top:0;left:0;right:0;bottom:0}.lib_edit_button{background:red}.lib_edit_button:hover{background:blue}.player_info_bar{position:fixed;top:45px;right:0;z-index:2;text-align:center}.player_status_dot{height:25px;width:25px;background-color:#bbb;border-radius:50%;display:inline-block}.player_info_table{background-color:white}.player_info_button{width:100%;background-color:red}.player_info_button:hover{background-color:blue}.pannel_button{width:30px;height:30px;display:inline-block;background-color:white}.pannel_selector_container{position:fixed;top:45px;left:0;z-index:11}
 
     </style>
 
@@ -363,6 +63,12 @@ main page style
             "type": "attack"
         },
         "text": "Attack"
+    },
+    {
+        "data": {
+            "type": "move_multi"
+        },
+        "text": "MoveMM"
     }
 ]
 ]
@@ -390,7 +96,6 @@ function draw_coord(coord,color){
     draw_list([to_item(coord,color)])
 }
 function draw_list(cclist){
-    console.log(cclist)
     postMessage({
         type: "DRAW_RECTS",
         draw_list: cclist,
@@ -404,7 +109,6 @@ class TwoClickHandler {
         if(!this.first_click){
             var move_range = this.getRange(game_state,click)
             var possible_moves = this.get_all_valid_around(game_state,click,move_range)
-            //console.log(possible_moves)
             draw_list(concat(
                 [to_item(click,"rgba(255,0,0,0.4)")],
                 coord_list_to_draws(possible_moves,"rgba(128,128,128,0.4)")
@@ -516,6 +220,86 @@ class AttackHandler extends TwoClickHandler {
         return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_attack(game_state,start,coord))
     }
 }
+function merge_arrays(array_list){
+    return [].concat.apply([], array_list);
+}
+function make_new_path(game_state,click1,click2){
+    var move_range = self.lib.get_move_range(game_state,click1)
+    if(!move_range){
+        return null
+    }
+    var move_path = lib.get_shortest_path(game_state.map,click1,click2)
+    if(move_path === null){
+        return null
+    }
+    var mmovepath = []
+    var i = 0;
+    for(; i < move_path.length; i += move_range){
+        mmovepath.push(move_path[i])
+    }
+    if(i !== move_path.length-1){
+        mmovepath.push(move_path[move_path.length-1])
+    }
+    return mmovepath
+}
+function deep_equals(o1,o2){
+    return JSON.stringify(o1) === JSON.stringify(o2)
+}
+function at(map,coord){
+    return map[coord.y][coord.x]
+}
+class MultiMoveHandler{
+    constructor(){
+        this.paths = []
+        this.first_click = null
+    }
+    updateData(new_data){
+        this.data = new_data
+    }
+    handleClick(click,game_state){
+        if(this.first_click){
+            var new_path = make_new_path(game_state,this.first_click,click)
+            if(new_path){
+                this.paths.push(new_path)
+            }
+            this.first_click = null
+            draw_list(this.current_path_highlights())
+        }
+        else{
+            if(at(game_state.map,click).category === "unit"){
+                this.first_click = click
+                this.deleteSource(click)
+                draw_list(concat(
+                    [to_item(click,"rgba(255,0,0,0.4)")],
+                    this.current_path_highlights()
+                ))
+            }
+        }
+    }
+    switched(){
+        this.first_click = null
+        draw_list(this.current_path_highlights())
+    }
+    deleteSource(coord){
+        for(var i = 0; i < this.paths.length; i++){
+            if(deep_equals(this.paths[i][0],coord)){
+                this.paths.splice(i,1)
+                return
+            }
+        }
+    }
+    current_path_highlights(){
+        return (merge_arrays(this.paths.map(function(path){
+            var source = path[0]
+            var dest = path[path.length-1]
+            return merge_arrays([
+                [to_item(source,"rgba(255,0,0,0.4)")],
+                [to_item(dest,"rgba(0,0,255,0.4)")],
+                path.slice(1,-1).map((coord) => to_item(coord,"rgba(128,128,128,0.4)")),
+            ])
+        })))
+    }
+}
 
 
 function make_building(clicks,type){
@@ -549,7 +333,7 @@ function exec_move(clicks){
         end_coord: clicks[1],
     })
 }
-var myhandler = new MoveHandler()
+var move_handler = new MultiMoveHandler()
 function make_handler(data){
     switch(data.type){
         case "buy_unit": return new BuyHandler(data.unit_type);
@@ -557,6 +341,7 @@ function make_handler(data){
         case "buy_equipment": return new AttachHandler(data.equip_type);
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
+        case "move_multi": move_handler.switched(); return move_handler;
         default: console.log("bad data type"); break;
     }
 }
@@ -607,6 +392,46 @@ function coords_around(c){
             y: y-1,
         },
     ]
+}
+function get_path(parents,target){
+    var cur_coord = target
+    var path = [target]
+    while(parents.get(cur_coord)){
+        path.push(parents.get(cur_coord))
+        cur_coord = parents.get(cur_coord)
+    }
+    path.reverse()
+    return path.map(JSON.parse)
+}
+function get_shortest_path(map,start,target){
+    //move_tos are an array of coords which you can move to even if they are blocked on the map
+    var hashable = JSON.stringify
+    var parents = new Map()
+    var htarget = hashable(target)
+    parents.set(hashable(start),null)
+    var cur_list = [start]
+    var next_list = []
+    while(cur_list.length){
+        for(var i = 0; i < cur_list.length; i++){
+            var next_coords = coords_around(cur_list[i])
+            for(var j = 0; j < next_coords.length; j++){
+                var nc = next_coords[j]
+                var hnc = hashable(nc)
+                if(!parents.has(hnc)){
+                    if(map[nc.y] && map[nc.y][nc.x] && map[nc.y][nc.x].category === "empty"){
+                        next_list.push(nc)
+                        parents.set(hnc,hashable(cur_list[i]))
+                        if(hnc === htarget){
+                            return get_path(parents,htarget)
+                        }
+                    }
+                }
+            }
+        }
+        cur_list = next_list
+        next_list = []
+    }
+    return null
 }
 function get_possible_set(map,start,range,move_tos){
     //move_tos are an array of coords which you can move to even if they are blocked on the map
@@ -695,6 +520,7 @@ module.exports = {
     get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
     is_possible_move: is_possible_move,
+    get_shortest_path: get_shortest_path,
     is_possible_attack: is_possible_attack,
 }
 
@@ -1105,6 +931,8 @@ function coords_around(game_state,center,range){
 
 self.lib = {
     get_possible_moves: pathing.get_possible_moves,
+    is_possible_move: pathing.is_possible_move,
+    get_shortest_path: pathing.get_shortest_path,
     get_move_range: get_stat_fn("move_range"),
     get_attack_range: get_stat_fn("attack_range"),
     is_empty: is_empty,
@@ -1657,7 +1485,8 @@ class PannelSelector extends BaseComponent {
                 console.log(layout_data[i])
                 pannel_buttons.push(new PannelButton(this,this.selector_div,i,this.pannel_selector))
             }
-            this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,signals.selectedData))
+            var base_signal = signals.selectedData
+            this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal))
             this.pannel_selector.listen((pannel_idx)=>{
                 $(".pannel_holder").hide()
                 var mypannel = this.pannels[pannel_idx]
@@ -3118,6 +2947,46 @@ function coords_around(c){
         },
     ]
 }
+function get_path(parents,target){
+    var cur_coord = target
+    var path = [target]
+    while(parents.get(cur_coord)){
+        path.push(parents.get(cur_coord))
+        cur_coord = parents.get(cur_coord)
+    }
+    path.reverse()
+    return path.map(JSON.parse)
+}
+function get_shortest_path(map,start,target){
+    //move_tos are an array of coords which you can move to even if they are blocked on the map
+    var hashable = JSON.stringify
+    var parents = new Map()
+    var htarget = hashable(target)
+    parents.set(hashable(start),null)
+    var cur_list = [start]
+    var next_list = []
+    while(cur_list.length){
+        for(var i = 0; i < cur_list.length; i++){
+            var next_coords = coords_around(cur_list[i])
+            for(var j = 0; j < next_coords.length; j++){
+                var nc = next_coords[j]
+                var hnc = hashable(nc)
+                if(!parents.has(hnc)){
+                    if(map[nc.y] && map[nc.y][nc.x] && map[nc.y][nc.x].category === "empty"){
+                        next_list.push(nc)
+                        parents.set(hnc,hashable(cur_list[i]))
+                        if(hnc === htarget){
+                            return get_path(parents,htarget)
+                        }
+                    }
+                }
+            }
+        }
+        cur_list = next_list
+        next_list = []
+    }
+    return null
+}
 function get_possible_set(map,start,range,move_tos){
     //move_tos are an array of coords which you can move to even if they are blocked on the map
     var hashable = JSON.stringify
@@ -3205,6 +3074,7 @@ module.exports = {
     get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
     is_possible_move: is_possible_move,
+    get_shortest_path: get_shortest_path,
     is_possible_attack: is_possible_attack,
 }
 

@@ -174,7 +174,7 @@ main page style
     border-style: solid;
     border-width: 1px;
     pointer-events: auto;
-    /*background image set in javascript*/
+    /*background image set in javascript, properties set here*/
     background-repeat: no-repeat;
     background-position: center;
     background-color: #bbbbbb;

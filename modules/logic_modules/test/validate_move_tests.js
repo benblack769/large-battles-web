@@ -2,6 +2,7 @@ var test = require('tape')
 var a_validate = require('../validate_instruction.js').validate_instruction
 var init_game = require('../init_game.js')
 var create_utils = require('../create_utils.js')
+var pathing = require('../pathing.js')
 var validate = function(g,i,p){
     var res = a_validate(g,i,p)
     console.log(res ? res.message: "null")
@@ -114,6 +115,17 @@ test('validate_move_player', function (t) {
     t.false(validate(game,instr1,"p1"))
     game.players.active_player = "p2"
     t.true(validate(game,instr1,"p2"))
+    t.end()
+})
+test('shortest_path_test', function (t) {
+    var game = make_game_state()
+    var path = pathing.get_shortest_path(game.map,{x:0,y:4},{x:2,y:1})
+    t.true(path.length === 6)
+    var path = pathing.get_shortest_path(game.map,{x:4,y:5},{x:1,y:4})
+    t.true(path === null)
+    game.map[2][2] = ee()
+    var path = pathing.get_shortest_path(game.map,{x:4,y:5},{x:1,y:4})
+    t.true(path === null)
     t.end()
 })
 test('validate_move_path', function (t) {

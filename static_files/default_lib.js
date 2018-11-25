@@ -21,7 +21,6 @@ function draw_coord(coord,color){
     draw_list([to_item(coord,color)])
 }
 function draw_list(cclist){
-    console.log(cclist)
     postMessage({
         type: "DRAW_RECTS",
         draw_list: cclist,
@@ -35,7 +34,6 @@ class TwoClickHandler {
         if(!this.first_click){
             var move_range = this.getRange(game_state,click)
             var possible_moves = this.get_all_valid_around(game_state,click,move_range)
-            //console.log(possible_moves)
             draw_list(concat(
                 [to_item(click,"rgba(255,0,0,0.4)")],
                 coord_list_to_draws(possible_moves,"rgba(128,128,128,0.4)")
@@ -147,6 +145,86 @@ class AttackHandler extends TwoClickHandler {
         return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_attack(game_state,start,coord))
     }
 }
+function merge_arrays(array_list){
+    return [].concat.apply([], array_list);
+}
+function make_new_path(game_state,click1,click2){
+    var move_range = self.lib.get_move_range(game_state,click1)
+    if(!move_range){
+        return null
+    }
+    var move_path = lib.get_shortest_path(game_state.map,click1,click2)
+    if(move_path === null){
+        return null
+    }
+    var mmovepath = []
+    var i = 0;
+    for(; i < move_path.length; i += move_range){
+        mmovepath.push(move_path[i])
+    }
+    if(i !== move_path.length-1){
+        mmovepath.push(move_path[move_path.length-1])
+    }
+    return mmovepath
+}
+function deep_equals(o1,o2){
+    return JSON.stringify(o1) === JSON.stringify(o2)
+}
+function at(map,coord){
+    return map[coord.y][coord.x]
+}
+class MultiMoveHandler{
+    constructor(){
+        this.paths = []
+        this.first_click = null
+    }
+    updateData(new_data){
+        this.data = new_data
+    }
+    handleClick(click,game_state){
+        if(this.first_click){
+            var new_path = make_new_path(game_state,this.first_click,click)
+            if(new_path){
+                this.paths.push(new_path)
+            }
+            this.first_click = null
+            draw_list(this.current_path_highlights())
+        }
+        else{
+            if(at(game_state.map,click).category === "unit"){
+                this.first_click = click
+                this.deleteSource(click)
+                draw_list(concat(
+                    [to_item(click,"rgba(255,0,0,0.4)")],
+                    this.current_path_highlights()
+                ))
+            }
+        }
+    }
+    switched(){
+        this.first_click = null
+        draw_list(this.current_path_highlights())
+    }
+    deleteSource(coord){
+        for(var i = 0; i < this.paths.length; i++){
+            if(deep_equals(this.paths[i][0],coord)){
+                this.paths.splice(i,1)
+                return
+            }
+        }
+    }
+    current_path_highlights(){
+        return (merge_arrays(this.paths.map(function(path){
+            var source = path[0]
+            var dest = path[path.length-1]
+            return merge_arrays([
+                [to_item(source,"rgba(255,0,0,0.4)")],
+                [to_item(dest,"rgba(0,0,255,0.4)")],
+                path.slice(1,-1).map((coord) => to_item(coord,"rgba(128,128,128,0.4)")),
+            ])
+        })))
+    }
+}
 
 
 function make_building(clicks,type){
@@ -180,7 +258,7 @@ function exec_move(clicks){
         end_coord: clicks[1],
     })
 }
-var myhandler = new MoveHandler()
+var move_handler = new MultiMoveHandler()
 function make_handler(data){
     switch(data.type){
         case "buy_unit": return new BuyHandler(data.unit_type);
@@ -188,6 +266,7 @@ function make_handler(data){
         case "buy_equipment": return new AttachHandler(data.equip_type);
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
+        case "move_multi": move_handler.switched(); return move_handler;
         default: console.log("bad data type"); break;
     }
 }

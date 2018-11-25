@@ -50,6 +50,12 @@
             "type": "attack"
         },
         "text": "Attack"
+    },
+    {
+        "data": {
+            "type": "move_multi"
+        },
+        "text": "MoveMM"
     }
 ]
 ]

@@ -138,7 +138,8 @@ class PannelSelector extends BaseComponent {
                 console.log(layout_data[i])
                 pannel_buttons.push(new PannelButton(this,this.selector_div,i,this.pannel_selector))
             }
-            this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,signals.selectedData))
+            var base_signal = signals.selectedData
+            this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal))
             this.pannel_selector.listen((pannel_idx)=>{
                 $(".pannel_holder").hide()
                 var mypannel = this.pannels[pannel_idx]

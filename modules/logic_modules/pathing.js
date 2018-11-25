@@ -36,6 +36,46 @@ function coords_around(c){
         },
     ]
 }
+function get_path(parents,target){
+    var cur_coord = target
+    var path = [target]
+    while(parents.get(cur_coord)){
+        path.push(parents.get(cur_coord))
+        cur_coord = parents.get(cur_coord)
+    }
+    path.reverse()
+    return path.map(JSON.parse)
+}
+function get_shortest_path(map,start,target){
+    //move_tos are an array of coords which you can move to even if they are blocked on the map
+    var hashable = JSON.stringify
+    var parents = new Map()
+    var htarget = hashable(target)
+    parents.set(hashable(start),null)
+    var cur_list = [start]
+    var next_list = []
+    while(cur_list.length){
+        for(var i = 0; i < cur_list.length; i++){
+            var next_coords = coords_around(cur_list[i])
+            for(var j = 0; j < next_coords.length; j++){
+                var nc = next_coords[j]
+                var hnc = hashable(nc)
+                if(!parents.has(hnc)){
+                    if(map[nc.y] && map[nc.y][nc.x] && map[nc.y][nc.x].category === "empty"){
+                        next_list.push(nc)
+                        parents.set(hnc,hashable(cur_list[i]))
+                        if(hnc === htarget){
+                            return get_path(parents,htarget)
+                        }
+                    }
+                }
+            }
+        }
+        cur_list = next_list
+        next_list = []
+    }
+    return null
+}
 function get_possible_set(map,start,range,move_tos){
     //move_tos are an array of coords which you can move to even if they are blocked on the map
     var hashable = JSON.stringify
@@ -123,5 +163,6 @@ module.exports = {
     get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
     is_possible_move: is_possible_move,
+    get_shortest_path: get_shortest_path,
     is_possible_attack: is_possible_attack,
 }
