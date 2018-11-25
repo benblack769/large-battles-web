@@ -143,6 +143,9 @@ class HighlightCanvas extends BaseComponent {
         command.draw_list.forEach((command)=>{
             display_board.fill_rect(this.context, command.coord, command.color)
         })
+        command.line_list.forEach((command)=>{
+            display_board.draw_line(this.context,command.coord1,command.coord2)
+        })
     }
 }
 class GameBoard extends BaseComponent {

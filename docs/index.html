@@ -86,19 +86,27 @@ function to_item(coord,color){
         color: color,
     }
 }
+function to_line(c1,c2){
+    return {
+        coord1: c1,
+        coord2: c2,
+    }
+}
 function clear_highlights(){
     postMessage({
         type: "DRAW_RECTS",
-        draw_list: []
+        draw_list: [],
+        line_list: []
     })
 }
 function draw_coord(coord,color){
     draw_list([to_item(coord,color)])
 }
-function draw_list(cclist){
+function draw_list(fill_list,line_list){
     postMessage({
         type: "DRAW_RECTS",
-        draw_list: cclist,
+        draw_list: fill_list,
+        line_list: (line_list ? line_list : []),
     })
 }
 class TwoClickHandler {
@@ -263,7 +271,7 @@ class MultiMoveHandler{
                 this.paths.push(new_path)
             }
             this.first_click = null
-            draw_list(this.current_path_highlights())
+            draw_list(this.current_path_highlights(),this.current_lines())
         }
         else{
             if(at(game_state.map,click).category === "unit"){
@@ -272,7 +280,7 @@ class MultiMoveHandler{
                 draw_list(concat(
                     [to_item(click,"rgba(255,0,0,0.4)")],
                     this.current_path_highlights()
-                ))
+                ),this.current_lines())
             }
         }
     }
@@ -288,8 +296,17 @@ class MultiMoveHandler{
             }
         }
     }
+    current_lines(){
+        return merge_arrays(this.paths.map(function(path){
+            var res = []
+            for(var i = 1; i < path.length; i++){
+                res.push(to_line(path[i-1],path[i]))
+            }
+            return res
+        }))
+    }
     current_path_highlights(){
-        return (merge_arrays(this.paths.map(function(path){
+        return merge_arrays(this.paths.map(function(path){
             var source = path[0]
             var dest = path[path.length-1]
             return merge_arrays([
@@ -297,7 +314,7 @@ class MultiMoveHandler{
                 [to_item(dest,"rgba(0,0,255,0.4)")],
                 path.slice(1,-1).map((coord) => to_item(coord,"rgba(128,128,128,0.4)")),
             ])
-        })))
+        }))
     }
 }
 
@@ -997,6 +1014,24 @@ function get_game_coords_from_pixels(xpix,ypix){
         y: Math.floor(ypix / 30.0),
     }
 }
+function p2(v){
+    return v+0.5
+}
+function draw_mini_circle(ctx,coord){
+    ctx.fillStyle="black";
+    ctx.beginPath();
+    ctx.arc(p2(coord.x)*sqr_size,p2(coord.y)*sqr_size,3,0,2*Math.PI);
+    ctx.fill();
+}
+function draw_line(ctx,c1,c2){
+    ctx.strokeStyle="black";
+    ctx.beginPath();
+    ctx.moveTo(p2(c1.x)*sqr_size,p2(c1.y)*sqr_size);
+    ctx.lineTo(p2(c2.x)*sqr_size,p2(c2.y)*sqr_size);
+    ctx.stroke();
+    draw_mini_circle(ctx,c1)
+    draw_mini_circle(ctx,c2)
+}
 function clear_rect(ctx,coord){
     ctx.clearRect(coord.x*sqr_size-1,
                 coord.y*sqr_size-1,
@@ -1046,6 +1081,7 @@ module.exports = {
     copy_rect: copy_rect,
     stroke_rect: stroke_rect,
     fill_rect: fill_rect,
+    draw_line: draw_line,
 }
 
 },{"../logic_modules/types.js":23}],2:[function(require,module,exports){
@@ -1240,6 +1276,9 @@ class HighlightCanvas extends BaseComponent {
         this.clear()
         command.draw_list.forEach((command)=>{
             display_board.fill_rect(this.context, command.coord, command.color)
+        })
+        command.line_list.forEach((command)=>{
+            display_board.draw_line(this.context,command.coord1,command.coord2)
         })
     }
 }

@@ -11,19 +11,27 @@ function to_item(coord,color){
         color: color,
     }
 }
+function to_line(c1,c2){
+    return {
+        coord1: c1,
+        coord2: c2,
+    }
+}
 function clear_highlights(){
     postMessage({
         type: "DRAW_RECTS",
-        draw_list: []
+        draw_list: [],
+        line_list: []
     })
 }
 function draw_coord(coord,color){
     draw_list([to_item(coord,color)])
 }
-function draw_list(cclist){
+function draw_list(fill_list,line_list){
     postMessage({
         type: "DRAW_RECTS",
-        draw_list: cclist,
+        draw_list: fill_list,
+        line_list: (line_list ? line_list : []),
     })
 }
 class TwoClickHandler {
@@ -188,7 +196,7 @@ class MultiMoveHandler{
                 this.paths.push(new_path)
             }
             this.first_click = null
-            draw_list(this.current_path_highlights())
+            draw_list(this.current_path_highlights(),this.current_lines())
         }
         else{
             if(at(game_state.map,click).category === "unit"){
@@ -197,7 +205,7 @@ class MultiMoveHandler{
                 draw_list(concat(
                     [to_item(click,"rgba(255,0,0,0.4)")],
                     this.current_path_highlights()
-                ))
+                ),this.current_lines())
             }
         }
     }
@@ -213,8 +221,17 @@ class MultiMoveHandler{
             }
         }
     }
+    current_lines(){
+        return merge_arrays(this.paths.map(function(path){
+            var res = []
+            for(var i = 1; i < path.length; i++){
+                res.push(to_line(path[i-1],path[i]))
+            }
+            return res
+        }))
+    }
     current_path_highlights(){
-        return (merge_arrays(this.paths.map(function(path){
+        return merge_arrays(this.paths.map(function(path){
             var source = path[0]
             var dest = path[path.length-1]
             return merge_arrays([
@@ -222,7 +239,7 @@ class MultiMoveHandler{
                 [to_item(dest,"rgba(0,0,255,0.4)")],
                 path.slice(1,-1).map((coord) => to_item(coord,"rgba(128,128,128,0.4)")),
             ])
-        })))
+        }))
     }
 }
 

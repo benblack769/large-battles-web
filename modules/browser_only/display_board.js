@@ -20,6 +20,24 @@ function get_game_coords_from_pixels(xpix,ypix){
         y: Math.floor(ypix / 30.0),
     }
 }
+function p2(v){
+    return v+0.5
+}
+function draw_mini_circle(ctx,coord){
+    ctx.fillStyle="black";
+    ctx.beginPath();
+    ctx.arc(p2(coord.x)*sqr_size,p2(coord.y)*sqr_size,3,0,2*Math.PI);
+    ctx.fill();
+}
+function draw_line(ctx,c1,c2){
+    ctx.strokeStyle="black";
+    ctx.beginPath();
+    ctx.moveTo(p2(c1.x)*sqr_size,p2(c1.y)*sqr_size);
+    ctx.lineTo(p2(c2.x)*sqr_size,p2(c2.y)*sqr_size);
+    ctx.stroke();
+    draw_mini_circle(ctx,c1)
+    draw_mini_circle(ctx,c2)
+}
 function clear_rect(ctx,coord){
     ctx.clearRect(coord.x*sqr_size-1,
                 coord.y*sqr_size-1,
@@ -69,4 +87,5 @@ module.exports = {
     copy_rect: copy_rect,
     stroke_rect: stroke_rect,
     fill_rect: fill_rect,
+    draw_line: draw_line,
 }
