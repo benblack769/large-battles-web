@@ -23,6 +23,7 @@ function init_script_signals(){
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
+        init_script_signals()
         this.interface_div = createDiv({
             className: "lib_pannel_container",
         })
@@ -49,6 +50,16 @@ class LibPannel extends BaseComponent {
             onclick: () => {
                 make_change_script_popup(pretty_print(signals.layoutChanged.getState()),JSON.parse,(js_code) => {
                     signals.layoutChanged.setState(JSON.parse(js_code))
+                })
+            }
+        })
+        this.edit_lib_button = createDiv({
+            innerText: "Edit Data",
+            className: "lib_edit_button",
+            parent: this.interface_div,
+            onclick: () => {
+                make_change_script_popup(pretty_print(signals.buttonData.getState()),JSON.parse,(js_code) => {
+                    signals.buttonData.setState(JSON.parse(js_code))
                 })
             }
         })
@@ -127,7 +138,6 @@ class PannelButton extends BaseComponent {
 class PannelSelector extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
-        init_script_signals()
 
         this.pannels = []
         signals.layoutChanged.listen((layout_data)=>{
@@ -136,7 +146,7 @@ class PannelSelector extends BaseComponent {
             this.selector_div = createDiv({
                 parent: basediv,
                 className: "pannel_selector_container",
-                id: "selector_div"
+                //id: "selector_div"
             })
             var pannel_buttons = []
             for(var i = 0; i < layout_data.length; i++){
@@ -149,7 +159,7 @@ class PannelSelector extends BaseComponent {
                 $(".pannel_holder").hide()
                 var mypannel = this.pannels[pannel_idx]
                 $(mypannel.interface_div).show()
-                mypannel.pannel_select_data.fire(mypannel.mydata)
+                mypannel.pannel_select_data.fire(mypannel.selected_id)
             })
             this.pannel_selector.fire(0)
         })
@@ -167,26 +177,45 @@ class ScriptButtonPannel extends BaseComponent {
         this.pannel_select_data = new Signal()
         this.buttons = []
         this.makeButtonsFromData(pannel_data)
-        this.mydata = this.buttons[0].state.data
-        this.pannel_select_data.fire(this.buttons[0].state.data)
-        this.pannel_select_data.listen((data)=>out_signal.setState(data))
-        this.pannel_select_data.listen((newdata)=>{
-            this.mydata = newdata
+        this.selected_id = pannel_data[0].id
+        this.pannel_select_data.fire(this.selected_id)
+        this.pannel_select_data.listen((id)=>out_signal.setState(id))
+        this.pannel_select_data.listen((id)=>{
+            this.selected_id = id
         })
-    }
-    deleteButtons(){
-        $(this.interface_div).empty()
-        this.buttons = []
     }
     makeButtonsFromData(init_data){
-        var str_data = init_data.map(function(data){return{
-            icon: data.icon,
-            text: data.text,
-            json_data: pretty_print(data.data),
-        }})
-        str_data.forEach((data) => {
+        init_data.forEach((data) => {
             this.buttons.push(new ScriptButton(this, this.interface_div, data, this.pannel_select_data))
         })
+    }
+}
+class SelectorContainer extends BaseComponent {
+    constructor(parent, basediv, name_list){
+        super(parent, basediv)
+        this.parent_container = createDiv({
+            className: "selector_container",
+            parent: basediv,
+        })
+        name_list.forEach((name)=>{
+            createDiv({
+                className: "selector_button",
+                parent: this.parent_container,
+                innerText: name,
+                onclick: function(){
+                    signals.selectorClicked.fire(name)
+                }
+            })
+        })
+    }
+    delete_this(){
+        $(this.parent_container).remove()
+    }
+    show(){
+        $(this.parent_container).show()
+    }
+    hide(){
+        $(this.parent_container).hide()
     }
 }
 class ScriptButton extends BaseComponent {
@@ -197,31 +226,55 @@ class ScriptButton extends BaseComponent {
             data: init_data,
             selected: false,
             editing: false,
+            myselectors: [],
         }
         this.mydiv = this.render()
         basediv.appendChild(this.mydiv)
         this.handle_signals()
+        this.makeSelectors()
     }
     handle_signals(){
-        this.pannel_select_data.listen((data)=>{
-            if(data === this.state.data){
+        this.pannel_select_data.listen((id)=>{
+            if(id === this.state.data.id){
                 this.state.selected = true;
                 this.mydiv.classList.add("game_script_box_selected")
+                this.myselectors.show()
             }
             else{
                 this.deselectScript()
             }
         })
+        signals.buttonData.listen((all_data)=>{
+            this.makeSelectors()
+            if(!this.state.selected){
+                this.myselectors.hide()
+            }
+        })
+    }
+    makeSelectors(){
+        if(this.myselectors){
+            this.myselectors.delete_this()
+        }
+        var all_data = signals.buttonData.getState()
+        var my_id = this.state.data.id
+        if(all_data && all_data[my_id] && all_data[my_id].selectors){
+            var myselector_names = all_data[my_id].selectors
+        }
+        else{
+            var myselector_names = []
+        }
+        this.myselectors = new SelectorContainer(this,this.basediv,myselector_names)
     }
     deselectScript(){
         if(this.state.selected){
             this.state.selected = false;
             this.mydiv.classList.remove("game_script_box_selected")
+            this.myselectors.hide()
         }
     }
     selectScript(){
         if(!this.state.selected){
-            this.pannel_select_data.fire(this.state.data)
+            this.pannel_select_data.fire(this.state.data.id)
         }
         //this.changeState(Object.assign({selected:true},this.state))
     }

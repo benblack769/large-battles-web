@@ -34,6 +34,14 @@ function draw_list(fill_list,line_list){
         line_list: (line_list ? line_list : []),
     })
 }
+function changeData(id,key,value){
+    postMessage({
+        type: "CHANGE_DATA",
+        id: id,
+        key: key,
+        value: value,
+    })
+}
 class TwoClickHandler {
     constructor(){
         this.first_click = null
@@ -225,6 +233,16 @@ class MultiMoveHandler{
         }
         this.draw_all(game_state)
     }
+    selector_clicked(selector_name,game_state){
+        if(selector_name === "OK"){
+            this.make_moves(game_state)
+        }
+        else if(selector_name === "CANCEL"){
+            this.paths = []
+            this.current_path = []
+        }
+        this.draw_all(game_state)
+    }
     switched(){
         this.current_path = []
         this.draw_all(null)
@@ -388,18 +406,23 @@ function exec_move(clicks){
 }
 var move_handler = new MultiMoveHandler()
 var path_handler = new PathHandler()
-function make_handler(data,game_state){
-    switch(data.type){
-        case "buy_unit": return new BuyHandler(data.unit_type);
-        case "build": return new BuildHandler(data.unit_type);
-        case "buy_equipment": return new AttachHandler(data.equip_type);
+function make_handler(function_id,game_state){
+    switch(function_id){
+        case "build_farm": return new BuildHandler("farm");
+        case "build_barracks": return new BuildHandler("barracks");
+        case "build_armory": return new BuildHandler("armory");
+        case "buy_soldier": return new BuyHandler("soldier");
+        case "buy_armor": return new AttachHandler("armor");
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
         case "move_multi": move_handler.switched(); return move_handler;
         case "move_path": path_handler.switched(); return path_handler;
-        case "exec_multi_move": move_handler.make_moves(game_state); move_handler.switched(); return move_handler;
         default: console.log("bad data type"); break;
     }
+}
+self.on_selector_click = function(selector_name,game_state){
+    console.log("selection reached lib: "+selector_name)
+    myhandler.selector_clicked(selector_name,game_state)
 }
 //do not change this code unless you know what you are doing
 self.on_set_fn = function(set_data,game_state){

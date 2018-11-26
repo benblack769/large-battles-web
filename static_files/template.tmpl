@@ -5,10 +5,11 @@
 
     <style>
     {{get_remote_file("https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.min.css")}}
-    {{get_local_file("style.min.css")}}
+    {{get_local_file("style.css")}}
     </style>
 
     <script id="default_layout_src" type="application/json">{{get_local_file("default_layout.json")}}</script>
+    <script id="default_data_src" type="application/json">{{get_local_file("default_data.json")}}</script>
     <script id="default_lib_src" type="application/jsworker">{{get_local_file("default_lib.js")}}</script>
     <script id="web_worker_src" type="application/jsworker">{{get_local_file("web_worker.js")}}</script>
     <script charset="utf-8">{{get_local_file("bundle.js")}}</script>

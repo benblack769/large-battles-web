@@ -1,73 +1,44 @@
 [
 [
     {
-        "data": {
-            "type": "build",
-            "unit_type": "farm"
-        },
+        "id": "build_farm",
         "icon": "farm.png"
     },
     {
-        "data": {
-            "type": "build",
-            "unit_type": "barracks"
-        },
+        "id": "build_barracks",
         "icon": "barracks.png"
     },
     {
-        "data": {
-            "type": "build",
-            "unit_type": "armory"
-        },
+        "id": "build_armory",
         "icon": "armory.png"
     }
 ],
 [
     {
-        "data": {
-            "type": "buy_unit",
-            "unit_type": "soldier"
-        },
+        "id": "buy_soldier",
         "icon": "Soldier.png"
     },
     {
-        "data": {
-            "type": "buy_equipment",
-            "equip_type": "armor"
-        },
+        "id": "buy_armor",
         "icon": "armor.png"
     }
 ],
 [
     {
-        "data": {
-            "type": "move"
-        },
+        "id":  "move",
         "text": "Move"
     },
     {
-        "data": {
-            "type": "attack"
-        },
+        "id": "attack",
         "text": "Attack"
     },
     {
-        "data": {
-            "type": "move_multi"
-        },
+        "id": "move_multi",
         "text": "MoveMM"
     },
     {
-        "data": {
-            "type": "move_path"
-        },
+        "id": "move_path",
         "text": "MovePath"
-    },
-    {
-        "data": {
-            "type": "exec_multi_move"
-        },
-        "text": "ExecMM"
     }
 ]
 ]

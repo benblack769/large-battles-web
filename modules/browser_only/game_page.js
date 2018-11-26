@@ -62,11 +62,11 @@ function init_signals(game_state){
             my_player: signals.myPlayer.getState(),
         })
     })
-    signals.selectedData.listen(function(data){
-        console.log(data)
+    signals.selectedData.listen(function(id){
+        console.log(id+" selected")
         my_web_worker.postMessage({
             type: "REPLACE_FUNCTION",
-            json_data: data.json_data,
+            function_id: id,
             game_state: game_state,
             my_player: signals.myPlayer.getState(),
         })
@@ -83,6 +83,15 @@ function init_signals(game_state){
             signals.activePlayer.setState(instr.player)
         }
     })
+    signals.selectorClicked.listen(function(selector_name){
+        console.log("selector clicked with name: "+selector_name)
+        my_web_worker.postMessage({
+            type: "SELECTOR_CLICKED",
+            selector_name: selector_name,
+            game_state: game_state,
+            my_player: signals.myPlayer.getState(),
+        })
+    })
 }
 function init_html_ui(gamesize,player_order){
     var basediv = document.getElementById("single_page_game_overlay")
@@ -91,11 +100,21 @@ function init_html_ui(gamesize,player_order){
 
     var default_layout = document.getElementById("default_layout_src").innerHTML
     signals.layoutChanged.setState(JSON.parse(default_layout))
+    var default_data = document.getElementById("default_data_src").innerHTML
+    signals.buttonData.setState(JSON.parse(default_data))
 }
 
 function process_message_frontend(game_state,instruction,player,on_backend_message){
     if(instruction.type === "DRAW_RECTS"){
         signals.highlightCommand.fire(instruction)
+    }
+    else if(instruction.type === "CHANGE_DATA"){
+        var key = instruction.key
+        var id = instruction.id
+        var value = instruction.value
+        var data = signals.buttonData.getState()
+        data[id][key] = value
+        signals.buttonData.setState(data)
     }
     else{
         var error = validate.validate_instruction(game_state,instruction,player)

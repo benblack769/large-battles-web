@@ -86,17 +86,22 @@ self.lib = {
 }
 
 
-function default_set_data(json_data,game_state){
-    self.set_data = json_data
+function default_set_data(function_id,game_state){
+    self.set_id = function_id
     if(self.on_set_fn){
         //if set_fn is defined in library, call it too.
-        self.on_set_fn(json_data,game_state)
+        self.on_set_fn(function_id,game_state)
+    }
+}
+function selector_clicked(selector_name,game_state){
+    if(self.on_selector_click){
+        self.on_selector_click(selector_name,game_state)
     }
 }
 self.click_handler = function(click){
     console.log("default click activated. You need to set 'self.click_handler' in your library code")
 }
-self.set_data = {}
+self.set_id = ""
 self.globals = {}
 function replace_lib(js_code){
     //console.log("replaced library with: "+js_code)
@@ -108,9 +113,11 @@ onmessage = function(message){
     var message = message.data
     switch(message.type){
         case "REPLACE_FUNCTION": message.game_state.my_player = message.my_player;
-                                 default_set_data(JSON.parse(message.json_data),message.game_state); break;
+                                 default_set_data(message.function_id,message.game_state); break;
         case "REPLACE_LIBRARY": replace_lib(message.js_str); break;
         case "CLICK_OCCURED": message.game_state.my_player = message.my_player;
                               click_handler(message.coord, message.game_state); break;
+        case "SELECTOR_CLICKED": message.game_state.my_player = message.my_player;
+                                 selector_clicked(message.selector_name,message.game_state); break;
     }
 }

@@ -7,83 +7,403 @@
 
     <style>
     .dynatable-active-page:hover,th a,th a:hover{color:#fff}th{background:#006a72}th a:hover{text-decoration:underline}.dynatable-search{float:right;margin-bottom:10px}.dynatable-pagination-links{float:right}.dynatable-record-count{display:block;padding:5px 0}.dynatable-pagination-links li,.dynatable-pagination-links span{display:inline-block}.dynatable-page-break,.dynatable-page-link{display:block;padding:5px 7px}.dynatable-page-link{cursor:pointer}.dynatable-active-page,.dynatable-disabled-page{cursor:text}.dynatable-active-page:hover,.dynatable-disabled-page:hover{text-decoration:none}.dynatable-active-page{background:#006a72;border-radius:5px;color:#fff}.dynatable-disabled-page,.dynatable-disabled-page:hover{background:0 0;color:#999}
-    table{border-collapse:collapse}table,th,td{border:1px solid black}th{background:#fff}.dynatable-head{background:#006a72}canvas{image-rendering:-moz-crisp-edges;image-rendering:-webkit-crisp-edges;image-rendering:pixelated;image-rendering:crisp-edges}img{image-rendering:optimizeSpeed;image-rendering:-moz-crisp-edges;image-rendering:-o-crisp-edges;image-rendering:-webkit-optimize-contrast;image-rendering:pixelated;image-rendering:optimize-contrast;-ms-interpolation-mode:nearest-neighbor}.live_table_col1{width:150px}.live_table_col2{width:110px}.gray_page_overlay{position:fixed;top:0;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);z-index:50}.central_cancel_box{position:relative;top:50%;-webkit-transform:translateY(-50%);-ms-transform:translateY(-50%);transform:translateY(-50%);height:200px;width:300px;margin:auto;background:rgba(0,0,0,0.5);box-shadow:0 0 10px 10px rgba(0,0,0,0.2);overflow:hidden;z-index:500}.horizontal-center{width:100%;margin:auto}.central_cancel_message{height:50%;font-size:1.3em;color:white;padding:.9em}.central_cancel_button_holder{width:100%;text-align:center}.central_cancel_button{font-size:1.3em;background-color:#000;margin:auto;border-style:solid;border-color:#646464;padding:.2em;color:white}.central_cancel_button:active{background-color:#222}.navbar{overflow:hidden;background-color:#333;position:fixed;top:0;height:45px;left:0;right:0;z-index:10000}.menu_entry{float:left;display:block;color:#f2f2f2;text-align:center;padding:14px 16px;text-decoration:none}.username_display{float:left;display:block;color:#f2f2f2;text-align:center;font-family:Arial;padding:14px 6px;text-decoration:none}#profile{float:right}.menu_entry:hover{background:#ddd;color:black}#main_page_view{margin-top:45px}.game_overlay{position:fixed;top:45px;bottom:0;left:0;right:0;z-index:20;background-color:rgba(100,100,100,0.5)}.script_container{position:fixed;top:45px;left:0;z-index:10}.lib_pannel_container{position:fixed;bottom:0;left:0;z-index:100;width:100px;text-align:center}.game_script_box{width:80px;height:80px;line-height:80px;text-align:center;background-color:white;border-style:solid;border-width:1px;pointer-events:auto;background-repeat:no-repeat;background-position:center;background-color:#bbb}.game_script_box_selected{background-color:#94fdf9}.script_box_button{width:40px;height:15px;font-size:10px}.script_box_button:active{color:red;text-decoration:underline}.script_box_button:hover{text-decoration:underline}.central_text_edit_box{position:relative;top:50%;-webkit-transform:translateY(-50%);-ms-transform:translateY(-50%);transform:translateY(-50%);height:400px;width:600px;margin:auto;background:rgba(0,0,0,0.5);box-shadow:0 0 10px 10px rgba(0,0,0,0.2);overflow:hidden;z-index:500}.central_text_edit{height:80%;font-size:1.3em;color:white;padding:.9em}.central_text_edit_button_holder{width:100%;text-align:center}.text_edit_button{font-size:1.3em;background-color:#000;margin:auto;border-style:solid;border-color:#646464;padding:.2em;color:white}.text_edit_button:active{background-color:#222}.text_edit_textarea_style{white-space:nowrap;wrap="off";resize:none}#text_edit_textarea{width:500px;height:250px}#text_edit_error_textarea{width:500px;height:50px}.canvas_holder{position:absolute;top:0;left:0;right:0;bottom:0}.lib_edit_button{background:red}.lib_edit_button:hover{background:blue}.player_info_bar{position:fixed;top:45px;right:0;z-index:2;text-align:center}.player_status_dot{height:25px;width:25px;background-color:#bbb;border-radius:50%;display:inline-block}.player_info_table{background-color:white}.player_info_button{width:100%;background-color:red}.player_info_button:hover{background-color:blue}.pannel_button{width:30px;height:30px;display:inline-block;background-color:white}.pannel_selector_container{position:fixed;top:45px;left:0;z-index:11}
+    table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+/*override bad dynatable background style for th*/
+th {
+  background: #ffffff;
+}
+.dynatable-head {
+  background: #006a72;
+}
+/*Disable smooth scaling*/
+canvas{
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+img {
+    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: -moz-crisp-edges;          /* Firefox                        */
+    image-rendering: -o-crisp-edges;            /* Opera                          */
+    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+    image-rendering: pixelated; /* Chrome */
+    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
+}
+/*fix live table widths so that updates don't jitter widths*/
+.live_table_col1 {
+    width: 150px;
+}
+.live_table_col2 {
+    width: 110px;
+}
+
+/*make gray cancel overlays for game requests*/
+.gray_page_overlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 50;
+}
+.central_cancel_box {
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    /* size of box on larger screens*/
+    height: 200px;
+    width: 300px;
+    margin: auto;
+    /*differentiates popup background slightly from normal background*/
+    background: rgba(0,0,0,0.5);
+    /* border around box on large screens
+     * pattern:  _ _ blur spread color*/
+    box-shadow: 0 0 10px 10px rgba(0,0,0,0.2);
+    overflow: hidden;
+
+    z-index: 500;
+}
+.horizontal-center{
+    width: 100%;
+    margin: auto;
+}
+.central_cancel_message{
+    height: 50%;
+    font-size: 1.3em;
+    color: white;
+    padding: 0.9em;
+}
+.central_cancel_button_holder{
+    width: 100%;
+    text-align: center;
+}
+.central_cancel_button{
+    font-size: 1.3em;
+    background-color: #000000;
+    margin: auto;
+    border-style: solid;
+    border-color: rgb(100,100,100);
+    padding: 0.2em;
+    color: white;
+}
+.central_cancel_button:active{
+    background-color: #222222;
+}
+
+
+/*
+navigation bar style
+*/
+.navbar {
+    overflow: hidden;
+    background-color: #333;
+    position: fixed; /* Set the navbar to fixed position */
+    top: 0; /* Position the navbar at the top of the page */
+    height: 45px;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+}
+
+/* Links inside the navbar */
+.menu_entry {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+.username_display {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    font-family: Arial;
+    padding: 14px 6px;
+    text-decoration: none;
+}
+#profile{
+    float: right;
+}
+.menu_entry:hover {
+    background: #ddd;
+    color: black;
+}
+/*
+main page style
+*/
+#main_page_view {
+    margin-top: 45px; /* Add a top margin to avoid content overlay */
+}
+
+/* Main game css */
+
+.game_overlay {
+    position: fixed;
+    top: 45px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background-color: rgba(100,100,100,0.5);
+}
+.script_container {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    z-index: 10;
+}
+.lib_pannel_container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    width: 100px;
+    text-align: center;
+}
+.game_script_box {
+    width: 80px;
+    height: 80px;
+    line-height: 80px;/*crnters text vertically*/
+    text-align: center;
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+    pointer-events: auto;
+    /*background image set in javascript, properties set here*/
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #bbbbbb;
+}
+.game_script_box_selected{
+    background-color: #94FDF9;
+}
+.script_box_button {
+    width: 40px;
+    height: 15px;
+    font-size: 10px;
+}
+.script_box_button:active {
+    color: red;
+    text-decoration: underline;
+}
+.script_box_button:hover {
+    text-decoration: underline;
+}
+
+.central_text_edit_box {
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    /* size of box on larger screens*/
+    height: 400px;
+    width: 600px;
+    margin: auto;
+    /*differentiates popup background slightly from normal background*/
+    background: rgba(0,0,0,0.5);
+    /* border around box on large screens
+     * pattern:  _ _ blur spread color*/
+    box-shadow: 0 0 10px 10px rgba(0,0,0,0.2);
+    overflow: hidden;
+
+    z-index: 500;
+}
+.central_text_edit {
+    height: 80%;
+    font-size: 1.3em;
+    color: white;
+    padding: 0.9em;
+
+}
+.central_text_edit_button_holder {
+    width: 100%;
+    text-align: center;
+}
+.text_edit_button {
+    font-size: 1.3em;
+    background-color: #000000;
+    margin: auto;
+    border-style: solid;
+    border-color: rgb(100,100,100);
+    padding: 0.2em;
+    color: white;
+}
+.text_edit_button:active{
+    background-color: #222222;
+}
+.text_edit_textarea_style{
+    white-space: nowrap;
+    wrap="off";
+    resize: none;
+}
+#text_edit_textarea {
+    width: 500px;
+    height: 250px;
+}
+#text_edit_error_textarea{
+    width: 500px;
+    height: 50px;
+}
+.canvas_holder {
+    position:absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+.lib_edit_button {
+    background: red;
+}
+.lib_edit_button:hover {
+    background: blue;
+}
+.player_info_bar {
+    position: fixed;
+    top: 45px;
+    right: 0;
+    z-index: 2;
+    text-align: center;
+}
+.player_status_dot {
+  height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+.player_info_table{
+    background-color: white;
+}
+.player_info_button {
+    width: 100%;
+    background-color: red;
+}
+.player_info_button:hover {
+    background-color: blue;
+}
+.pannel_button {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    background-color: white;
+}
+.pannel_selector_container {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    z-index: 11;
+}
+.selector_container {
+    position: fixed;
+    top: 80px;
+    left: 85px;
+    z-index: 11;
+}
+.selector_button {
+    min-width: 30px;
+    min-height: 20px;
+    background-color: red;
+}
+.selector_button:hover {
+    background-color: blue;
+}
 
     </style>
 
     <script id="default_layout_src" type="application/json">[
 [
     {
-        "data": {
-            "type": "build",
-            "unit_type": "farm"
-        },
+        "id": "build_farm",
         "icon": "farm.png"
     },
     {
-        "data": {
-            "type": "build",
-            "unit_type": "barracks"
-        },
+        "id": "build_barracks",
         "icon": "barracks.png"
     },
     {
-        "data": {
-            "type": "build",
-            "unit_type": "armory"
-        },
+        "id": "build_armory",
         "icon": "armory.png"
     }
 ],
 [
     {
-        "data": {
-            "type": "buy_unit",
-            "unit_type": "soldier"
-        },
+        "id": "buy_soldier",
         "icon": "Soldier.png"
     },
     {
-        "data": {
-            "type": "buy_equipment",
-            "equip_type": "armor"
-        },
+        "id": "buy_armor",
         "icon": "armor.png"
     }
 ],
 [
     {
-        "data": {
-            "type": "move"
-        },
+        "id":  "move",
         "text": "Move"
     },
     {
-        "data": {
-            "type": "attack"
-        },
+        "id": "attack",
         "text": "Attack"
     },
     {
-        "data": {
-            "type": "move_multi"
-        },
+        "id": "move_multi",
         "text": "MoveMM"
     },
     {
-        "data": {
-            "type": "move_path"
-        },
+        "id": "move_path",
         "text": "MovePath"
-    },
-    {
-        "data": {
-            "type": "exec_multi_move"
-        },
-        "text": "ExecMM"
     }
 ]
 ]
+</script>
+    <script id="default_data_src" type="application/json">{
+    "build_farm": {
+        "type": "build",
+        "unit_type": "farm",
+        "selectors": [
+            "Build",
+            "Awsome"
+        ]
+    },
+    "build_barracks": {
+        "type": "build",
+        "unit_type": "barracks"
+    },
+    "build_armory": {
+        "type": "build",
+        "unit_type": "armory"
+    },
+    "buy_soldier": {
+        "type": "buy_unit",
+        "unit_type": "soldier"
+    },
+    "buy_armor": {
+        "type": "buy_equipment",
+        "equip_type": "armor"
+    },
+    "move": {},
+    "attack": {},
+    "move_multi": {
+        "selectors": [
+            "OK"
+        ]
+    },
+    "move_path": {}
+}
 </script>
     <script id="default_lib_src" type="application/jsworker">
 function coord_list_to_draws(clist,color){
@@ -119,6 +439,14 @@ function draw_list(fill_list,line_list){
         type: "DRAW_RECTS",
         draw_list: fill_list,
         line_list: (line_list ? line_list : []),
+    })
+}
+function changeData(id,key,value){
+    postMessage({
+        type: "CHANGE_DATA",
+        id: id,
+        key: key,
+        value: value,
     })
 }
 class TwoClickHandler {
@@ -312,6 +640,16 @@ class MultiMoveHandler{
         }
         this.draw_all(game_state)
     }
+    selector_clicked(selector_name,game_state){
+        if(selector_name === "OK"){
+            this.make_moves(game_state)
+        }
+        else if(selector_name === "CANCEL"){
+            this.paths = []
+            this.current_path = []
+        }
+        this.draw_all(game_state)
+    }
     switched(){
         this.current_path = []
         this.draw_all(null)
@@ -475,18 +813,23 @@ function exec_move(clicks){
 }
 var move_handler = new MultiMoveHandler()
 var path_handler = new PathHandler()
-function make_handler(data,game_state){
-    switch(data.type){
-        case "buy_unit": return new BuyHandler(data.unit_type);
-        case "build": return new BuildHandler(data.unit_type);
-        case "buy_equipment": return new AttachHandler(data.equip_type);
+function make_handler(function_id,game_state){
+    switch(function_id){
+        case "build_farm": return new BuildHandler("farm");
+        case "build_barracks": return new BuildHandler("barracks");
+        case "build_armory": return new BuildHandler("armory");
+        case "buy_soldier": return new BuyHandler("soldier");
+        case "buy_armor": return new AttachHandler("armor");
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
         case "move_multi": move_handler.switched(); return move_handler;
         case "move_path": path_handler.switched(); return path_handler;
-        case "exec_multi_move": move_handler.make_moves(game_state); move_handler.switched(); return move_handler;
         default: console.log("bad data type"); break;
     }
+}
+self.on_selector_click = function(selector_name,game_state){
+    console.log("selection reached lib: "+selector_name)
+    myhandler.selector_clicked(selector_name,game_state)
 }
 //do not change this code unless you know what you are doing
 self.on_set_fn = function(set_data,game_state){
@@ -1119,17 +1462,22 @@ self.lib = {
 }
 
 
-function default_set_data(json_data,game_state){
-    self.set_data = json_data
+function default_set_data(function_id,game_state){
+    self.set_id = function_id
     if(self.on_set_fn){
         //if set_fn is defined in library, call it too.
-        self.on_set_fn(json_data,game_state)
+        self.on_set_fn(function_id,game_state)
+    }
+}
+function selector_clicked(selector_name,game_state){
+    if(self.on_selector_click){
+        self.on_selector_click(selector_name,game_state)
     }
 }
 self.click_handler = function(click){
     console.log("default click activated. You need to set 'self.click_handler' in your library code")
 }
-self.set_data = {}
+self.set_id = ""
 self.globals = {}
 function replace_lib(js_code){
     //console.log("replaced library with: "+js_code)
@@ -1141,10 +1489,12 @@ onmessage = function(message){
     var message = message.data
     switch(message.type){
         case "REPLACE_FUNCTION": message.game_state.my_player = message.my_player;
-                                 default_set_data(JSON.parse(message.json_data),message.game_state); break;
+                                 default_set_data(message.function_id,message.game_state); break;
         case "REPLACE_LIBRARY": replace_lib(message.js_str); break;
         case "CLICK_OCCURED": message.game_state.my_player = message.my_player;
                               click_handler(message.coord, message.game_state); break;
+        case "SELECTOR_CLICKED": message.game_state.my_player = message.my_player;
+                                 selector_clicked(message.selector_name,message.game_state); break;
     }
 }
 
@@ -1524,6 +1874,8 @@ function clear_all_signals(){
     module.exports.gameStateChange.clear()
     module.exports.libData.clear()
     module.exports.layoutChanged.clear()
+    module.exports.buttonData.clear()
+    module.exports.selectorClicked.clear()
     module.exports.highlightCommand.clear()
 }
 
@@ -1539,6 +1891,8 @@ module.exports = {
     gameStateChange: new Signal(),
     libData: new StateHolder(),
     layoutChanged: new StateHolder(),
+    buttonData: new StateHolder(),
+    selectorClicked: new Signal(),
     highlightCommand: new Signal(),
 }
 
@@ -1568,6 +1922,7 @@ function init_script_signals(){
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
+        init_script_signals()
         this.interface_div = createDiv({
             className: "lib_pannel_container",
         })
@@ -1594,6 +1949,16 @@ class LibPannel extends BaseComponent {
             onclick: () => {
                 make_change_script_popup(pretty_print(signals.layoutChanged.getState()),JSON.parse,(js_code) => {
                     signals.layoutChanged.setState(JSON.parse(js_code))
+                })
+            }
+        })
+        this.edit_lib_button = createDiv({
+            innerText: "Edit Data",
+            className: "lib_edit_button",
+            parent: this.interface_div,
+            onclick: () => {
+                make_change_script_popup(pretty_print(signals.buttonData.getState()),JSON.parse,(js_code) => {
+                    signals.buttonData.setState(JSON.parse(js_code))
                 })
             }
         })
@@ -1672,7 +2037,6 @@ class PannelButton extends BaseComponent {
 class PannelSelector extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
-        init_script_signals()
 
         this.pannels = []
         signals.layoutChanged.listen((layout_data)=>{
@@ -1681,7 +2045,7 @@ class PannelSelector extends BaseComponent {
             this.selector_div = createDiv({
                 parent: basediv,
                 className: "pannel_selector_container",
-                id: "selector_div"
+                //id: "selector_div"
             })
             var pannel_buttons = []
             for(var i = 0; i < layout_data.length; i++){
@@ -1694,7 +2058,7 @@ class PannelSelector extends BaseComponent {
                 $(".pannel_holder").hide()
                 var mypannel = this.pannels[pannel_idx]
                 $(mypannel.interface_div).show()
-                mypannel.pannel_select_data.fire(mypannel.mydata)
+                mypannel.pannel_select_data.fire(mypannel.selected_id)
             })
             this.pannel_selector.fire(0)
         })
@@ -1712,26 +2076,45 @@ class ScriptButtonPannel extends BaseComponent {
         this.pannel_select_data = new Signal()
         this.buttons = []
         this.makeButtonsFromData(pannel_data)
-        this.mydata = this.buttons[0].state.data
-        this.pannel_select_data.fire(this.buttons[0].state.data)
-        this.pannel_select_data.listen((data)=>out_signal.setState(data))
-        this.pannel_select_data.listen((newdata)=>{
-            this.mydata = newdata
+        this.selected_id = pannel_data[0].id
+        this.pannel_select_data.fire(this.selected_id)
+        this.pannel_select_data.listen((id)=>out_signal.setState(id))
+        this.pannel_select_data.listen((id)=>{
+            this.selected_id = id
         })
-    }
-    deleteButtons(){
-        $(this.interface_div).empty()
-        this.buttons = []
     }
     makeButtonsFromData(init_data){
-        var str_data = init_data.map(function(data){return{
-            icon: data.icon,
-            text: data.text,
-            json_data: pretty_print(data.data),
-        }})
-        str_data.forEach((data) => {
+        init_data.forEach((data) => {
             this.buttons.push(new ScriptButton(this, this.interface_div, data, this.pannel_select_data))
         })
+    }
+}
+class SelectorContainer extends BaseComponent {
+    constructor(parent, basediv, name_list){
+        super(parent, basediv)
+        this.parent_container = createDiv({
+            className: "selector_container",
+            parent: basediv,
+        })
+        name_list.forEach((name)=>{
+            createDiv({
+                className: "selector_button",
+                parent: this.parent_container,
+                innerText: name,
+                onclick: function(){
+                    signals.selectorClicked.fire(name)
+                }
+            })
+        })
+    }
+    delete_this(){
+        $(this.parent_container).remove()
+    }
+    show(){
+        $(this.parent_container).show()
+    }
+    hide(){
+        $(this.parent_container).hide()
     }
 }
 class ScriptButton extends BaseComponent {
@@ -1742,31 +2125,55 @@ class ScriptButton extends BaseComponent {
             data: init_data,
             selected: false,
             editing: false,
+            myselectors: [],
         }
         this.mydiv = this.render()
         basediv.appendChild(this.mydiv)
         this.handle_signals()
+        this.makeSelectors()
     }
     handle_signals(){
-        this.pannel_select_data.listen((data)=>{
-            if(data === this.state.data){
+        this.pannel_select_data.listen((id)=>{
+            if(id === this.state.data.id){
                 this.state.selected = true;
                 this.mydiv.classList.add("game_script_box_selected")
+                this.myselectors.show()
             }
             else{
                 this.deselectScript()
             }
         })
+        signals.buttonData.listen((all_data)=>{
+            this.makeSelectors()
+            if(!this.state.selected){
+                this.myselectors.hide()
+            }
+        })
+    }
+    makeSelectors(){
+        if(this.myselectors){
+            this.myselectors.delete_this()
+        }
+        var all_data = signals.buttonData.getState()
+        var my_id = this.state.data.id
+        if(all_data && all_data[my_id] && all_data[my_id].selectors){
+            var myselector_names = all_data[my_id].selectors
+        }
+        else{
+            var myselector_names = []
+        }
+        this.myselectors = new SelectorContainer(this,this.basediv,myselector_names)
     }
     deselectScript(){
         if(this.state.selected){
             this.state.selected = false;
             this.mydiv.classList.remove("game_script_box_selected")
+            this.myselectors.hide()
         }
     }
     selectScript(){
         if(!this.state.selected){
-            this.pannel_select_data.fire(this.state.data)
+            this.pannel_select_data.fire(this.state.data.id)
         }
         //this.changeState(Object.assign({selected:true},this.state))
     }
@@ -1939,11 +2346,11 @@ function init_signals(game_state){
             my_player: signals.myPlayer.getState(),
         })
     })
-    signals.selectedData.listen(function(data){
-        console.log(data)
+    signals.selectedData.listen(function(id){
+        console.log(id+" selected")
         my_web_worker.postMessage({
             type: "REPLACE_FUNCTION",
-            json_data: data.json_data,
+            function_id: id,
             game_state: game_state,
             my_player: signals.myPlayer.getState(),
         })
@@ -1960,6 +2367,15 @@ function init_signals(game_state){
             signals.activePlayer.setState(instr.player)
         }
     })
+    signals.selectorClicked.listen(function(selector_name){
+        console.log("selector clicked with name: "+selector_name)
+        my_web_worker.postMessage({
+            type: "SELECTOR_CLICKED",
+            selector_name: selector_name,
+            game_state: game_state,
+            my_player: signals.myPlayer.getState(),
+        })
+    })
 }
 function init_html_ui(gamesize,player_order){
     var basediv = document.getElementById("single_page_game_overlay")
@@ -1968,11 +2384,21 @@ function init_html_ui(gamesize,player_order){
 
     var default_layout = document.getElementById("default_layout_src").innerHTML
     signals.layoutChanged.setState(JSON.parse(default_layout))
+    var default_data = document.getElementById("default_data_src").innerHTML
+    signals.buttonData.setState(JSON.parse(default_data))
 }
 
 function process_message_frontend(game_state,instruction,player,on_backend_message){
     if(instruction.type === "DRAW_RECTS"){
         signals.highlightCommand.fire(instruction)
+    }
+    else if(instruction.type === "CHANGE_DATA"){
+        var key = instruction.key
+        var id = instruction.id
+        var value = instruction.value
+        var data = signals.buttonData.getState()
+        data[id][key] = value
+        signals.buttonData.setState(data)
     }
     else{
         var error = validate.validate_instruction(game_state,instruction,player)

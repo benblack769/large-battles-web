@@ -299,3 +299,17 @@ main page style
     left: 0;
     z-index: 11;
 }
+.selector_container {
+    position: fixed;
+    top: 80px;
+    left: 85px;
+    z-index: 11;
+}
+.selector_button {
+    min-width: 30px;
+    min-height: 20px;
+    background-color: red;
+}
+.selector_button:hover {
+    background-color: blue;
+}
