@@ -44,6 +44,27 @@ function coords_around(game_state,center,range){
 function is_unit(map,coord){
     return at(map,coord).category === "unit"
 }
+function is_mine(game_state,coord){
+    if(!is_unit(game_state.map,coord)){
+        return false
+    }
+    if(at(game_state.map,coord).player !== game_state.my_player){
+        return false
+    }
+    return true
+}
+function is_moveable_unit(game_state,coord){
+    if(!is_unit(game_state.map,coord)){
+        return false
+    }
+    if(!is_mine(game_state,coord)){
+        return false
+    }
+    if(!self.lib.get_move_range(game_state,coord)){
+        return false
+    }
+    return true
+}
 
 
 self.lib = {
@@ -60,6 +81,8 @@ self.lib = {
     validate_instruction: validate_instruction,
     is_valid: is_valid,
     is_unit: is_unit,
+    is_moveable_unit: is_moveable_unit,
+    is_mine: is_mine,
 }
 
 

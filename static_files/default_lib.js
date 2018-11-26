@@ -188,6 +188,13 @@ function at(map,coord){
 function last(array){
     return array[array.length-1]
 }
+function enumerate_map(array,callback){
+    var res = [];
+    for(var i = 0; i < array.length; i++){
+        res.push(callback(array[i],i))
+    }
+    return res
+}
 class MultiMoveHandler{
     constructor(){
         this.paths = []
@@ -211,7 +218,7 @@ class MultiMoveHandler{
             }
         }
         else{
-            if(self.lib.is_unit(game_state.map,click)){
+            if(self.lib.is_moveable_unit(game_state,click)){
                 this.deleteSource(click)
                 this.current_path.push(click)
             }
@@ -251,7 +258,8 @@ class MultiMoveHandler{
         var source = this.current_path[0]
         var move_range = self.lib.get_move_range(game_state,source)
         var possible_moves = lib.coords_around(null,last(this.current_path),move_range)
-        return possible_moves.map((coord)=>to_item(coord,"rgba(128,128,128,0.2)"))
+        var possible_highlights = possible_moves.map((coord)=>to_item(coord,"rgba(128,128,128,0.2)"))
+        return possible_highlights
     }
     make_moves(game_state){
         var new_paths = []
@@ -268,15 +276,23 @@ class MultiMoveHandler{
     }
     current_path_highlights(){
         var all_paths = concat(this.paths,[this.current_path])
-        return []/* merge_arrays(all_paths.map(function(path){
+        return  merge_arrays(all_paths.map(function(path){
+            if(path.length === 0){
+                return []
+            }
+            else if(path.length === 1){
+                return [
+                    to_item(path[0],"rgba(255,0,0,0.4)"),
+                ]
+            }
             var source = path[0]
             var dest = path[path.length-1]
             return merge_arrays([
                 [to_item(source,"rgba(255,0,0,0.4)")],
                 [to_item(dest,"rgba(0,0,255,0.4)")],
-                path.slice(1,-1).map((coord) => to_item(coord,"rgba(128,128,128,0.4)")),
+                enumerate_map(path.slice(1,-1),((coord,idx) => to_item(coord,"rgba(0,0,0,"+(1.0/(2.5+idx))+")"))),
             ])
-        }))*/
+        }))
     }
 }
 class PathHandler{
