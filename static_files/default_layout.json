@@ -56,6 +56,18 @@
             "type": "move_multi"
         },
         "text": "MoveMM"
+    },
+    {
+        "data": {
+            "type": "move_path"
+        },
+        "text": "MovePath"
+    },
+    {
+        "data": {
+            "type": "exec_multi_move"
+        },
+        "text": "ExecMM"
     }
 ]
 ]

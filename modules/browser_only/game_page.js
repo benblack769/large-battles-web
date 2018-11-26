@@ -46,7 +46,11 @@ function switch_away_from_game_page(){
     document.body.style["background-color"] = "white"
 }
 function init_game_page(){
-
+    $(document).keyup(function(e) {
+         if (e.key === "Escape" || e.keycode === 27) {
+             signals.selectedData.setState(signals.selectedData.getState())
+        }
+    });
 }
 
 function init_signals(game_state){
@@ -63,6 +67,8 @@ function init_signals(game_state){
         my_web_worker.postMessage({
             type: "REPLACE_FUNCTION",
             json_data: data.json_data,
+            game_state: game_state,
+            my_player: signals.myPlayer.getState(),
         })
     })
     signals.libData.listen(function(js_code){

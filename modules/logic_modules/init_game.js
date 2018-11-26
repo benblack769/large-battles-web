@@ -49,6 +49,16 @@ function place_initial_units(gamesize,player_ids){
             data: farm,
             coord: farm_coord,
         })
+        var soldier_coord = {
+            x: cen.x,
+            y: cen.y+1
+        }
+        var soldier = create_utils.create_unit("soldier",player_ids[i])
+        all_messages.push({
+            type: "CREATE",
+            data: soldier,
+            coord: soldier_coord,
+        })
     }
     return all_messages
 }

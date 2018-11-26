@@ -162,6 +162,7 @@ function is_possible_attack(map, start, target, range){
 module.exports = {
     get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
+    distance: distance,
     is_possible_move: is_possible_move,
     get_shortest_path: get_shortest_path,
     is_possible_attack: is_possible_attack,

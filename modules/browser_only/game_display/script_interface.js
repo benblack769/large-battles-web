@@ -12,9 +12,13 @@ var Signal = signals.Signal
 
 var edit_signal = new Signal()
 var stop_edit_signal = new Signal()
-signals.selectedData.listen(()=>signals.clear_highlights.fire())
-edit_signal.listen(()=>signals.clear_highlights.fire())
+function init_script_signals(){
+    edit_signal = new Signal()
+    stop_edit_signal = new Signal()
 
+    signals.selectedData.listen(()=>signals.clear_highlights.fire())
+    edit_signal.listen(()=>signals.clear_highlights.fire())
+}
 
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
@@ -123,6 +127,7 @@ class PannelButton extends BaseComponent {
 class PannelSelector extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
+        init_script_signals()
 
         this.pannels = []
         signals.layoutChanged.listen((layout_data)=>{

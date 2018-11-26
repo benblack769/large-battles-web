@@ -43,6 +43,7 @@ function init_all(){
     signup_login.init_signup_login()
     rankings_page.init_rankings()
     live_connections.init_live_games()
+    game_page.init_game_page()
     //single_player.init_single_player()
     //multi_player.init_multi_player()
 }

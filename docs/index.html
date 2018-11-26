@@ -69,6 +69,18 @@
             "type": "move_multi"
         },
         "text": "MoveMM"
+    },
+    {
+        "data": {
+            "type": "move_path"
+        },
+        "text": "MovePath"
+    },
+    {
+        "data": {
+            "type": "exec_multi_move"
+        },
+        "text": "ExecMM"
     }
 ]
 ]
@@ -130,6 +142,17 @@ class TwoClickHandler {
         }
     }
 }
+class NullHandler {
+    handleClick(click,game_state){}
+}
+function is_valid_move(game_state,start,end){
+    var instr = {
+        type: "MOVE",
+        start_coord: start,
+        end_coord: end,
+    }
+    return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+}
 class MoveHandler extends TwoClickHandler {
     getRange(game_state,click){
         return self.lib.get_move_range(game_state,click)
@@ -137,16 +160,8 @@ class MoveHandler extends TwoClickHandler {
     execAction(click2){
         exec_move([this.first_click,click2])
     }
-    is_valid_move(game_state,start,end){
-        var instr = {
-            type: "MOVE",
-            start_coord: start,
-            end_coord: end,
-        }
-        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
-    }
     get_all_valid_around(game_state,start,range){
-        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_move(game_state,start,coord))
+        return lib.coords_around(game_state,start,range).filter((coord)=>is_valid_move(game_state,start,coord))
     }
 }
 class BuyHandler extends TwoClickHandler {
@@ -250,19 +265,111 @@ function make_new_path(game_state,click1,click2){
     }
     return mmovepath
 }
+const hashable = JSON.stringify
 function deep_equals(o1,o2){
     return JSON.stringify(o1) === JSON.stringify(o2)
 }
 function at(map,coord){
     return map[coord.y][coord.x]
 }
+function last(array){
+    return array[array.length-1]
+}
 class MultiMoveHandler{
     constructor(){
         this.paths = []
-        this.first_click = null
+        this.current_path = []
     }
-    updateData(new_data){
-        this.data = new_data
+    handleClick(click,game_state){
+        if(this.current_path.length){
+            var source = this.current_path[0]
+            var current_cen = last(this.current_path)
+            if(deep_equals(current_cen,click)){
+                if(this.current_path.length > 1){
+                    this.paths.push(this.current_path)
+                }
+                this.current_path = []
+            }
+            else{
+                var move_range = self.lib.get_move_range(game_state,source)
+                if(self.lib.distance(current_cen,click) <= move_range){
+                    this.current_path.push(click)
+                }
+            }
+        }
+        else{
+            if(self.lib.is_unit(game_state.map,click)){
+                this.deleteSource(click)
+                this.current_path.push(click)
+            }
+        }
+        this.draw_all(game_state)
+    }
+    switched(){
+        this.current_path = []
+        this.draw_all(null)
+    }
+    deleteSource(coord){
+        for(var i = 0; i < this.paths.length; i++){
+            if(deep_equals(this.paths[i][0],coord)){
+                this.paths.splice(i,1)
+                return
+            }
+        }
+    }
+    draw_all(game_state){
+        var all_fills = concat(this.current_path_highlights(),this.current_choice_highlights(game_state))
+        draw_list(all_fills,this.current_lines())
+    }
+    current_lines(){
+        var all_paths = concat(this.paths,[this.current_path])
+        return merge_arrays(all_paths.map(function(path){
+            var res = []
+            for(var i = 1; i < path.length; i++){
+                res.push(to_line(path[i-1],path[i]))
+            }
+            return res
+        }))
+    }
+    current_choice_highlights(game_state){
+        if(!this.current_path.length){
+            return []
+        }
+        var source = this.current_path[0]
+        var move_range = self.lib.get_move_range(game_state,source)
+        var possible_moves = lib.coords_around(null,last(this.current_path),move_range)
+        return possible_moves.map((coord)=>to_item(coord,"rgba(128,128,128,0.2)"))
+    }
+    make_moves(game_state){
+        var new_paths = []
+        this.paths.forEach((path)=>{
+            if(is_valid_move(game_state,path[0],path[1])){
+                exec_move([path[0],path[1]])
+                if(path.length > 2){
+                    path.shift()
+                    new_paths.push(path)
+                }
+            }
+        })
+        this.paths = new_paths
+    }
+    current_path_highlights(){
+        var all_paths = concat(this.paths,[this.current_path])
+        return []/* merge_arrays(all_paths.map(function(path){
+            var source = path[0]
+            var dest = path[path.length-1]
+            return merge_arrays([
+                [to_item(source,"rgba(255,0,0,0.4)")],
+                [to_item(dest,"rgba(0,0,255,0.4)")],
+                path.slice(1,-1).map((coord) => to_item(coord,"rgba(128,128,128,0.4)")),
+            ])
+        }))*/
+    }
+}
+class PathHandler{
+    constructor(){
+        this.paths = []
+        this.first_click = null
     }
     handleClick(click,game_state){
         if(this.first_click){
@@ -274,7 +381,7 @@ class MultiMoveHandler{
             draw_list(this.current_path_highlights(),this.current_lines())
         }
         else{
-            if(at(game_state.map,click).category === "unit"){
+            if(self.lib.is_unit(game_state.map,click)){
                 this.first_click = click
                 this.deleteSource(click)
                 draw_list(concat(
@@ -351,7 +458,8 @@ function exec_move(clicks){
     })
 }
 var move_handler = new MultiMoveHandler()
-function make_handler(data){
+var path_handler = new PathHandler()
+function make_handler(data,game_state){
     switch(data.type){
         case "buy_unit": return new BuyHandler(data.unit_type);
         case "build": return new BuildHandler(data.unit_type);
@@ -359,12 +467,14 @@ function make_handler(data){
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
         case "move_multi": move_handler.switched(); return move_handler;
+        case "move_path": path_handler.switched(); return path_handler;
+        case "exec_multi_move": move_handler.make_moves(game_state); move_handler.switched(); return move_handler;
         default: console.log("bad data type"); break;
     }
 }
 //do not change this code unless you know what you are doing
-self.on_set_fn = function(set_data){
-    myhandler = make_handler(set_data)
+self.on_set_fn = function(set_data,game_state){
+    myhandler = make_handler(set_data,game_state)
 }
 self.click_handler = function(click,game_state,active_player){
     //console.log(game_state)
@@ -536,6 +646,7 @@ function is_possible_attack(map, start, target, range){
 module.exports = {
     get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
+    distance: distance,
     is_possible_move: is_possible_move,
     get_shortest_path: get_shortest_path,
     is_possible_attack: is_possible_attack,
@@ -929,6 +1040,9 @@ function all_coords(game_state){
     return res;
 }
 function is_valid(game_state,coord){
+    if(!game_state){
+        return true
+    }
     var map = game_state.map
     return map[coord.y] && map[coord.y][coord.x];
 }
@@ -944,12 +1058,16 @@ function coords_around(game_state,center,range){
     }
     return res;
 }
+function is_unit(map,coord){
+    return at(map,coord).category === "unit"
+}
 
 
 self.lib = {
     get_possible_moves: pathing.get_possible_moves,
     is_possible_move: pathing.is_possible_move,
     get_shortest_path: pathing.get_shortest_path,
+    distance: pathing.distance,
     get_move_range: get_stat_fn("move_range"),
     get_attack_range: get_stat_fn("attack_range"),
     is_empty: is_empty,
@@ -958,14 +1076,15 @@ self.lib = {
     coords_around: coords_around,
     validate_instruction: validate_instruction,
     is_valid: is_valid,
+    is_unit: is_unit,
 }
 
 
-function default_set_data(json_data){
+function default_set_data(json_data,game_state){
     self.set_data = json_data
     if(self.on_set_fn){
         //if set_fn is defined in library, call it too.
-        self.on_set_fn(json_data)
+        self.on_set_fn(json_data,game_state)
     }
 }
 self.click_handler = function(click){
@@ -982,7 +1101,8 @@ function replace_lib(js_code){
 onmessage = function(message){
     var message = message.data
     switch(message.type){
-        case "REPLACE_FUNCTION": default_set_data(JSON.parse(message.json_data)); break;
+        case "REPLACE_FUNCTION": message.game_state.my_player = message.my_player;
+                                 default_set_data(JSON.parse(message.json_data),message.game_state); break;
         case "REPLACE_LIBRARY": replace_lib(message.js_str); break;
         case "CLICK_OCCURED": message.game_state.my_player = message.my_player;
                               click_handler(message.coord, message.game_state); break;
@@ -1398,9 +1518,13 @@ var Signal = signals.Signal
 
 var edit_signal = new Signal()
 var stop_edit_signal = new Signal()
-signals.selectedData.listen(()=>signals.clear_highlights.fire())
-edit_signal.listen(()=>signals.clear_highlights.fire())
+function init_script_signals(){
+    edit_signal = new Signal()
+    stop_edit_signal = new Signal()
 
+    signals.selectedData.listen(()=>signals.clear_highlights.fire())
+    edit_signal.listen(()=>signals.clear_highlights.fire())
+}
 
 class LibPannel extends BaseComponent {
     constructor(parent, basediv){
@@ -1509,6 +1633,7 @@ class PannelButton extends BaseComponent {
 class PannelSelector extends BaseComponent {
     constructor(parent, basediv){
         super(parent, basediv)
+        init_script_signals()
 
         this.pannels = []
         signals.layoutChanged.listen((layout_data)=>{
@@ -1759,7 +1884,11 @@ function switch_away_from_game_page(){
     document.body.style["background-color"] = "white"
 }
 function init_game_page(){
-
+    $(document).keyup(function(e) {
+         if (e.key === "Escape" || e.keycode === 27) {
+             signals.selectedData.setState(signals.selectedData.getState())
+        }
+    });
 }
 
 function init_signals(game_state){
@@ -1776,6 +1905,8 @@ function init_signals(game_state){
         my_web_worker.postMessage({
             type: "REPLACE_FUNCTION",
             json_data: data.json_data,
+            game_state: game_state,
+            my_player: signals.myPlayer.getState(),
         })
     })
     signals.libData.listen(function(js_code){
@@ -2154,17 +2285,6 @@ var example_player_state = {
     ],
     //active_player: "ben's player",
 }
-function init_player_interface(state, active_player, myplayer){
-    for(var id in state.player_info){
-        signals.gameStateChange.fire({
-            type: "SET_MONEY",
-            player: id,
-            amount: state.player_info[id].money
-        })
-    }
-    signals.activePlayer.setState(active_player)
-    signals.myPlayer.setState(myplayer)
-}
 function next_player(player_state, active_player){
     var active_player = signals.activePlayer.getState()
     var idx = player_state.player_order.indexOf(active_player)
@@ -2175,7 +2295,6 @@ function next_player(player_state, active_player){
 module.exports = {
     example_player_state: example_player_state,
     next_player: next_player,
-    init_player_interface: init_player_interface,
 }
 
 },{"./game_display/global_signals.js":5}],11:[function(require,module,exports){
@@ -2500,6 +2619,7 @@ function init_all(){
     signup_login.init_signup_login()
     rankings_page.init_rankings()
     live_connections.init_live_games()
+    game_page.init_game_page()
     //single_player.init_single_player()
     //multi_player.init_multi_player()
 }
@@ -2939,6 +3059,16 @@ function place_initial_units(gamesize,player_ids){
             data: farm,
             coord: farm_coord,
         })
+        var soldier_coord = {
+            x: cen.x,
+            y: cen.y+1
+        }
+        var soldier = create_utils.create_unit("soldier",player_ids[i])
+        all_messages.push({
+            type: "CREATE",
+            data: soldier,
+            coord: soldier_coord,
+        })
     }
     return all_messages
 }
@@ -3112,6 +3242,7 @@ function is_possible_attack(map, start, target, range){
 module.exports = {
     get_possible_moves: get_possible_moves,
     //get_possible_set: get_possible_set,
+    distance: distance,
     is_possible_move: is_possible_move,
     get_shortest_path: get_shortest_path,
     is_possible_attack: is_possible_attack,

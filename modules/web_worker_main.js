@@ -23,6 +23,9 @@ function all_coords(game_state){
     return res;
 }
 function is_valid(game_state,coord){
+    if(!game_state){
+        return true
+    }
     var map = game_state.map
     return map[coord.y] && map[coord.y][coord.x];
 }
@@ -38,12 +41,16 @@ function coords_around(game_state,center,range){
     }
     return res;
 }
+function is_unit(map,coord){
+    return at(map,coord).category === "unit"
+}
 
 
 self.lib = {
     get_possible_moves: pathing.get_possible_moves,
     is_possible_move: pathing.is_possible_move,
     get_shortest_path: pathing.get_shortest_path,
+    distance: pathing.distance,
     get_move_range: get_stat_fn("move_range"),
     get_attack_range: get_stat_fn("attack_range"),
     is_empty: is_empty,
@@ -52,14 +59,15 @@ self.lib = {
     coords_around: coords_around,
     validate_instruction: validate_instruction,
     is_valid: is_valid,
+    is_unit: is_unit,
 }
 
 
-function default_set_data(json_data){
+function default_set_data(json_data,game_state){
     self.set_data = json_data
     if(self.on_set_fn){
         //if set_fn is defined in library, call it too.
-        self.on_set_fn(json_data)
+        self.on_set_fn(json_data,game_state)
     }
 }
 self.click_handler = function(click){
@@ -76,7 +84,8 @@ function replace_lib(js_code){
 onmessage = function(message){
     var message = message.data
     switch(message.type){
-        case "REPLACE_FUNCTION": default_set_data(JSON.parse(message.json_data)); break;
+        case "REPLACE_FUNCTION": message.game_state.my_player = message.my_player;
+                                 default_set_data(JSON.parse(message.json_data),message.game_state); break;
         case "REPLACE_LIBRARY": replace_lib(message.js_str); break;
         case "CLICK_OCCURED": message.game_state.my_player = message.my_player;
                               click_handler(message.coord, message.game_state); break;

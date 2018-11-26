@@ -55,6 +55,17 @@ class TwoClickHandler {
         }
     }
 }
+class NullHandler {
+    handleClick(click,game_state){}
+}
+function is_valid_move(game_state,start,end){
+    var instr = {
+        type: "MOVE",
+        start_coord: start,
+        end_coord: end,
+    }
+    return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+}
 class MoveHandler extends TwoClickHandler {
     getRange(game_state,click){
         return self.lib.get_move_range(game_state,click)
@@ -62,16 +73,8 @@ class MoveHandler extends TwoClickHandler {
     execAction(click2){
         exec_move([this.first_click,click2])
     }
-    is_valid_move(game_state,start,end){
-        var instr = {
-            type: "MOVE",
-            start_coord: start,
-            end_coord: end,
-        }
-        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
-    }
     get_all_valid_around(game_state,start,range){
-        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_move(game_state,start,coord))
+        return lib.coords_around(game_state,start,range).filter((coord)=>is_valid_move(game_state,start,coord))
     }
 }
 class BuyHandler extends TwoClickHandler {
@@ -175,19 +178,111 @@ function make_new_path(game_state,click1,click2){
     }
     return mmovepath
 }
+const hashable = JSON.stringify
 function deep_equals(o1,o2){
     return JSON.stringify(o1) === JSON.stringify(o2)
 }
 function at(map,coord){
     return map[coord.y][coord.x]
 }
+function last(array){
+    return array[array.length-1]
+}
 class MultiMoveHandler{
     constructor(){
         this.paths = []
-        this.first_click = null
+        this.current_path = []
     }
-    updateData(new_data){
-        this.data = new_data
+    handleClick(click,game_state){
+        if(this.current_path.length){
+            var source = this.current_path[0]
+            var current_cen = last(this.current_path)
+            if(deep_equals(current_cen,click)){
+                if(this.current_path.length > 1){
+                    this.paths.push(this.current_path)
+                }
+                this.current_path = []
+            }
+            else{
+                var move_range = self.lib.get_move_range(game_state,source)
+                if(self.lib.distance(current_cen,click) <= move_range){
+                    this.current_path.push(click)
+                }
+            }
+        }
+        else{
+            if(self.lib.is_unit(game_state.map,click)){
+                this.deleteSource(click)
+                this.current_path.push(click)
+            }
+        }
+        this.draw_all(game_state)
+    }
+    switched(){
+        this.current_path = []
+        this.draw_all(null)
+    }
+    deleteSource(coord){
+        for(var i = 0; i < this.paths.length; i++){
+            if(deep_equals(this.paths[i][0],coord)){
+                this.paths.splice(i,1)
+                return
+            }
+        }
+    }
+    draw_all(game_state){
+        var all_fills = concat(this.current_path_highlights(),this.current_choice_highlights(game_state))
+        draw_list(all_fills,this.current_lines())
+    }
+    current_lines(){
+        var all_paths = concat(this.paths,[this.current_path])
+        return merge_arrays(all_paths.map(function(path){
+            var res = []
+            for(var i = 1; i < path.length; i++){
+                res.push(to_line(path[i-1],path[i]))
+            }
+            return res
+        }))
+    }
+    current_choice_highlights(game_state){
+        if(!this.current_path.length){
+            return []
+        }
+        var source = this.current_path[0]
+        var move_range = self.lib.get_move_range(game_state,source)
+        var possible_moves = lib.coords_around(null,last(this.current_path),move_range)
+        return possible_moves.map((coord)=>to_item(coord,"rgba(128,128,128,0.2)"))
+    }
+    make_moves(game_state){
+        var new_paths = []
+        this.paths.forEach((path)=>{
+            if(is_valid_move(game_state,path[0],path[1])){
+                exec_move([path[0],path[1]])
+                if(path.length > 2){
+                    path.shift()
+                    new_paths.push(path)
+                }
+            }
+        })
+        this.paths = new_paths
+    }
+    current_path_highlights(){
+        var all_paths = concat(this.paths,[this.current_path])
+        return []/* merge_arrays(all_paths.map(function(path){
+            var source = path[0]
+            var dest = path[path.length-1]
+            return merge_arrays([
+                [to_item(source,"rgba(255,0,0,0.4)")],
+                [to_item(dest,"rgba(0,0,255,0.4)")],
+                path.slice(1,-1).map((coord) => to_item(coord,"rgba(128,128,128,0.4)")),
+            ])
+        }))*/
+    }
+}
+class PathHandler{
+    constructor(){
+        this.paths = []
+        this.first_click = null
     }
     handleClick(click,game_state){
         if(this.first_click){
@@ -199,7 +294,7 @@ class MultiMoveHandler{
             draw_list(this.current_path_highlights(),this.current_lines())
         }
         else{
-            if(at(game_state.map,click).category === "unit"){
+            if(self.lib.is_unit(game_state.map,click)){
                 this.first_click = click
                 this.deleteSource(click)
                 draw_list(concat(
@@ -276,7 +371,8 @@ function exec_move(clicks){
     })
 }
 var move_handler = new MultiMoveHandler()
-function make_handler(data){
+var path_handler = new PathHandler()
+function make_handler(data,game_state){
     switch(data.type){
         case "buy_unit": return new BuyHandler(data.unit_type);
         case "build": return new BuildHandler(data.unit_type);
@@ -284,12 +380,14 @@ function make_handler(data){
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
         case "move_multi": move_handler.switched(); return move_handler;
+        case "move_path": path_handler.switched(); return path_handler;
+        case "exec_multi_move": move_handler.make_moves(game_state); move_handler.switched(); return move_handler;
         default: console.log("bad data type"); break;
     }
 }
 //do not change this code unless you know what you are doing
-self.on_set_fn = function(set_data){
-    myhandler = make_handler(set_data)
+self.on_set_fn = function(set_data,game_state){
+    myhandler = make_handler(set_data,game_state)
 }
 self.click_handler = function(click,game_state,active_player){
     //console.log(game_state)
