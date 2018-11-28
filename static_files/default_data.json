@@ -26,6 +26,7 @@
     "move": {},
     "attack": {},
     "move_multi": {
+        "paths": [],
         "selectors": [
             "OK"
         ]

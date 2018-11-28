@@ -34,14 +34,6 @@ function draw_list(fill_list,line_list){
         line_list: (line_list ? line_list : []),
     })
 }
-function changeData(id,key,value){
-    postMessage({
-        type: "CHANGE_DATA",
-        id: id,
-        key: key,
-        value: value,
-    })
-}
 class TwoClickHandler {
     constructor(){
         this.first_click = null
@@ -205,8 +197,13 @@ function enumerate_map(array,callback){
 }
 class MultiMoveHandler{
     constructor(){
-        this.paths = []
         this.current_path = []
+    }
+    paths(){
+        return get_data_by_key("move_multi","paths")
+    }
+    setPaths(paths){
+        changeData("move_multi","paths",paths)
     }
     handleClick(click,game_state){
         if(this.current_path.length){
@@ -214,7 +211,9 @@ class MultiMoveHandler{
             var current_cen = last(this.current_path)
             if(deep_equals(current_cen,click)){
                 if(this.current_path.length > 1){
-                    this.paths.push(this.current_path)
+                    var paths = this.paths()
+                    paths.push(this.current_path)
+                    this.setPaths(paths)
                 }
                 this.current_path = []
             }
@@ -238,7 +237,7 @@ class MultiMoveHandler{
             this.make_moves(game_state)
         }
         else if(selector_name === "CANCEL"){
-            this.paths = []
+            this.setPaths([])
             this.current_path = []
         }
         this.draw_all(game_state)
@@ -248,9 +247,11 @@ class MultiMoveHandler{
         this.draw_all(null)
     }
     deleteSource(coord){
-        for(var i = 0; i < this.paths.length; i++){
-            if(deep_equals(this.paths[i][0],coord)){
-                this.paths.splice(i,1)
+        var paths = this.paths()
+        for(var i = 0; i < paths.length; i++){
+            if(deep_equals(paths[i][0],coord)){
+                paths.splice(i,1)
+                this.setPaths(paths)
                 return
             }
         }
@@ -260,7 +261,7 @@ class MultiMoveHandler{
         draw_list(all_fills,this.current_lines())
     }
     current_lines(){
-        var all_paths = concat(this.paths,[this.current_path])
+        var all_paths = concat(this.paths(),[this.current_path])
         return merge_arrays(all_paths.map(function(path){
             var res = []
             for(var i = 1; i < path.length; i++){
@@ -281,7 +282,7 @@ class MultiMoveHandler{
     }
     make_moves(game_state){
         var new_paths = []
-        this.paths.forEach((path)=>{
+        this.paths().forEach((path)=>{
             if(is_valid_move(game_state,path[0],path[1])){
                 exec_move([path[0],path[1]])
                 if(path.length > 2){
@@ -290,10 +291,10 @@ class MultiMoveHandler{
                 }
             }
         })
-        this.paths = new_paths
+        this.setPaths(new_paths)
     }
     current_path_highlights(){
-        var all_paths = concat(this.paths,[this.current_path])
+        var all_paths = concat(this.paths(),[this.current_path])
         return  merge_arrays(all_paths.map(function(path){
             if(path.length === 0){
                 return []
@@ -417,7 +418,7 @@ function make_handler(function_id,game_state){
         case "attack": return new AttackHandler();
         case "move_multi": move_handler.switched(); return move_handler;
         case "move_path": path_handler.switched(); return path_handler;
-        default: console.log("bad data type"); break;
+        default: console.log("bad data type: "+function_id); break;
     }
 }
 self.on_selector_click = function(selector_name,game_state){

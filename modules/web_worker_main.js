@@ -98,16 +98,32 @@ function selector_clicked(selector_name,game_state){
         self.on_selector_click(selector_name,game_state)
     }
 }
+function deep_copy(obj){
+    return JSON.parse(JSON.stringify(obj))
+}
+self.changeData = function(id,key,value){
+    current_data[id][key] = value
+    postMessage({
+        type: "CHANGE_DATA",
+        id: id,
+        key: key,
+        value: value,
+    })
+}
+self.get_data_by_key = function(id,key){
+    return deep_copy(current_data[id][key])
+}
 self.click_handler = function(click){
     console.log("default click activated. You need to set 'self.click_handler' in your library code")
 }
 self.set_id = ""
+var current_data = {}
 self.globals = {}
 function replace_lib(js_code){
     //console.log("replaced library with: "+js_code)
     self.globals = {};
     (new Function(js_code))()
-    self.on_set_fn(self.set_data)
+    self.on_set_fn(self.set_id)
 }
 onmessage = function(message){
     var message = message.data
@@ -119,5 +135,6 @@ onmessage = function(message){
                               click_handler(message.coord, message.game_state); break;
         case "SELECTOR_CLICKED": message.game_state.my_player = message.my_player;
                                  selector_clicked(message.selector_name,message.game_state); break;
+        case "DATA_CHANGED": current_data = message.data;
     }
 }

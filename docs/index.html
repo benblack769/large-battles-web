@@ -398,6 +398,7 @@ main page style
     "move": {},
     "attack": {},
     "move_multi": {
+        "paths": [],
         "selectors": [
             "OK"
         ]
@@ -439,14 +440,6 @@ function draw_list(fill_list,line_list){
         type: "DRAW_RECTS",
         draw_list: fill_list,
         line_list: (line_list ? line_list : []),
-    })
-}
-function changeData(id,key,value){
-    postMessage({
-        type: "CHANGE_DATA",
-        id: id,
-        key: key,
-        value: value,
     })
 }
 class TwoClickHandler {
@@ -612,8 +605,13 @@ function enumerate_map(array,callback){
 }
 class MultiMoveHandler{
     constructor(){
-        this.paths = []
         this.current_path = []
+    }
+    paths(){
+        return get_data_by_key("move_multi","paths")
+    }
+    setPaths(paths){
+        changeData("move_multi","paths",paths)
     }
     handleClick(click,game_state){
         if(this.current_path.length){
@@ -621,7 +619,9 @@ class MultiMoveHandler{
             var current_cen = last(this.current_path)
             if(deep_equals(current_cen,click)){
                 if(this.current_path.length > 1){
-                    this.paths.push(this.current_path)
+                    var paths = this.paths()
+                    paths.push(this.current_path)
+                    this.setPaths(paths)
                 }
                 this.current_path = []
             }
@@ -645,7 +645,7 @@ class MultiMoveHandler{
             this.make_moves(game_state)
         }
         else if(selector_name === "CANCEL"){
-            this.paths = []
+            this.setPaths([])
             this.current_path = []
         }
         this.draw_all(game_state)
@@ -655,9 +655,11 @@ class MultiMoveHandler{
         this.draw_all(null)
     }
     deleteSource(coord){
-        for(var i = 0; i < this.paths.length; i++){
-            if(deep_equals(this.paths[i][0],coord)){
-                this.paths.splice(i,1)
+        var paths = this.paths()
+        for(var i = 0; i < paths.length; i++){
+            if(deep_equals(paths[i][0],coord)){
+                paths.splice(i,1)
+                this.setPaths(paths)
                 return
             }
         }
@@ -667,7 +669,7 @@ class MultiMoveHandler{
         draw_list(all_fills,this.current_lines())
     }
     current_lines(){
-        var all_paths = concat(this.paths,[this.current_path])
+        var all_paths = concat(this.paths(),[this.current_path])
         return merge_arrays(all_paths.map(function(path){
             var res = []
             for(var i = 1; i < path.length; i++){
@@ -688,7 +690,7 @@ class MultiMoveHandler{
     }
     make_moves(game_state){
         var new_paths = []
-        this.paths.forEach((path)=>{
+        this.paths().forEach((path)=>{
             if(is_valid_move(game_state,path[0],path[1])){
                 exec_move([path[0],path[1]])
                 if(path.length > 2){
@@ -697,10 +699,10 @@ class MultiMoveHandler{
                 }
             }
         })
-        this.paths = new_paths
+        this.setPaths(new_paths)
     }
     current_path_highlights(){
-        var all_paths = concat(this.paths,[this.current_path])
+        var all_paths = concat(this.paths(),[this.current_path])
         return  merge_arrays(all_paths.map(function(path){
             if(path.length === 0){
                 return []
@@ -824,7 +826,7 @@ function make_handler(function_id,game_state){
         case "attack": return new AttackHandler();
         case "move_multi": move_handler.switched(); return move_handler;
         case "move_path": path_handler.switched(); return path_handler;
-        default: console.log("bad data type"); break;
+        default: console.log("bad data type: "+function_id); break;
     }
 }
 self.on_selector_click = function(selector_name,game_state){
@@ -1474,16 +1476,32 @@ function selector_clicked(selector_name,game_state){
         self.on_selector_click(selector_name,game_state)
     }
 }
+function deep_copy(obj){
+    return JSON.parse(JSON.stringify(obj))
+}
+self.changeData = function(id,key,value){
+    current_data[id][key] = value
+    postMessage({
+        type: "CHANGE_DATA",
+        id: id,
+        key: key,
+        value: value,
+    })
+}
+self.get_data_by_key = function(id,key){
+    return deep_copy(current_data[id][key])
+}
 self.click_handler = function(click){
     console.log("default click activated. You need to set 'self.click_handler' in your library code")
 }
 self.set_id = ""
+var current_data = {}
 self.globals = {}
 function replace_lib(js_code){
     //console.log("replaced library with: "+js_code)
     self.globals = {};
     (new Function(js_code))()
-    self.on_set_fn(self.set_data)
+    self.on_set_fn(self.set_id)
 }
 onmessage = function(message){
     var message = message.data
@@ -1495,6 +1513,7 @@ onmessage = function(message){
                               click_handler(message.coord, message.game_state); break;
         case "SELECTOR_CLICKED": message.game_state.my_player = message.my_player;
                                  selector_clicked(message.selector_name,message.game_state); break;
+        case "DATA_CHANGED": current_data = message.data;
     }
 }
 
@@ -2376,6 +2395,12 @@ function init_signals(game_state){
             my_player: signals.myPlayer.getState(),
         })
     })
+    signals.buttonData.listen(function(buttondata){
+        my_web_worker.postMessage({
+            type: "DATA_CHANGED",
+            data: buttondata,
+        })
+    })
 }
 function init_html_ui(gamesize,player_order){
     var basediv = document.getElementById("single_page_game_overlay")
@@ -2981,11 +3006,46 @@ function process_instruction_backend(game_state,instruction,player){
 function process_instruction(game_state,instruction,player){
     game_page.process_message_frontend(game_state,instruction,player,process_instruction_backend)
 }
+var player_frontend_data = {}
+function init_player_frontend_data(player_order){
+    var lib_data = document.getElementById("default_lib_src").innerHTML
+    var data_data = JSON.parse(document.getElementById("default_data_src").innerHTML)
+    var layout_data = JSON.parse(document.getElementById("default_layout_src").innerHTML)
+    player_order.forEach(function(player){
+        player_frontend_data[player] = {
+            lib_data: lib_data,
+            data_data: data_data,
+            layout_data: layout_data,
+        }
+    })
+}
 function init_signals(game_state){
     signals.clear_all_signals()
     game_page.init_signals(game_state)
     signals.ended_turn.listen(() => {
         process_instruction_backend(game_state,{type:"END_TURN"},signals.myPlayer.getState())
+        var myplayer = signals.myPlayer.getState()
+        signals.libData.setState(player_frontend_data[myplayer].lib_data)
+        signals.layoutChanged.setState(player_frontend_data[myplayer].layout_data)
+        signals.buttonData.setState(player_frontend_data[myplayer].data_data)
+    })
+    signals.libData.listen(function(newstate){
+        var myplayer = signals.myPlayer.getState()
+        if(myplayer){
+            player_frontend_data[myplayer].lib_data = newstate
+        }
+    })
+    signals.layoutChanged.listen(function(newstate){
+        var myplayer = signals.myPlayer.getState()
+        if(myplayer){
+            player_frontend_data[myplayer].layout_data = newstate
+        }
+    })
+    signals.buttonData.listen(function(newstate){
+        var myplayer = signals.myPlayer.getState()
+        if(myplayer){
+            player_frontend_data[myplayer].data_data = newstate
+        }
     })
     signals.activePlayer.listen(function(newstate){
         signals.myPlayer.setState(newstate)
@@ -3013,6 +3073,7 @@ function create_single_player(){
         map: null,
         stats: null,
     }
+    init_player_frontend_data(player_utils.example_player_state.player_order)
     init_signals(game_state)
 
     game_page.set_worker_callback(function(message){

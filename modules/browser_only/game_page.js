@@ -92,6 +92,12 @@ function init_signals(game_state){
             my_player: signals.myPlayer.getState(),
         })
     })
+    signals.buttonData.listen(function(buttondata){
+        my_web_worker.postMessage({
+            type: "DATA_CHANGED",
+            data: buttondata,
+        })
+    })
 }
 function init_html_ui(gamesize,player_order){
     var basediv = document.getElementById("single_page_game_overlay")
