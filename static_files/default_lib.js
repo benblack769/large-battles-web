@@ -458,6 +458,9 @@ function draw_occupation(game_state){
 var move_handler = new MultiMoveHandler()
 var path_handler = new PathHandler()
 function make_handler(function_id,game_state){
+    if(!game_state || !game_state.map){
+        return;
+    }
     switch(function_id){
         case "build_farm": return new BuildHandler("farm",game_state);
         case "build_barracks": return new BuildHandler("barracks",game_state);

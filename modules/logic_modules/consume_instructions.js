@@ -90,7 +90,7 @@ function set_unit_val(map,ocmap){
 }
 function update_occupied(game_state){
     var ocmap = game_state.occupied
-    for(var i = 0; i < 10; i++){
+    for(var i = 0; i < 60; i++){
         ocmap = update_iter(game_state.map,ocmap)
     }
     set_unit_val(game_state.map,ocmap)
