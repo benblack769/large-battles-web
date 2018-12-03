@@ -3,15 +3,28 @@ var create_utils = require("./create_utils.js")
 
 var num_players = 2;
 
-function init_map(gamesize){
+function deep_copy(obj){
+    return JSON.parse(JSON.stringify(obj))
+}
+function init2d(gamesize,value){
     var map = new Array(gamesize.ysize)
     for(var i = 0; i < gamesize.ysize; i++){
         map[i] = new Array(gamesize.xsize)
         for(var j = 0; j < gamesize.xsize; j++){
-            map[i][j] = create_utils.create_empty()
+            map[i][j] = deep_copy(value)
         }
     }
     return map
+}
+function init_map(gamesize){
+    return init2d(gamesize,create_utils.create_empty())
+}
+function init_oppupied(gamesize,player_order){
+    var init_occ = {}
+    player_order.forEach(function(player){
+        init_occ[player] = 0
+    })
+    return init2d(gamesize,init_occ)
 }
 function get_player_start_coords(gamesize){
     var cmath = new CMath(gamesize.xsize, gamesize.ysize)
@@ -64,5 +77,6 @@ function place_initial_units(gamesize,player_ids){
 }
 module.exports = {
     init_map: init_map,
+    init_oppupied: init_oppupied,
     place_initial_units: place_initial_units,
 }

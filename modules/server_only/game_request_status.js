@@ -11,7 +11,7 @@ function ClientInfo(on_add_waiting, on_remove_waiting, on_add_requester, on_disc
     */
     this.client_mapping = {}
     this.is_authenticated = function(client_id){
-        return client_id && this.client_mapping[client_id] !== undefined
+        return client_id && this.client_mapping[client_id]
     }
     this.authenticated = function(client_id, client_info){
         if(this.is_authenticated(client_id)){

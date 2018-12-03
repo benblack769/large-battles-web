@@ -162,7 +162,10 @@ function decomp_endturn(gamestate,instr,player){
         type: "SET_ACTIVE_PLAYER",
         player: next_player(gamestate.players,player),
     }
-    var total_list = status_resets.concat([money_entry,active_entry])
+    var update_occ = {
+        type: "UPDATE_OCCUPIED"
+    }
+    var total_list = status_resets.concat([money_entry,update_occ,active_entry])
     return total_list
 }
 function decomp_buy_unit(gamestate,instr,player){

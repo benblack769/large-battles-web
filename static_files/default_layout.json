@@ -11,6 +11,10 @@
     {
         "id": "build_armory",
         "icon": "armory.png"
+    },
+    {
+        "id": "draw_occupation",
+        "text": "hightlight"
     }
 ],
 [

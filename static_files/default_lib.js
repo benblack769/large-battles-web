@@ -405,6 +405,30 @@ function exec_move(clicks){
         end_coord: clicks[1],
     })
 }
+function to_rgba(colorname,a){
+    switch(colorname){
+        case "red": return "rgba(255,0,0,"+a+")";
+        case "blue": return "rgba(0,0,255,"+a+")";
+    }
+}
+function draw_occupation(game_state){
+    var player_colors = {}
+    player_colors[game_state.players.player_order[0]] = "red"
+    player_colors[game_state.players.player_order[1]] = "blue"
+
+    var all_highlights = []
+    lib.all_coords(game_state).forEach(function(coord){
+        var occ = lib.at(game_state.occupied,coord)
+        for(var player in occ){
+            var color = player_colors[player]
+            var val = occ[player]
+            var val_max = 10
+            var rgba = to_rgba(color,(Math.min(1,val/val_max))*0.5)
+            all_highlights.push(to_item(coord,rgba))
+        }
+    })
+    draw_list(all_highlights)
+}
 var move_handler = new MultiMoveHandler()
 var path_handler = new PathHandler()
 function make_handler(function_id,game_state){
@@ -416,6 +440,7 @@ function make_handler(function_id,game_state){
         case "buy_armor": return new AttachHandler("armor");
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
+        case "draw_occupation": draw_occupation(game_state); return new NullHandler();
         case "move_multi": move_handler.switched(); return move_handler;
         case "move_path": path_handler.switched(); return path_handler;
         default: console.log("bad data type: "+function_id); break;

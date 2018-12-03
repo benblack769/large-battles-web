@@ -88,9 +88,6 @@ function make_game_map(){
         [ee(),U1(),C1(),ee()],
     ]
 }
-function deep_copy(obj){
-    return JSON.parse(JSON.stringify(obj))
-}
 function make_game_state(){
     return {
         map: make_game_map(),

@@ -10,9 +10,6 @@ var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 var game_page = require("./game_page.js")
 
-function deep_copy(obj){
-    return JSON.parse(JSON.stringify(obj))
-}
 function process_instruction_backend(game_state,instruction,player){
     var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
     instr_parts.forEach(function(part){
