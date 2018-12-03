@@ -89,59 +89,13 @@ function make_game_map(){
     ]
 }
 function make_game_state(){
-    return {
+    var state =  {
         map: make_game_map(),
         players: make_player_state(120,120),
         stats: make_stats(),
     }
+    return state
 }
-
-test('validate_build_over', function (t) {
-    var game = make_game_state()
-    var instr1 = {
-        type: "BUILD",
-        coord: {x:2,y:3},
-        building_type: "cheap_building",
-    }
-    t.true(validate(game,instr1,"p1"))
-    t.end()
-})
-test('validate_build_type', function (t) {
-    var game = make_game_state()
-    var instr1 = {
-        type: "BUILD",
-        coord: {x:1,y:1},
-        building_type: "bad_build_type",
-    }
-    t.true(validate(game,instr1,"p1"))
-    t.end()
-})
-
-test('validate_active_player', function (t) {
-    var game = make_game_state()
-    var instr1 = {
-        type: "BUILD",
-        coord: {x:0,y:0},
-        building_type: "cheap_building",
-    }
-    t.false(validate(game,instr1,"p1"))
-    game.players.active_player = "p2"
-    t.true(validate(game,instr1,"p1"))
-    t.false(validate(game,instr1,"p2"))
-    t.end()
-})
-test('validate_money_build', function (t) {
-    var game = make_game_state()
-    var instr1 = {
-        type: "BUILD",
-        coord: {x:0,y:0},
-        building_type: "cheap_building",
-    }
-    t.false(validate(game,instr1,"p1"))
-    game.players.player_info["p1"].money = 5
-    t.true(validate(game,instr1,"p1"))
-    t.end()
-})
 
 test('validate_buy_unit', function (t) {
     var game = make_game_state()

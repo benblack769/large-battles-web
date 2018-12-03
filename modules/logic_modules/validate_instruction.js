@@ -131,6 +131,23 @@ function assert_buildable(build_type, game_stats){
         throw new Error('Unit type not buildable!')
     }
 }
+function sum_values(obj){
+    return  Object.values(obj).reduce((a,b)=>(a+b))
+}
+function is_occupied_by(occ,player){
+    var tot_occ = sum_values(occ)
+    var player_occ = occ[player]
+    var prop_occ = player_occ / (tot_occ + 1e-10)
+    var ratio_min = 0.9
+    var abs_min = 20
+    return prop_occ > ratio_min &&
+        player_occ > abs_min
+}
+function assert_occupied(game_state,coord,player){
+    if(!is_occupied_by(at(game_state.occupied,coord),player)){
+        throw new Error('You do not occupy this square')
+    }
+}
 function valid_build(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_type","coord"])
     assert_is_valid_coord(instr.coord,gamestate.map)
@@ -138,6 +155,7 @@ function valid_build(gamestate, instr, player){
     assert_active_player(gamestate,player)
     assert_empty(gamestate.map, instr.coord)
     assert_buildable(instr.building_type,gamestate.stats)
+    assert_occupied(gamestate,instr.coord,player)
     assert_money_enough(instr.building_type, player, gamestate)
 }
 function valid_end_turn(gamestate, instr, player){

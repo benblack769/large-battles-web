@@ -424,7 +424,7 @@ function draw_occupation(game_state){
         for(var player in occ){
             var color = player_colors[player]
             var val = occ[player]
-            var val_max = 10
+            var val_max = 20
             var proportion = val / (tot_oc+0.00001)
             var absolute_val = (Math.min(1,val/val_max))
             var draw_val = Math.min(proportion,absolute_val)
