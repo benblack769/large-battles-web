@@ -19,6 +19,7 @@ function init_game_interface(game_state,started_instr){
     game_page.init_html_ui(started_instr.game_size,started_instr.player_order)
     var creds = signup_login.get_credentials()
     signals.myPlayer.setState(creds.username)
+    signals.selectedData.setState(signals.selectedData.getState())
     game_page.switch_to_game_page()
 }
 function validate_websocket_instruction(game_state,instr,player){

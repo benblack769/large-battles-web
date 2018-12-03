@@ -64,7 +64,7 @@ function is_valid_move(game_state,start,end){
         start_coord: start,
         end_coord: end,
     }
-    return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+    return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
 }
 class MoveHandler extends TwoClickHandler {
     getRange(game_state,click){
@@ -98,15 +98,36 @@ class BuyHandler extends TwoClickHandler {
             placement_coord: end,
             buy_type: this.buy_type,
         }
-        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }
 class BuildHandler {
-    constructor(buy_type){
+    constructor(buy_type,game_state){
         this.buy_type = buy_type
+        this.draw_all(game_state)
     }
-    handleClick(click){
-        make_building(click,this.buy_type)
+    handleClick(click,game_state){
+        var instr = {
+            type: "BUILD",
+            building_type: this.buy_type,
+            coord: click,
+        }
+        postMessage(instr)
+        self.lib.simulate_instruction(game_state,instr,game_state.my_player)
+        this.draw_all(game_state)
+    }
+    draw_all(game_state){
+        draw_list(lib.all_coords(game_state)
+           .filter((coord)=>this.is_valid_buy(game_state,coord))
+           .map((coord)=>to_item(coord,"rgba(128,128,128,0.4)")))
+    }
+    is_valid_buy(game_state,coord){
+        var instr = {
+            type: "BUILD",
+            building_type: this.buy_type,
+            coord: coord,
+        }
+        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }
 class AttachHandler extends TwoClickHandler {
@@ -130,7 +151,7 @@ class AttachHandler extends TwoClickHandler {
             equip_coord: end,
             equip_type: this.buy_type,
         }
-        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }
 class AttackHandler extends TwoClickHandler {
@@ -150,7 +171,7 @@ class AttackHandler extends TwoClickHandler {
             source_coord: start,
             target_coord: end,
         }
-        return !self.lib.validate_instruction(game_state,instr,game_state.my_player)
+        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
     get_all_valid_around(game_state,start,range){
         return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_attack(game_state,start,coord))
@@ -438,9 +459,9 @@ var move_handler = new MultiMoveHandler()
 var path_handler = new PathHandler()
 function make_handler(function_id,game_state){
     switch(function_id){
-        case "build_farm": return new BuildHandler("farm");
-        case "build_barracks": return new BuildHandler("barracks");
-        case "build_armory": return new BuildHandler("armory");
+        case "build_farm": return new BuildHandler("farm",game_state);
+        case "build_barracks": return new BuildHandler("barracks",game_state);
+        case "build_armory": return new BuildHandler("armory",game_state);
         case "buy_soldier": return new BuyHandler("soldier");
         case "buy_armor": return new AttachHandler("armor");
         case "move": return new MoveHandler();

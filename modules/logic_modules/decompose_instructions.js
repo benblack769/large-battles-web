@@ -222,6 +222,9 @@ function decomp_init_game(gamestate,instr,player){
         }].concat(money_setups)
           .concat(instr.initial_creations)
           .concat(all_resets)
+          .concat([{
+              type: "UPDATE_OCCUPIED"
+          }])
 }
 var decomp_funcs = {
     "MOVE": decomp_move,

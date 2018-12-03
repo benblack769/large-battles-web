@@ -78,6 +78,7 @@ function execute_init_instr(gamesize,game_state){
         stats: types.default_stats,
     }
     process_instruction(game_state,init_instr,"__server")
+    signals.selectedData.setState(signals.selectedData.getState())
 }
 function create_single_player(){
     var gamesize = {

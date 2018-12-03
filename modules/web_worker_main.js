@@ -1,10 +1,23 @@
 var pathing = require("./logic_modules/pathing.js")
 var calc_stat = require("./logic_modules/types.js").calc_stat
 var validate_instruction = require("./logic_modules/validate_instruction.js").validate_instruction
+var decompose_instructions = require("./logic_modules/decompose_instructions.js").decompose_instructions
+var consume_instructions = require("./logic_modules/consume_instructions.js").consume_change
 
 function get_stat_fn(stat_name){
     return function(game_state,coord){
         return calc_stat(game_state.stats,at(game_state.map,coord),stat_name)
+    }
+}
+function is_valid_instr(game_state,instr,player){
+    return ! validate_instruction(game_state,instr,player)
+}
+function simulate_instruction(game_state,instr,player){
+    if(is_valid_instr(game_state,instr,player)){
+        var decomps = decompose_instructions(game_state,instr,player)
+        decomps.forEach(function(sinstr){
+            consume_instructions(game_state,sinstr)
+        })
     }
 }
 function at(map,coord){
@@ -78,7 +91,8 @@ self.lib = {
     at: at,
     all_coords: all_coords,
     coords_around: coords_around,
-    validate_instruction: validate_instruction,
+    is_valid_instr: is_valid_instr,
+    simulate_instruction: simulate_instruction,
     is_valid: is_valid,
     is_unit: is_unit,
     is_moveable_unit: is_moveable_unit,
