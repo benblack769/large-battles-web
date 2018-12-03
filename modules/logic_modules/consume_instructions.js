@@ -79,7 +79,11 @@ function set_unit_val(map,ocmap){
         for(var x = 0; x < ocmap[y].length; x++){
             var unit = map[y][x]
             if(unit.category === "unit"){
-                ocmap[y][x][unit.player] = 100
+                var occ = ocmap[y][x]
+                for(var p in occ){
+                    occ[p] = 0
+                }
+                occ[unit.player] = 100
             }
         }
     }
@@ -89,6 +93,7 @@ function update_occupied(game_state){
     for(var i = 0; i < 10; i++){
         ocmap = update_iter(game_state.map,ocmap)
     }
+    set_unit_val(game_state.map,ocmap)
     game_state.occupied = ocmap
 }
 function on_victory(){

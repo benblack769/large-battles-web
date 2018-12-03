@@ -419,11 +419,16 @@ function draw_occupation(game_state){
     var all_highlights = []
     lib.all_coords(game_state).forEach(function(coord){
         var occ = lib.at(game_state.occupied,coord)
+        var tot_oc = Object.values(occ)
+                           .reduce((a,b)=>(a+b))
         for(var player in occ){
             var color = player_colors[player]
             var val = occ[player]
             var val_max = 10
-            var rgba = to_rgba(color,(Math.min(1,val/val_max))*0.5)
+            var proportion = val / (tot_oc+0.00001)
+            var absolute_val = (Math.min(1,val/val_max))
+            var draw_val = Math.min(proportion,absolute_val)
+            var rgba = to_rgba(color,draw_val*0.5)
             all_highlights.push(to_item(coord,rgba))
         }
     })

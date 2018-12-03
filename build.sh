@@ -6,4 +6,4 @@ browserify modules/web_worker_main.js > static_files/web_worker.js
 uglifycss static_files/style.css > static_files/style.min.css
 (cd static_files; python ../process_html.py .)
 gzip -k -f static_files/index.html
-cp static_files/index.html docs/
+#cp static_files/index.html docs/
