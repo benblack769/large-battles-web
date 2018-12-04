@@ -150,7 +150,7 @@ class PannelSelector extends BaseComponent {
             })
             var pannel_buttons = []
             for(var i = 0; i < layout_data.length; i++){
-                console.log(layout_data[i])
+                //console.log(layout_data[i])
                 pannel_buttons.push(new PannelButton(this,this.selector_div,i,this.pannel_selector))
             }
             var base_signal = signals.selectedData
@@ -331,7 +331,7 @@ class PlayerInfoPannel extends BaseComponent {
     }
     statusChanged(circ,player_id){
         var act_player = signals.activePlayer.getState()
-        
+
         //var newcolor = this.colorForState(player_id,myplayer,act_player)
         circ.innerHTML = (player_id === act_player) ? "☼" : "☽"
         //circ.style["background-color"] = newcolor
