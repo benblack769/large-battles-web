@@ -11,6 +11,7 @@ var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 var signup_login = require("./signup_login.js")
 var game_page = require("./game_page.js")
+var nav_signal = require("./nav_signal.js")
 
 var server_socket = null
 
@@ -21,7 +22,7 @@ function init_game_interface(game_state,started_instr){
     var creds = signup_login.get_credentials()
     signals.myPlayer.setState(creds.username)
     signals.selectedData.setState(signals.selectedData.getState())
-    game_page.switch_to_game_page()
+    nav_signal.change_page.fire("game_naventry")
 }
 function validate_websocket_instruction(game_state,instr,player){
     var error = validate.validate_instruction(game_state,instr,player)

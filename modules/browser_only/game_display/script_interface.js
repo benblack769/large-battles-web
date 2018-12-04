@@ -332,9 +332,7 @@ class PlayerInfoPannel extends BaseComponent {
     statusChanged(circ,player_id){
         var act_player = signals.activePlayer.getState()
 
-        //var newcolor = this.colorForState(player_id,myplayer,act_player)
         circ.innerHTML = (player_id === act_player) ? "☼" : "☽"
-        //circ.style["background-color"] = newcolor
     }
     makePlayerRow(player_id){
         var player_box = createEl('tr',{
@@ -363,20 +361,6 @@ class PlayerInfoPannel extends BaseComponent {
             ]
         })
         return player_box
-    }
-    colorForState(this_id,my_id,active_id){
-        if(this_id === my_id && this_id === active_id){
-            return "green"
-        }
-        else if(this_id === my_id){
-            return "blue"
-        }
-        else if(this_id === active_id){
-            return "red"
-        }
-        else{
-            return "white"
-        }
     }
     makeMoney(player_id){
         var money = createSpan({})

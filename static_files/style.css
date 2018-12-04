@@ -67,13 +67,15 @@ img {
     z-index: 500;
 }
 .horizontal-center{
-    width: 100%;
+    /*width: 100%;*/
+    text-align: center;
     margin: auto;
 }
 .central_cancel_message{
     height: 50%;
     font-size: 1.3em;
     color: white;
+    display:block;
     padding: 0.9em;
 }
 .central_cancel_button_holder{

@@ -10,6 +10,7 @@ var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
 var game_page = require("./game_page.js")
+var nav_signal = require("./nav_signal.js")
 
 function process_instruction_backend(game_state,instruction,player){
     var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
@@ -116,7 +117,7 @@ function create_single_player(){
     game_page.init_html_ui(gamesize,player_utils.example_player_state.player_order)
     game_page.init_web_worker()
     execute_init_instr(gamesize,game_state)
-    game_page.switch_to_game_page()
+    nav_signal.change_page.fire("game_naventry")
 }
 
 module.exports = {

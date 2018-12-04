@@ -8,6 +8,7 @@ var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
 var player_utils = require("./player_utils.js")
+var nav_signal = require("./nav_signal.js")
 
 function init_web_worker(){
     var lib_data = document.getElementById("default_lib_src").innerHTML
@@ -59,6 +60,9 @@ function init_game_page(){
              signals.selectedData.setState(signals.selectedData.getState())
         }
     });
+    $("#goto_live_games").click(function(){
+        nav_signal.change_page.fire("live_connect_naventry")
+    })
 }
 
 function init_signals(game_state){
@@ -108,6 +112,8 @@ function init_signals(game_state){
     })
 }
 function init_html_ui(gamesize,player_order){
+    $(".player_info_bar").show()
+    $("#game_not_started_message").hide()
     var basediv = document.getElementById("single_page_game_overlay")
     basediv.innerHTML = ""
     set_player_colors(player_order)

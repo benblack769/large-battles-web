@@ -25,21 +25,6 @@ function init_oppupied(gamesize,player_order){
     })
     return init2d(gamesize,init_occ)
 }
-function get_player_start_coords(gamesize){
-    var cmath = new CMath(gamesize.xsize, gamesize.ysize)
-    var min_dist_from_borders = 3
-    var min_dist_from_players = 5
-    var player_centers = [];
-    for(var i = 0; i < num_players; i++){
-        var center;
-        do {
-            center = cmath.random_coord()
-        } while (cmath.min_distance(center,player_centers) < min_dist_from_players ||
-                cmath.dist_border(center) < min_dist_from_borders);
-        player_centers.push(center)
-    }
-    return player_centers
-}
 function rand_int(max_val){
     return Math.floor(Math.random()*max_val)
 }

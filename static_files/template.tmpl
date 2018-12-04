@@ -25,7 +25,7 @@
     <div id="menu">
         <span id="home_naventry" class="menu_entry">Home</span>
         <span id="rankings_naventry" class="menu_entry">Rankings</span>
-        <span id="live_connect_naventry" class="menu_entry">Live Games</span>
+        <span id="live_connect_naventry" class="menu_entry">Start Game</span>
         <span id="game_naventry" class="menu_entry">Game</span>
     </div>
     <div id="profile">
@@ -151,6 +151,17 @@
         <div id="single_page_game_overlay">
         </div>
 
+        <div id="game_not_started_message" class="gray_page_overlay">
+            <div class="central_cancel_box">
+                <div class="central_cancel_message horizontal-center">
+                     No game running. Go to live pages to run game.
+                </div>
+                <div class="central_cancel_button_holder">
+                    <span class="central_cancel_button" id="goto_live_games">Ok</span>
+                </div>
+            </div>
+        </div>
+
         <div id="global_text_popup" class="gray_page_overlay" hidden>
             <div class="central_text_edit_box">
                 <div class="central_text_edit horizontal-center">
@@ -163,7 +174,7 @@
                 </div>
             </div>
         </div>
-        <div class="player_info_bar">
+        <div class="player_info_bar" hidden>
             <table class="player_info_table">
                 <thead>
                     <tr>
