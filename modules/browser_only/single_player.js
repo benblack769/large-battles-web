@@ -1,16 +1,17 @@
 var types = require("../logic_modules/types.js")
-var canv_inter = require("./game_display/canvas_interface.js")
-var script_inter = require("./game_display/script_interface.js")
-var base_inter = require("./game_display/base_component.js")
 var info_display = require("./game_display/info_display.js")
 var signals = require("./game_display/global_signals.js")
 var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
-var player_utils = require("./player_utils.js")
 var game_page = require("./game_page.js")
 var nav_signal = require("./nav_signal.js")
+
+var single_player_players = [
+    "Player A",
+    "Player B",
+]
 
 function process_instruction_backend(game_state,instruction,player){
     var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
@@ -86,13 +87,13 @@ function init_signals(game_state){
     })
 }
 function execute_init_instr(gamesize,game_state){
-    var player_order = player_utils.example_player_state.player_order
+    var player_order = single_player_players
     var init_instr = {
         type: "GAME_STARTED",
         game_size: gamesize,
         initial_creations: init_game.place_initial_units(gamesize,player_order),
         player_order: player_order,
-        initial_money: 500,
+        initial_money: 100,
         stats: types.default_stats,
     }
     process_instruction(game_state,init_instr,"__server")
@@ -108,13 +109,13 @@ function create_single_player(){
         map: null,
         stats: null,
     }
-    init_player_frontend_data(player_utils.example_player_state.player_order)
+    init_player_frontend_data(single_player_players)
     init_signals(game_state)
 
     game_page.set_worker_callback(function(message){
         process_instruction(game_state,message,signals.myPlayer.getState())
     })
-    game_page.init_html_ui(gamesize,player_utils.example_player_state.player_order)
+    game_page.init_html_ui(gamesize,single_player_players)
     game_page.init_web_worker()
     execute_init_instr(gamesize,game_state)
     nav_signal.change_page.fire("game_naventry")

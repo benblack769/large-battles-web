@@ -7,7 +7,6 @@ var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
-var player_utils = require("./player_utils.js")
 var nav_signal = require("./nav_signal.js")
 
 function init_web_worker(){

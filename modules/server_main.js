@@ -124,7 +124,7 @@ function start_game(){
         game_size: game_size,
         initial_creations: init_game.place_initial_units(game_size,player_order),
         player_order: player_order,
-        initial_money: 500,
+        initial_money: 100,
         stats: types.default_stats,
     }
     disperse_instruction(game_state,init_instr,"__server")
