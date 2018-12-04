@@ -26,6 +26,14 @@ function set_worker_callback(onmessage_fn){
         onmessage_fn(message.data)
     }
 }
+function set_player_colors(players_order){
+    var pcolors = {}
+    var color_cycle = ["red","blue"]
+    for(var i = 0; i < players_order.length; i++){
+        pcolors[players_order[i]] = color_cycle[i]
+    }
+    signals.playerColors.setState(pcolors)
+}
 class GameInterface extends base_inter.BaseComponent {
     constructor(parent,basediv,gamesize,init_player_state){
         super(parent,basediv)
@@ -102,6 +110,7 @@ function init_signals(game_state){
 function init_html_ui(gamesize,player_order){
     var basediv = document.getElementById("single_page_game_overlay")
     basediv.innerHTML = ""
+    set_player_colors(player_order)
     var base = new GameInterface(null, basediv, gamesize, player_order)
 
     var default_layout = document.getElementById("default_layout_src").innerHTML

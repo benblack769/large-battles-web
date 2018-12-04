@@ -323,7 +323,7 @@ class PlayerInfoPannel extends BaseComponent {
     }
     createStatusCircle(player_id){
         var circ = createSpan({
-            className: "player_status_dot",
+            className: "player_active_star",
         })
         signals.activePlayer.listen(() => this.statusChanged(circ,player_id))
         signals.myPlayer.listen(() => this.statusChanged(circ,player_id))
@@ -331,9 +331,10 @@ class PlayerInfoPannel extends BaseComponent {
     }
     statusChanged(circ,player_id){
         var act_player = signals.activePlayer.getState()
-        var myplayer = signals.myPlayer.getState()
-        var newcolor = this.colorForState(player_id,myplayer,act_player)
-        circ.style["background-color"] = newcolor
+        
+        //var newcolor = this.colorForState(player_id,myplayer,act_player)
+        circ.innerHTML = (player_id === act_player) ? "☼" : "☽"
+        //circ.style["background-color"] = newcolor
     }
     makePlayerRow(player_id){
         var player_box = createEl('tr',{
@@ -342,13 +343,23 @@ class PlayerInfoPannel extends BaseComponent {
                     children: [this.createStatusCircle(player_id)]
                 }),
                 createEl('td',{
+                    children: [
+                        createSpan({
+                            className: "player_status_dot",
+                            style: {
+                                "background-color": signals.playerColors.getState()[player_id]
+                            }
+                        })
+                    ]
+                }),
+                createEl('td',{
+                    children: [this.makeMoney(player_id)]
+                }),
+                createEl('td',{
                     children: [createSpan({
                         innerText: player_id
                     })]
                 }),
-                createEl('td',{
-                    children: [this.makeMoney(player_id)]
-                })
             ]
         })
         return player_box

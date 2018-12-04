@@ -2,14 +2,14 @@ import base64
 from jinja2 import Template
 import sys
 import os
-import urllib2
+import urllib.request
 
 def encodebase64(filename):
     fin = open(filename, 'rb')
     contents = fin.read()
     data_url = base64.b64encode(contents)
     fin.close()
-    return data_url
+    return data_url.decode("utf-8") 
 
 def make_data_url_png(filename):
 	prefix = 'data:image/png;base64,'
@@ -42,8 +42,8 @@ def get_remote_file(url):
     if os.path.exists(basename):
         return get_local_file(basename)
     else:
-        response = urllib2.urlopen(url)
-        html = response.read()
+        with urllib.request.urlopen('http://python.org/') as response:
+            html = response.read()
         save_file(html,basename)
         return html
 

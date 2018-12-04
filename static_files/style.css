@@ -277,6 +277,11 @@ main page style
   border-radius: 50%;
   display: inline-block;
 }
+.player_active_star {
+    font-size: 1.5em;
+    height: 1.3em;
+    display: inline-block;
+}
 .player_info_table{
     background-color: white;
 }

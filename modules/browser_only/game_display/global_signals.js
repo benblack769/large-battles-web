@@ -23,6 +23,7 @@ module.exports = {
     clear_highlights: new Signal(),
     clickOccurred: new Signal(),
     selectedData: new StateHolder(),
+    playerColors: new StateHolder(),
     ended_turn: new Signal(),
     activePlayer: new StateHolder(),
     myPlayer: new StateHolder(),

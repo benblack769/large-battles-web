@@ -42,9 +42,15 @@ function disconnected(client_id){
     })
 }
 function client_state_error(client_id, errmsg){
-    var socket = waiting_clients.get_client_info(client_id).socket
+    if(waiting_clients.is_authenticated(client_id)){
+        var socket = waiting_clients.get_client_info(client_id).socket
+        send_error(socket,errmsg)
+        console.log("authenticated user error:")
+    }
+    else{
+        console.log("unauthenticated user error:")
+    }
     console.log("error: "+errmsg+" from ip: "+socket._socket.remoteAddress)
-    send_error(socket,errmsg)
 }
 var waiting_clients = new client_info(add_waiting, remove_waiting, add_requester, disconnected, client_state_error)
 

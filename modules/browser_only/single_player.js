@@ -2,6 +2,7 @@ var types = require("../logic_modules/types.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 var base_inter = require("./game_display/base_component.js")
+var info_display = require("./game_display/info_display.js")
 var signals = require("./game_display/global_signals.js")
 var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
@@ -32,6 +33,7 @@ function init_player_frontend_data(player_order){
             lib_data: lib_data,
             data_data: data_data,
             layout_data: layout_data,
+            selected_item: layout_data[0][0].id
         }
     })
 }
@@ -41,9 +43,19 @@ function init_signals(game_state){
     signals.ended_turn.listen(() => {
         process_instruction_backend(game_state,{type:"END_TURN"},signals.myPlayer.getState())
         var myplayer = signals.myPlayer.getState()
+        //var old_sel_state = player_frontend_data[myplayer].selected_item
         signals.libData.setState(player_frontend_data[myplayer].lib_data)
         signals.layoutChanged.setState(player_frontend_data[myplayer].layout_data)
         signals.buttonData.setState(player_frontend_data[myplayer].data_data)
+        //signals.selectedData.setState(old_sel_state)
+        //console.log("state reset to: "+old_sel_state)
+    })
+    signals.selectedData.listen(function(newstate){
+        var myplayer = signals.myPlayer.getState()
+        if(myplayer){
+            //console.log("set state to: "+newstate)
+            player_frontend_data[myplayer].selected_item = newstate
+        }
     })
     signals.libData.listen(function(newstate){
         var myplayer = signals.myPlayer.getState()
@@ -65,6 +77,11 @@ function init_signals(game_state){
     })
     signals.activePlayer.listen(function(newstate){
         signals.myPlayer.setState(newstate)
+    })
+    signals.gameStateChange.listen(function(change){
+        if (change.type === "VICTORY") {
+            info_display.make_info_display("Player: '" +change.win_player+"' won the game.")
+        }
     })
 }
 function execute_init_instr(gamesize,game_state){

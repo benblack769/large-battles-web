@@ -23,10 +23,13 @@ function get_game_coords_from_pixels(xpix,ypix){
 function p2(v){
     return v+0.5
 }
-function draw_mini_circle(ctx,coord){
-    ctx.fillStyle="black";
+function draw_player_marker(ctx,coord,color){
+    draw_mini_circle(ctx,coord,color,0.8,0.8)
+}
+function draw_mini_circle(ctx,coord,color,offx,offy){
+    ctx.fillStyle=color;
     ctx.beginPath();
-    ctx.arc(p2(coord.x)*sqr_size,p2(coord.y)*sqr_size,3,0,2*Math.PI);
+    ctx.arc((coord.x+offx)*sqr_size,(coord.y+offy)*sqr_size,2.7,0,2*Math.PI);
     ctx.fill();
 }
 function draw_line(ctx,c1,c2){
@@ -35,8 +38,8 @@ function draw_line(ctx,c1,c2){
     ctx.moveTo(p2(c1.x)*sqr_size,p2(c1.y)*sqr_size);
     ctx.lineTo(p2(c2.x)*sqr_size,p2(c2.y)*sqr_size);
     ctx.stroke();
-    draw_mini_circle(ctx,c1)
-    draw_mini_circle(ctx,c2)
+    draw_mini_circle(ctx,c1,"black",0.5,0.5)
+    draw_mini_circle(ctx,c2,"black",0.5,0.5)
 }
 function clear_rect(ctx,coord){
     ctx.clearRect(coord.x*sqr_size-1,
@@ -88,4 +91,6 @@ module.exports = {
     stroke_rect: stroke_rect,
     fill_rect: fill_rect,
     draw_line: draw_line,
+    draw_mini_circle: draw_mini_circle,
+    draw_player_marker: draw_player_marker,
 }

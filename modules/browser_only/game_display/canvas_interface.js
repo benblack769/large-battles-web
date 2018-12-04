@@ -54,8 +54,9 @@ class ForegroundCanvas extends BaseComponent {
         display_board.clear_rect(this.context,coord)
     }
     createChange(data, coord){
-        //console.log(data)
         display_board.draw_image(this.context,icons.unit_icons[data.unit_type],coord)
+        var player_color = signals.playerColors.getState()[data.player]
+        display_board.draw_player_marker(this.context,coord,player_color)
     }
     onAddEquipment(equip_type, coord){
         display_board.draw_image(this.context,icons.attach_icons[equip_type],coord)

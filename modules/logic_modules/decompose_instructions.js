@@ -149,7 +149,7 @@ function decomp_endturn(gamestate,instr,player){
     if(win_player !== null){
         return [{
             type: "VICTORY",
-            win_player: player,
+            win_player: win_player,
         }]
     }
     var status_resets = all_status_resets(gamestate)

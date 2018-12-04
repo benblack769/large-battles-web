@@ -3,6 +3,7 @@ var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 var base_inter = require("./game_display/base_component.js")
 var signals = require("./game_display/global_signals.js")
+var info_display = require("./game_display/info_display.js")
 var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
@@ -37,7 +38,7 @@ function process_instruction_backend(game_state,instruction,player){
     //validate instruction
     var error = validate.validate_instruction(game_state,instruction,player)
     if(error){
-        console.log("SERVER SENT PAGE MESSAGE!!!"+error.name+": \n"+error.message)
+        console.log("SERVER SENT BAD MESSAGE!!!"+error.name+": \n"+error.message)
     }
     if(instruction.type === "GAME_STARTED"){
         init_game_interface(game_state,instruction)
@@ -61,6 +62,16 @@ function init_signals(game_state){
     game_page.init_signals(game_state)
     signals.ended_turn.listen(() => {
         send_instruction({type:"END_TURN"})
+    })
+    signals.gameStateChange.listen(function(change){
+        if(change.type === "VICTORY"){
+            if(change.win_player === signals.myPlayer.getState()){
+                info_display.make_info_display("You won!")
+            }
+            else{
+                info_display.make_info_display("You lost. Winner: '"+change.win_player+"'")
+            }
+        }
     })
 }
 function init_web_worker(game_state){
