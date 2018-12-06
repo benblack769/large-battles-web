@@ -29,14 +29,14 @@ function rand_int(max_val){
     return Math.floor(Math.random()*max_val)
 }
 function get_coord(dim_size){
-    var border_avoid = 2
+    var border_avoid = 6
     return rand_int(dim_size-border_avoid*2)+border_avoid
 }
 function distance(c1,c2){
     return Math.max(Math.abs(c1.x-c2.x),Math.abs(c1.y-c2.y))
 }
 function get_init_coord(gamesize){
-    var min_player_distance = 8
+    var min_player_distance = 16
     do{
         var coord = {
             x: get_coord(gamesize.xsize),

@@ -101,8 +101,8 @@ function execute_init_instr(gamesize,game_state){
 }
 function create_single_player(){
     var gamesize = {
-        xsize: 15,
-        ysize: 10,
+        xsize: 45,
+        ysize: 40,
     }
     var game_state = {
         players: null,

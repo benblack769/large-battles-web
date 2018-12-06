@@ -15,7 +15,7 @@ function add_waiting(client_id){
         client.send(JSON.stringify({
             "type": "add_waiting_username",
             "username": client_id,
-        }),function(){})
+        }),function(err){if(err){console.log(err)}})
     })
 }
 function remove_waiting(client_id){
@@ -23,7 +23,7 @@ function remove_waiting(client_id){
         client.send(JSON.stringify({
             "type": "remove_waiting_username",
             "username": client_id,
-        }))
+        }),function(err){if(err){console.log(err)}})
     })
 }
 function add_requester(target_client_info, client_id){
@@ -38,7 +38,7 @@ function disconnected(client_id){
         client.send(JSON.stringify({
             "type": "username_disconnected",
             "username": client_id,
-        }))
+        }),function(err){if(err){console.log(err)}})
     })
 }
 function client_state_error(client_id, errmsg){

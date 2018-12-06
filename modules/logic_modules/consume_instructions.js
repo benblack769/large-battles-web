@@ -54,13 +54,14 @@ function consume_destroy(game_state,instr){
 function get_iter_coord(ocmap,xc,yc,player){
     var orig_val = ocmap[yc][xc][player]
     var sum = -orig_val;
+    var num_squares = -1;
     for(var y = Math.max(0,yc-1); y <= Math.min(yc+1,ocmap.length-1); y++){
         for(var x = Math.max(0,xc-1); x <= Math.min(xc+1,ocmap[y].length-1); x++){
             sum += ocmap[y][x][player]
+            num_squares++;
         }
     }
-    var num_squares = 8;
-    return (orig_val + (sum / num_squares)) * 0.5
+    return (orig_val + (sum / num_squares)) * 0.49
 }
 function update_iter(map,ocmap){
     set_unit_val(map,ocmap)
@@ -90,7 +91,7 @@ function set_unit_val(map,ocmap){
 }
 function update_occupied(game_state){
     var ocmap = game_state.occupied
-    for(var i = 0; i < 60; i++){
+    for(var i = 0; i < 30; i++){
         ocmap = update_iter(game_state.map,ocmap)
     }
     set_unit_val(game_state.map,ocmap)

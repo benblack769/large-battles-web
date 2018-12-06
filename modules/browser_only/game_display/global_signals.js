@@ -7,6 +7,7 @@ function clear_all_signals(){
     module.exports.clickOccurred.clear()
     module.exports.selectedData.clear()
     module.exports.ended_turn.clear()
+    module.exports.playerColors.clear()
     module.exports.activePlayer.clear()
     module.exports.myPlayer.clear()
     module.exports.gameStateChange.clear()
