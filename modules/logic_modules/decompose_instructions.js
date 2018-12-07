@@ -123,7 +123,7 @@ function all_status_resets(gamestate){
 function winning_player(gamestate){
     //player wins if they have WIN_RATIO times more value of assets than their opponent,
     //or they have no physical assets, only cash
-    var WIN_RATIO = 5
+    var WIN_RATIO = 10
     var players_money = gamestate.players.player_order.map(function(player){
         var player_assets = types.get_player_cost(gamestate.stats,gamestate.map,player)
         var player_money = gamestate.players.player_info[player].money + player_assets
