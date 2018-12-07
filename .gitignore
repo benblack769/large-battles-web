@@ -12,3 +12,4 @@ static_files/index.html
 *.min.js
 *.min.css
 *.log
+game_records/

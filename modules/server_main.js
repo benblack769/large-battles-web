@@ -5,6 +5,8 @@ var decompose_instr = require("./logic_modules/decompose_instructions.js").decom
 var consume_instr = require("./logic_modules/consume_instructions.js").consume_change
 var validate = require("./logic_modules/validate_instruction.js")
 var types = require("./logic_modules/types.js")
+const fs = require('fs');
+
 
 
 console.assert(process.argv.length >= 7, "needs 3 command line arguments, port, unique_game_id, p1_username, p2_username, p1_password, p2_password")
@@ -15,6 +17,8 @@ const player1_username = process.argv[4]
 const player2_username = process.argv[5]
 const player1_password = process.argv[6]
 const player2_password = process.argv[7]
+
+var full_validated_instruction_list = []
 
 var player_sockets = {}
 
@@ -50,6 +54,12 @@ function make_winner_results(win_name){
         throw new Error("bad winner")
     }
 }
+function get_folder_to_save(){
+    return "../game_records/"+unique_game_id+".json"
+}
+function save_game_log(){
+    fs.writeFileSync(get_folder_to_save(), JSON.stringify(full_validated_instruction_list,null,2));
+}
 function log_game_result(results){
     var req_options = {
         uri: 'http://localhost:8804/log_game_result',
@@ -72,6 +82,7 @@ function log_game_result(results){
             console.log("successfully logged results")
             console.log(results)
         }
+        save_game_log()
         safe_process_exit()
     });
 }
@@ -92,6 +103,10 @@ function disperse_instruction(game_state,instr,player){
             instr: instr,
         }))
     })
+    full_validated_instruction_list.push({
+        player:player,
+        instr:instr,
+    })
     consume_player_instr(game_state,instr,player)
 }
 function handle_player_message(game_state,message,player_id){
@@ -110,8 +125,8 @@ function handle_player_message(game_state,message,player_id){
 }
 function start_game(){
     var game_size = {
-        xsize: 20,
-        ysize: 10,
+        xsize: 35,
+        ysize: 35,
     }
     var game_state = {
         map: null,

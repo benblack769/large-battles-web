@@ -3,6 +3,7 @@ var request = require('request');
 var child_process = require('child_process');
 var client_info = require('./server_only/game_request_status.js').ClientInfo;
 var fs = require('fs')
+var crypto = require('crypto')
 
 var listen_port = 9003;
 var wss = new WebSocketServer({ port: listen_port });
@@ -87,46 +88,57 @@ function send_error(socket,errname){
         //do nothing, we don't really care if an error didn't get processed correctly
     })
 }
-function get_unused_port(){
-    return 9009
+function get_unused_port(on_port){
+    run_command = 'ruby -e \'require "socket"; puts Addrinfo.tcp("", 0).bind {|s| s.local_address.ip_port }\' '
+    child_process.exec(run_command,function(err,stdout,stderr){
+        if(err){
+            console.log("error producing port")
+        }
+        on_port(stdout)
+    })
 }
-function get_unique_game_id(){
-    return 12123
+function get_unique_game_id(on_game_id){
+    return crypto.randomBytes(16, function(err, buffer) {
+      var token = buffer.toString('hex');
+      on_game_id(token)
+    });
 }
 function start_game(cl1,cl2){
-    var game_port = get_unused_port()
-    var unique_game_id = get_unique_game_id();
-    var args = [
-        "server_main.js",
-        game_port,
-        unique_game_id,
-        cl1.username,
-        cl2.username,
-        cl1.password,
-        cl2.password,
-    ]
-    var proc = child_process.spawn("node",args,{
-        //detached: true,
-        //stdio: 'ignore',
-    })
-    var logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
-    proc.stdout.pipe(logStream);
-    proc.stderr.pipe(logStream);
+    get_unused_port(function(game_port){
+        get_unique_game_id(function(unique_game_id){
+            var args = [
+                "server_main.js",
+                game_port,
+                unique_game_id,
+                cl1.username,
+                cl2.username,
+                cl1.password,
+                cl2.password,
+            ]
+            var proc = child_process.spawn("node",args,{
+                //detached: true,
+                //stdio: 'ignore',
+            })
+            var logStream = fs.createWriteStream('./logFile.log', {flags: 'a'});
+            proc.stdout.pipe(logStream);
+            proc.stderr.pipe(logStream);
 
-    console.log("started server")
-    console.log(args)
-    cl1.socket.send(JSON.stringify({
-        "type":"game_started",
-        "username": cl2.username,
-        "port": game_port,
-        "game_id": unique_game_id,
-    }))
-    cl2.socket.send(JSON.stringify({
-        "type":"game_started",
-        "username": cl1.username,
-        "port": game_port,
-        "game_id": unique_game_id,
-    }))
+            console.log("started server")
+            console.log(args)
+            cl1.socket.send(JSON.stringify({
+                "type":"game_started",
+                "username": cl2.username,
+                "port": game_port,
+                "game_id": unique_game_id,
+            }))
+            cl2.socket.send(JSON.stringify({
+                "type":"game_started",
+                "username": cl1.username,
+                "port": game_port,
+                "game_id": unique_game_id,
+            }))
+        })
+    })
 }
 function handle_bad_verification(socket,verified,on_verify){
     if(!verified){
