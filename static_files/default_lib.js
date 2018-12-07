@@ -465,6 +465,11 @@ function make_handler(function_id,game_state){
         case "build_farm": return new BuildHandler("farm",game_state);
         case "build_barracks": return new BuildHandler("barracks",game_state);
         case "build_armory": return new BuildHandler("armory",game_state);
+        case "build_ba_shop": return new BuildHandler("BA_shop",game_state);
+        case "build_sword_shop": return new BuildHandler("sword_shop",game_state);
+        case "build_pike_shop": return new BuildHandler("pike_shop",game_state);
+        case "build_cat_factory": return new BuildHandler("catapult_factory",game_state);
+        case "build_stable": return new BuildHandler("armory",game_state);
         case "buy_soldier": return new BuyHandler("soldier");
         case "buy_armor": return new AttachHandler("armor");
         case "move": return new MoveHandler();

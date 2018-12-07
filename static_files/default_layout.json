@@ -13,18 +13,28 @@
         "icon": "armory.png"
     },
     {
-        "id": "draw_occupation",
-        "text": "hightlight"
-    }
-],
-[
-    {
-        "id": "buy_soldier",
-        "icon": "Soldier.png"
+        "id": "build_ba_shop",
+        "icon": "bow-arrow-shop.png"
     },
     {
-        "id": "buy_armor",
-        "icon": "armor.png"
+        "id": "build_sword_shop",
+        "icon": "sword-shop.png"
+    },
+    {
+        "id": "build_pike_shop",
+        "icon": "pike-shop.png"
+    },
+    {
+        "id": "build_cat_factory",
+        "icon": "catapult-factory.png"
+    },
+    {
+        "id": "build_stable",
+        "icon": "stable.png"
+    },
+    {
+        "id": "draw_occupation",
+        "text": "hightlight"
     }
 ],
 [
@@ -35,6 +45,10 @@
     {
         "id": "attack",
         "text": "Attack"
+    },
+    {
+        "id": "buy",
+        "text": "Buy"
     },
     {
         "id": "move_multi",

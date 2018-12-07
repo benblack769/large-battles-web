@@ -32,7 +32,15 @@ var default_stats = {
             "cost": 100,
             "buildable": true,
             "can_make": ["soldier"],
-            "max_HP": 2,
+        },
+        "catapult_factory": {
+            "attack_range": 0,
+            "move_range": 0,
+            "max_HP": 4,
+            "buys_per_turn": 1,
+            "cost": 100,
+            "buildable": true,
+            "can_make": ["catpult"],
         },
         "armory": {
             "attack_range": 0,
@@ -42,11 +50,70 @@ var default_stats = {
             "cost": 200,
             "buildable": true,
             "can_make_equip": ["armor"],
-            "max_HP": 2,
+        },
+        "BA_shop": {
+            "attack_range": 0,
+            "move_range": 0,
+            "max_HP": 4,
+            "buys_per_turn": 1,
+            "cost": 200,
+            "buildable": true,
+            "can_make_equip": ["bow_and_arrow"],
+        },
+        "sword_shop": {
+            "attack_range": 0,
+            "move_range": 0,
+            "max_HP": 4,
+            "buys_per_turn": 1,
+            "cost": 200,
+            "buildable": true,
+            "can_make_equip": ["sword"],
+        },
+        "pike_shop": {
+            "attack_range": 0,
+            "move_range": 0,
+            "max_HP": 4,
+            "buys_per_turn": 1,
+            "cost": 200,
+            "buildable": true,
+            "can_make_equip": ["pike"],
+        },
+        "stable": {
+            "attack_range": 0,
+            "move_range": 0,
+            "max_HP": 4,
+            "buys_per_turn": 1,
+            "cost": 200,
+            "buildable": true,
+            "can_make_equip": ["horse"],
         },
     },
     "attachment_types": {
         "armor": {
+            "cost": 30,
+            "stat_alt": {
+                "max_HP": 2,
+            }
+        },
+        "bow_and_arrow": {
+            "cost": 30,
+            "stat_alt": {
+                "max_HP": 2,
+            }
+        },
+        "sword": {
+            "cost": 30,
+            "stat_alt": {
+                "max_HP": 2,
+            }
+        },
+        "pike": {
+            "cost": 30,
+            "stat_alt": {
+                "max_HP": 2,
+            }
+        },
+        "horse": {
             "cost": 30,
             "stat_alt": {
                 "max_HP": 2,
@@ -62,9 +129,17 @@ var icons = {
         "farm": "farm.png",
         "barracks": "barracks.png",
         "armory": "armory.png",
+        "BA_shop": "bow-arrow-shop.png",
+        "sword_shop": "sword-shop.png",
+        "pike_shop": "pike-shop.png",
+        "stable": "stable.png",
     },
     "attach_icons": {
-        "armor": "armor.png"
+        "armor": "armor.png",
+        "bow_and_arrow": "bow-arrow.png",
+        "sword": "sword.png",
+        "pike": "pike.png",
+        "horse": "horse.png",
     }
 }
 function calc_stat(stats,unit_info,stat_name){
