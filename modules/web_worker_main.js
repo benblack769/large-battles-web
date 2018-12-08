@@ -78,7 +78,15 @@ function is_moveable_unit(game_state,coord){
     }
     return true
 }
-
+function first_if_there(arr){
+    return arr ? arr[0] : null
+}
+function get_make_equip(gs,c){
+    return first_if_there(get_stat_fn("can_make_equip")(gs,c))
+}
+function get_make_unit(gs,c){
+    return first_if_there(get_stat_fn("can_make")(gs,c))
+}
 
 self.lib = {
     get_possible_moves: pathing.get_possible_moves,
@@ -87,6 +95,8 @@ self.lib = {
     distance: pathing.distance,
     get_move_range: get_stat_fn("move_range"),
     get_attack_range: get_stat_fn("attack_range"),
+    get_make_equip: get_make_equip,
+    get_make_unit: get_make_unit,
     is_empty: is_empty,
     at: at,
     all_coords: all_coords,

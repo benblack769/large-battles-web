@@ -51,6 +51,10 @@
         "text": "Buy"
     },
     {
+        "id": "attach",
+        "text": "Equip"
+    },
+    {
         "id": "move_multi",
         "text": "MoveMM"
     },

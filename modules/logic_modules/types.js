@@ -2,19 +2,20 @@ var default_stats = {
     "unit_types": {
         "soldier": {
             "attack_range": 1,
-            "move_range": 3,
-            "attack_strength": 2,
-            "cost": 10,
+            "move_range": 2,
+            "attack_strength": 1,
+            "cost": 20,
             "max_HP": 2,
-            "attack_strength": 2,
-            "viable_attachments": ["armor"],
+            "viable_attachments": ["armor","pike","sword","horse"],
         },
-        /*"catapult": {
+        "catapult": {
             "attack_range": 3,
             "move_range": 1,
+            "attack_strength": 4,
             "cost": 100,
-            "max_HP": 1,
-        },*/
+            "max_HP": 2,
+            "viable_attachments": ["horse"],
+        },
         "farm": {
             "attack_range": 0,
             "move_range": 0,
@@ -22,7 +23,6 @@ var default_stats = {
             "cost": 50,
             "buildable": true,
             "income": 5,
-            "max_HP": 1,
         },
         "barracks": {
             "attack_range": 0,
@@ -47,7 +47,7 @@ var default_stats = {
             "move_range": 0,
             "max_HP": 4,
             "buys_per_turn": 1,
-            "cost": 200,
+            "cost": 300,
             "buildable": true,
             "can_make_equip": ["armor"],
         },
@@ -65,7 +65,7 @@ var default_stats = {
             "move_range": 0,
             "max_HP": 4,
             "buys_per_turn": 1,
-            "cost": 200,
+            "cost": 100,
             "buildable": true,
             "can_make_equip": ["sword"],
         },
@@ -83,7 +83,7 @@ var default_stats = {
             "move_range": 0,
             "max_HP": 4,
             "buys_per_turn": 1,
-            "cost": 200,
+            "cost": 300,
             "buildable": true,
             "can_make_equip": ["horse"],
         },
@@ -96,27 +96,28 @@ var default_stats = {
             }
         },
         "bow_and_arrow": {
-            "cost": 30,
+            "cost": 20,
             "stat_alt": {
-                "max_HP": 2,
+                "attack_range": 2,
             }
         },
         "sword": {
-            "cost": 30,
+            "cost": 10,
             "stat_alt": {
-                "max_HP": 2,
+                "attack_strength": 1,
             }
         },
         "pike": {
             "cost": 30,
             "stat_alt": {
-                "max_HP": 2,
+                "attack_range": 1,
+                "attack_strength": 1,
             }
         },
         "horse": {
             "cost": 30,
             "stat_alt": {
-                "max_HP": 2,
+                "move_range": 2,
             }
         }
     }

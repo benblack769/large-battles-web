@@ -77,30 +77,6 @@ class MoveHandler extends TwoClickHandler {
         return lib.coords_around(game_state,start,range).filter((coord)=>is_valid_move(game_state,start,coord))
     }
 }
-class BuyHandler extends TwoClickHandler {
-    constructor(buy_type){
-        super()
-        this.buy_type = buy_type
-    }
-    getRange(game_state,click){
-        return 1
-    }
-    execAction(click2){
-        exec_buy([this.first_click,click2],this.buy_type)
-    }
-    get_all_valid_around(game_state,start,range){
-        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_buy(game_state,start,coord))
-    }
-    is_valid_buy(game_state,start,end){
-        var instr = {
-            type: "BUY_UNIT",
-            building_coord: start,
-            placement_coord: end,
-            buy_type: this.buy_type,
-        }
-        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
-    }
-}
 class BuildHandler {
     constructor(buy_type,game_state){
         this.buy_type = buy_type
@@ -130,13 +106,72 @@ class BuildHandler {
         return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }
-class AttachHandler extends TwoClickHandler {
-    constructor(buy_type){
+class BuySomethingHandler {
+    constructor(){
+        this.first_click = null
+        this.buy_type = null
+    }
+    handleClick(click,game_state){
+        if(!this.first_click){
+            if(!self.lib.is_unit(game_state.map,click)){
+                return
+            }
+            var buy_type = this.get_buy_type(game_state,click)
+            if(buy_type){
+                this.first_click = click
+                this.buy_type = buy_type
+                var move_range = this.getRange(game_state,click)
+                var possible_moves = this.get_all_valid_around(game_state,click,move_range)
+                draw_list(concat(
+                    [to_item(click,"rgba(255,0,0,0.4)")],
+                    coord_list_to_draws(possible_moves,"rgba(128,128,128,0.4)")
+                ))
+            }
+        }
+        else{
+            this.execAction(click)
+            clear_highlights()
+            this.first_click = null
+            this.buy_type = null
+        }
+    }
+}
+
+class BuyHandler extends BuySomethingHandler {
+    constructor(){
         super()
-        this.buy_type = buy_type
     }
     getRange(game_state,click){
         return 1
+    }
+    get_buy_type(game_state,coord){
+        return self.lib.get_make_unit(game_state,coord)
+    }
+    execAction(click2){
+        exec_buy([this.first_click,click2],this.buy_type)
+    }
+    get_all_valid_around(game_state,start,range){
+        return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_buy(game_state,start,coord))
+    }
+    is_valid_buy(game_state,start,end){
+        var instr = {
+            type: "BUY_UNIT",
+            building_coord: start,
+            placement_coord: end,
+            buy_type: this.buy_type,
+        }
+        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
+    }
+}
+class AttachHandler extends BuySomethingHandler {
+    constructor(){
+        super()
+    }
+    getRange(game_state,click){
+        return 1
+    }
+    get_buy_type(game_state,coord){
+        return self.lib.get_make_equip(game_state,coord)
     }
     execAction(click2){
         exec_equip([this.first_click,click2],this.buy_type)
@@ -470,8 +505,8 @@ function make_handler(function_id,game_state){
         case "build_pike_shop": return new BuildHandler("pike_shop",game_state);
         case "build_cat_factory": return new BuildHandler("catapult_factory",game_state);
         case "build_stable": return new BuildHandler("armory",game_state);
-        case "buy_soldier": return new BuyHandler("soldier");
-        case "buy_armor": return new AttachHandler("armor");
+        case "buy": return new BuyHandler();
+        case "attach": return new AttachHandler();
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
         case "draw_occupation": draw_occupation(game_state); return new NullHandler();
