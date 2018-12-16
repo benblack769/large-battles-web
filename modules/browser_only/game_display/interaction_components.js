@@ -1,4 +1,9 @@
+var lib = require("../../logic_modules/coord_lib.js")
+var signals = require("./global_signals.js")
 
+function postMessage(message){
+    signals.interfaceInstruction.fire(message)
+}
 function coord_list_to_draws(clist,color){
     return clist.map((coord)=>to_item(coord,color))
 }
@@ -64,11 +69,11 @@ function is_valid_move(game_state,start,end){
         start_coord: start,
         end_coord: end,
     }
-    return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
+    return lib.is_valid_instr(game_state,instr,game_state.my_player)
 }
 class MoveHandler extends TwoClickHandler {
     getRange(game_state,click){
-        return self.lib.get_move_range(game_state,click)
+        return lib.get_move_range(game_state,click)
     }
     execAction(click2){
         exec_move([this.first_click,click2])
@@ -89,7 +94,7 @@ class BuildHandler {
             coord: click,
         }
         postMessage(instr)
-        self.lib.simulate_instruction(game_state,instr,game_state.my_player)
+        lib.simulate_instruction(game_state,instr,game_state.my_player)
         this.draw_all(game_state)
     }
     draw_all(game_state){
@@ -103,7 +108,8 @@ class BuildHandler {
             building_type: this.buy_type,
             coord: coord,
         }
-        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
+        //console.log(lib.get_instr_err(game_state,instr,game_state.my_player))
+        return lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }
 class BuySomethingHandler {
@@ -113,7 +119,7 @@ class BuySomethingHandler {
     }
     handleClick(click,game_state){
         if(!this.first_click){
-            if(!self.lib.is_unit(game_state.map,click)){
+            if(!lib.is_unit(game_state.map,click)){
                 return
             }
             var buy_type = this.get_buy_type(game_state,click)
@@ -145,7 +151,7 @@ class BuyHandler extends BuySomethingHandler {
         return 1
     }
     get_buy_type(game_state,coord){
-        return self.lib.get_make_unit(game_state,coord)
+        return lib.get_make_unit(game_state,coord)
     }
     execAction(click2){
         exec_buy([this.first_click,click2],this.buy_type)
@@ -160,7 +166,7 @@ class BuyHandler extends BuySomethingHandler {
             placement_coord: end,
             buy_type: this.buy_type,
         }
-        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
+        return lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }
 class AttachHandler extends BuySomethingHandler {
@@ -171,7 +177,7 @@ class AttachHandler extends BuySomethingHandler {
         return 1
     }
     get_buy_type(game_state,coord){
-        return self.lib.get_make_equip(game_state,coord)
+        return lib.get_make_equip(game_state,coord)
     }
     execAction(click2){
         exec_equip([this.first_click,click2],this.buy_type)
@@ -186,12 +192,12 @@ class AttachHandler extends BuySomethingHandler {
             equip_coord: end,
             equip_type: this.buy_type,
         }
-        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
+        return lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }
 class AttackHandler extends TwoClickHandler {
     getRange(game_state,click){
-        return self.lib.get_attack_range(game_state,click)
+        return lib.get_attack_range(game_state,click)
     }
     execAction(click2){
         postMessage({
@@ -206,7 +212,7 @@ class AttackHandler extends TwoClickHandler {
             source_coord: start,
             target_coord: end,
         }
-        return self.lib.is_valid_instr(game_state,instr,game_state.my_player)
+        return lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
     get_all_valid_around(game_state,start,range){
         return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_attack(game_state,start,coord))
@@ -216,7 +222,7 @@ function merge_arrays(array_list){
     return [].concat.apply([], array_list);
 }
 function make_new_path(game_state,click1,click2){
-    var move_range = self.lib.get_move_range(game_state,click1)
+    var move_range = lib.get_move_range(game_state,click1)
     if(!move_range){
         return null
     }
@@ -274,14 +280,14 @@ class MultiMoveHandler{
                 this.current_path = []
             }
             else{
-                var move_range = self.lib.get_move_range(game_state,source)
-                if(self.lib.distance(current_cen,click) <= move_range){
+                var move_range = lib.get_move_range(game_state,source)
+                if(lib.distance(current_cen,click) <= move_range){
                     this.current_path.push(click)
                 }
             }
         }
         else{
-            if(self.lib.is_moveable_unit(game_state,click)){
+            if(lib.is_moveable_unit(game_state,click)){
                 this.deleteSource(click)
                 this.current_path.push(click)
             }
@@ -331,7 +337,7 @@ class MultiMoveHandler{
             return []
         }
         var source = this.current_path[0]
-        var move_range = self.lib.get_move_range(game_state,source)
+        var move_range = lib.get_move_range(game_state,source)
         var possible_moves = lib.coords_around(null,last(this.current_path),move_range)
         var possible_highlights = possible_moves.map((coord)=>to_item(coord,"rgba(128,128,128,0.2)"))
         return possible_highlights
@@ -385,7 +391,7 @@ class PathHandler{
             draw_list(this.current_path_highlights(),this.current_lines())
         }
         else{
-            if(self.lib.is_unit(game_state.map,click)){
+            if(lib.is_unit(game_state.map,click)){
                 this.first_click = click
                 this.deleteSource(click)
                 draw_list(concat(
@@ -515,15 +521,20 @@ function make_handler(function_id,game_state){
         default: console.log("bad data type: "+function_id); break;
     }
 }
-self.on_selector_click = function(selector_name,game_state){
-    console.log("selection reached lib: "+selector_name)
-    myhandler.selector_clicked(selector_name,game_state)
+function copy_game_state(game_state,myplayer){
+    var new_game_state = lib.deep_copy(game_state)
+    new_game_state.my_player = myplayer
+    return new_game_state
 }
-//do not change this code unless you know what you are doing
-self.on_set_fn = function(set_data,game_state){
-    myhandler = make_handler(set_data,game_state)
+var set_fn = function(set_data,game_state,myplayer){
+    myhandler = make_handler(set_data,copy_game_state(game_state,myplayer))
 }
-self.click_handler = function(click,game_state,active_player){
+var handle_click = function(click,game_state,myplayer){
+    game_state.my_player = myplayer
     //console.log(game_state)
-    myhandler.handleClick(click,game_state)
+    myhandler.handleClick(click,copy_game_state(game_state,myplayer))
+}
+module.exports = {
+    set_fn: set_fn,
+    handle_click: handle_click,
 }

@@ -13,7 +13,6 @@ var server_socket = null
 
 function init_game_interface(game_state,started_instr){
     init_signals(game_state)
-    init_web_worker(game_state)
     game_page.init_html_ui(started_instr.game_size,started_instr.player_order)
     var creds = signup_login.get_credentials()
     signals.myPlayer.setState(creds.username)
@@ -70,10 +69,7 @@ function init_signals(game_state){
             }
         }
     })
-}
-function init_web_worker(game_state){
-    game_page.init_web_worker()
-    game_page.set_worker_callback(function(message){
+    signals.interfaceInstruction.listen(function(message){
         game_page.process_message_frontend(game_state,message,signals.myPlayer.getState(),function(g,message,p){
             send_instruction(message)
         })

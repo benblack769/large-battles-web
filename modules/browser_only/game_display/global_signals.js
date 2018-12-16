@@ -11,11 +11,8 @@ function clear_all_signals(){
     module.exports.activePlayer.clear()
     module.exports.myPlayer.clear()
     module.exports.gameStateChange.clear()
-    module.exports.libData.clear()
-    module.exports.layoutChanged.clear()
-    module.exports.buttonData.clear()
-    module.exports.selectorClicked.clear()
     module.exports.highlightCommand.clear()
+    module.exports.interfaceInstruction.clear()
 }
 
 module.exports = {
@@ -29,9 +26,6 @@ module.exports = {
     activePlayer: new StateHolder(),
     myPlayer: new StateHolder(),
     gameStateChange: new Signal(),
-    libData: new StateHolder(),
-    layoutChanged: new StateHolder(),
-    buttonData: new StateHolder(),
-    selectorClicked: new Signal(),
     highlightCommand: new Signal(),
+    interfaceInstruction: new Signal(),
 }

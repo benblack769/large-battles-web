@@ -18,96 +18,10 @@ function init_script_signals(){
     signals.selectedData.listen(()=>signals.clear_highlights.fire())
     edit_signal.listen(()=>signals.clear_highlights.fire())
 }
-
-class LibPannel extends BaseComponent {
-    constructor(parent, basediv){
-        super(parent, basediv)
-        init_script_signals()
-        this.interface_div = createDiv({
-            className: "lib_pannel_container",
-        })
-        basediv.appendChild(this.interface_div)
-        this.stop_edit()
-        this.handle_signals()
-    }
-    start_edit(){
-        $(this.interface_div).empty()
-        this.edit_lib_button = createDiv({
-            innerText: "Edit Library",
-            className: "lib_edit_button",
-            parent: this.interface_div,
-            onclick: () => {
-                make_change_script_popup(signals.libData.getState(),Function,(js_code) => {
-                    signals.libData.setState(js_code)
-                })
-            }
-        })
-        this.edit_lib_button = createDiv({
-            innerText: "Edit Layout",
-            className: "lib_edit_button",
-            parent: this.interface_div,
-            onclick: () => {
-                make_change_script_popup(pretty_print(signals.layoutChanged.getState()),JSON.parse,(js_code) => {
-                    signals.layoutChanged.setState(JSON.parse(js_code))
-                })
-            }
-        })
-        this.edit_lib_button = createDiv({
-            innerText: "Edit Data",
-            className: "lib_edit_button",
-            parent: this.interface_div,
-            onclick: () => {
-                make_change_script_popup(pretty_print(signals.buttonData.getState()),JSON.parse,(js_code) => {
-                    signals.buttonData.setState(JSON.parse(js_code))
-                })
-            }
-        })
-        this.edit_button = createDiv({
-            innerText: "Stop Edit",
-            className: "lib_edit_button",
-            parent: this.interface_div,
-            onclick: () => {stop_edit_signal.fire()}
-        })
-    }
-    stop_edit(){
-        $(this.interface_div).empty()
-        this.edit_button = createDiv({
-            innerText: "Edit",
-            className: "lib_edit_button",
-            parent: this.interface_div,
-            onclick: () => {edit_signal.fire()}
-        })
-    }
-    handle_signals(){
-        edit_signal.listen(() => {this.start_edit()})
-        stop_edit_signal.listen(() => {this.stop_edit()})
-    }
-}
 class ScriptInterface extends BaseComponent {
     constructor(parent, basediv){
         super(parent,basediv)
         this.mybuttonpannel = new PannelSelector(this,basediv)
-        this.libbuttonpannel = new LibPannel(this,basediv)
-        this.edit_overlay = new EditOverlay(this,basediv)
-    }
-}
-class EditOverlay extends BaseComponent {
-    constructor(parent, basediv){
-        super(parent,basediv)
-        this.overlay_div = createDiv({
-            className: "game_overlay",
-        })
-        basediv.appendChild(this.overlay_div)
-        $(this.overlay_div).hide()
-        this.overlay_div.onclick = this.overlay_gone.bind(this)
-        this.handle_signals()
-    }
-    handle_signals(){
-        edit_signal.listen(() => {$(this.overlay_div).show()})
-        stop_edit_signal.listen(() => {$(this.overlay_div).hide()})
-    }
-    overlay_gone(){
-        stop_edit_signal.fire()
     }
 }
 function pretty_print(obj){
@@ -139,29 +53,28 @@ class PannelSelector extends BaseComponent {
         super(parent, basediv)
 
         this.pannels = []
-        signals.layoutChanged.listen((layout_data)=>{
-            this.pannel_selector = new Signal()
-            $(this.parent_div).empty()
-            this.selector_div = createDiv({
-                parent: basediv,
-                className: "pannel_selector_container",
-                //id: "selector_div"
-            })
-            var pannel_buttons = []
-            for(var i = 0; i < layout_data.length; i++){
-                //console.log(layout_data[i])
-                pannel_buttons.push(new PannelButton(this,this.selector_div,i,this.pannel_selector))
-            }
-            var base_signal = signals.selectedData
-            this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal))
-            this.pannel_selector.listen((pannel_idx)=>{
-                $(".pannel_holder").hide()
-                var mypannel = this.pannels[pannel_idx]
-                $(mypannel.interface_div).show()
-                mypannel.pannel_select_data.fire(mypannel.selected_id)
-            })
-            this.pannel_selector.fire(0)
+        var layout_data = JSON.parse(document.getElementById("default_layout_src").innerHTML)
+        this.pannel_selector = new Signal()
+        $(this.parent_div).empty()
+        this.selector_div = createDiv({
+            parent: basediv,
+            className: "pannel_selector_container",
+            //id: "selector_div"
         })
+        var pannel_buttons = []
+        for(var i = 0; i < layout_data.length; i++){
+            //console.log(layout_data[i])
+            pannel_buttons.push(new PannelButton(this,this.selector_div,i,this.pannel_selector))
+        }
+        var base_signal = signals.selectedData
+        this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal))
+        this.pannel_selector.listen((pannel_idx)=>{
+            $(".pannel_holder").hide()
+            var mypannel = this.pannels[pannel_idx]
+            $(mypannel.interface_div).show()
+            mypannel.pannel_select_data.fire(mypannel.selected_id)
+        })
+        this.pannel_selector.fire(0)
     }
 }
 class ScriptButtonPannel extends BaseComponent {
@@ -189,34 +102,6 @@ class ScriptButtonPannel extends BaseComponent {
         })
     }
 }
-class SelectorContainer extends BaseComponent {
-    constructor(parent, basediv, name_list){
-        super(parent, basediv)
-        this.parent_container = createDiv({
-            className: "selector_container",
-            parent: basediv,
-        })
-        name_list.forEach((name)=>{
-            createDiv({
-                className: "selector_button",
-                parent: this.parent_container,
-                innerText: name,
-                onclick: function(){
-                    signals.selectorClicked.fire(name)
-                }
-            })
-        })
-    }
-    delete_this(){
-        $(this.parent_container).remove()
-    }
-    show(){
-        $(this.parent_container).show()
-    }
-    hide(){
-        $(this.parent_container).hide()
-    }
-}
 class ScriptButton extends BaseComponent {
     constructor(parent, basediv, init_data, pannel_select_data){
         super(parent, basediv)
@@ -225,50 +110,26 @@ class ScriptButton extends BaseComponent {
             data: init_data,
             selected: false,
             editing: false,
-            myselectors: [],
         }
         this.mydiv = this.render()
         basediv.appendChild(this.mydiv)
         this.handle_signals()
-        this.makeSelectors()
     }
     handle_signals(){
         this.pannel_select_data.listen((id)=>{
             if(id === this.state.data.id){
                 this.state.selected = true;
                 this.mydiv.classList.add("game_script_box_selected")
-                this.myselectors.show()
             }
             else{
                 this.deselectScript()
             }
         })
-        signals.buttonData.listen((all_data)=>{
-            this.makeSelectors()
-            if(!this.state.selected){
-                this.myselectors.hide()
-            }
-        })
-    }
-    makeSelectors(){
-        if(this.myselectors){
-            this.myselectors.delete_this()
-        }
-        var all_data = signals.buttonData.getState()
-        var my_id = this.state.data.id
-        if(all_data && all_data[my_id] && all_data[my_id].selectors){
-            var myselector_names = all_data[my_id].selectors
-        }
-        else{
-            var myselector_names = []
-        }
-        this.myselectors = new SelectorContainer(this,this.basediv,myselector_names)
     }
     deselectScript(){
         if(this.state.selected){
             this.state.selected = false;
             this.mydiv.classList.remove("game_script_box_selected")
-            this.myselectors.hide()
         }
     }
     selectScript(){
