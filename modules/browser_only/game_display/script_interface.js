@@ -28,7 +28,7 @@ function pretty_print(obj){
     return JSON.stringify(obj,null,2)
 }
 class PannelButton extends BaseComponent {
-    constructor(parent, basediv, pannel_id, pannel_select_signal){
+    constructor(parent, basediv, pannel_id){
         super(parent, basediv)
         this.pannel_id = pannel_id
         this.button = createDiv({
@@ -38,7 +38,7 @@ class PannelButton extends BaseComponent {
         this.button.onclick = (click)=>{
             pannel_select_signal.fire(this.pannel_id)
         }
-        pannel_select_signal.listen((pan_id)=>{
+        signals.pannelSelector.listen((pan_id)=>{
             if(pan_id === this.pannel_id){
                 this.button.style["background-color"] = "#bbbbbb"
             }
@@ -54,7 +54,6 @@ class PannelSelector extends BaseComponent {
 
         this.pannels = []
         var layout_data = JSON.parse(document.getElementById("default_layout_src").innerHTML)
-        this.pannel_selector = new Signal()
         $(this.parent_div).empty()
         this.selector_div = createDiv({
             parent: basediv,
@@ -64,17 +63,17 @@ class PannelSelector extends BaseComponent {
         var pannel_buttons = []
         for(var i = 0; i < layout_data.length; i++){
             //console.log(layout_data[i])
-            pannel_buttons.push(new PannelButton(this,this.selector_div,i,this.pannel_selector))
+            pannel_buttons.push(new PannelButton(this,this.selector_div,i))
         }
         var base_signal = signals.selectedData
         this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal))
-        this.pannel_selector.listen((pannel_idx)=>{
+        signals.pannelSelector.listen((pannel_idx)=>{
             $(".pannel_holder").hide()
             var mypannel = this.pannels[pannel_idx]
             $(mypannel.interface_div).show()
             mypannel.pannel_select_data.fire(mypannel.selected_id)
         })
-        this.pannel_selector.fire(0)
+        signals.pannelSelector.fire(0)
     }
 }
 class ScriptButtonPannel extends BaseComponent {

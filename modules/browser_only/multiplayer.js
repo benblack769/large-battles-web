@@ -47,6 +47,10 @@ function process_instruction_backend(game_state,instruction,player){
         //display instruction on canvas
         signals.gameStateChange.fire(part)
     })
+
+    if(instruction.type === "END_TURN" || instruction.type === "GAME_STARTED"){
+        signals.selectedData.setState(signals.selectedData.getState())
+    }
 }
 function send_instruction(instr){
     console.log("sent instr:")

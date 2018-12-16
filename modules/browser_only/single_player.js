@@ -21,6 +21,9 @@ function process_instruction_backend(game_state,instruction,player){
         //display instruction on canvas
         signals.gameStateChange.fire(part)
     })
+    if(instruction.type === "END_TURN"){
+        signals.selectedData.setState(signals.selectedData.getState())
+    }
 }
 function process_instruction(game_state,instruction,player){
     game_page.process_message_frontend(game_state,instruction,player,process_instruction_backend)
@@ -30,7 +33,7 @@ function init_signals(game_state){
     game_page.init_signals(game_state)
     signals.ended_turn.listen(() => {
         process_instruction_backend(game_state,{type:"END_TURN"},signals.myPlayer.getState())
-        var myplayer = signals.myPlayer.getState()
+    //    signals.selectedData.setState(signals.selectedData.getState())
     })
     signals.activePlayer.listen(function(newstate){
         signals.myPlayer.setState(newstate)

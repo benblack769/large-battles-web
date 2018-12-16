@@ -6,6 +6,7 @@ function clear_all_signals(){
     module.exports.clear_highlights.clear()
     module.exports.clickOccurred.clear()
     module.exports.selectedData.clear()
+    module.exports.pannelSelector.clear()
     module.exports.ended_turn.clear()
     module.exports.playerColors.clear()
     module.exports.activePlayer.clear()
@@ -21,6 +22,7 @@ module.exports = {
     clear_highlights: new Signal(),
     clickOccurred: new Signal(),
     selectedData: new StateHolder(),
+    pannelSelector: new Signal(),
     playerColors: new StateHolder(),
     ended_turn: new Signal(),
     activePlayer: new StateHolder(),
