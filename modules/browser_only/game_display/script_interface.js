@@ -36,7 +36,7 @@ class PannelButton extends BaseComponent {
         })
         basediv.appendChild(this.button)
         this.button.onclick = (click)=>{
-            pannel_select_signal.fire(this.pannel_id)
+            signals.pannelSelector.fire(this.pannel_id)
         }
         signals.pannelSelector.listen((pan_id)=>{
             if(pan_id === this.pannel_id){
