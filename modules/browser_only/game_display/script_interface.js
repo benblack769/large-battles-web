@@ -1,6 +1,5 @@
 var basecomp = require("./base_component.js")
 var signals = require("./global_signals.js")
-var make_change_script_popup = require("./change_script.js").make_change_script_popup
 
 var BaseComponent = basecomp.BaseComponent
 var createEl = basecomp.createEL
