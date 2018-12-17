@@ -47,6 +47,7 @@ class ForegroundCanvas extends BaseComponent {
             case "CREATE": this.createChange(statechange.data,statechange.coord); break;
             case "MOVE": this.moveChange(statechange.start_coord,statechange.end_coord); break;
             case "ADD_EQUIPMENT": this.onAddEquipment(statechange.equip_type,statechange.coord); break;
+            case "CLEAR": this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); break;
             //default: console.log("bad state change"); break;
         }
     }

@@ -159,21 +159,59 @@ class PlayerInfoPannel extends BaseComponent {
     constructor(parent, basediv, player_ids){
         super(parent, basediv)
         var player_rows = player_ids.map(this.makePlayerRow.bind(this))
-        this.table_div = document.getElementById("player_info_tbody")
-        this.table_div.innerHTML = ''
+        console.log(basediv)
+        this.table_div = createEl('tbody',{})
+        this.end_turn_button = createDiv({
+            className: "player_info_button",
+            innerHTML: "End Turn",
+        })
+        this.main_table_div = createDiv({
+            className: "player_info_bar",
+            parent: basediv,
+            children: [
+                createEl('table',{
+                    className: "player_info_table",
+                    children: [
+                        createEl('thead',{
+                            children: [
+                                createEl('tr',{
+                                    children:[
+                                        createEl('th',{
+                                            innerText: "Active",
+                                        }),
+                                        createEl('th',{
+                                            innerText: "Color",
+                                        }),
+                                        createEl('th',{
+                                            innerText: "Money",
+                                        }),
+                                        createEl('th',{
+                                            innerText: "Player",
+                                        }),
+                                    ]
+                                })
+                            ]
+                        }),
+                        this.table_div
+                    ]
+                }),
+                this.end_turn_button
+            ]
+        })
         player_rows.forEach((row)=>this.table_div.appendChild(row))
         this.createEndTurnButton()
     }
     createEndTurnButton(){
-        $("#end_turn_button").click(function(){
+        var $end_button = $(this.end_turn_button)
+        $end_button.click(function(){
             signals.ended_turn.fire()
         })
         function status_changed(){
             if(signals.activePlayer.getState() === signals.myPlayer.getState()){
-                $("#end_turn_button").show()
+                $end_button.show()
             }
             else{
-                $("#end_turn_button").hide()
+                $end_button.hide()
             }
         }
         signals.activePlayer.listen(status_changed)
