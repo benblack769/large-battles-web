@@ -14,6 +14,9 @@ function clear_all_signals(){
     module.exports.gameStateChange.clear()
     module.exports.highlightCommand.clear()
     module.exports.interfaceInstruction.clear()
+    module.exports.analysis_navigation.clear()
+    module.exports.analysis_signal.clear()
+    module.exports.stop_analysis_signal.clear()
 }
 
 module.exports = {
@@ -30,4 +33,7 @@ module.exports = {
     gameStateChange: new Signal(),
     highlightCommand: new Signal(),
     interfaceInstruction: new Signal(),
+    analysis_navigation: new Signal(),
+    analysis_signal: new Signal(),
+    stop_analysis_signal: new Signal(),
 }

@@ -32,7 +32,7 @@ function init_signals(game_state){
     signals.clear_all_signals()
     game_page.init_signals(game_state)
     signals.ended_turn.listen(() => {
-        process_instruction_backend(game_state,{type:"END_TURN"},signals.myPlayer.getState())
+        process_instruction(game_state,{type:"END_TURN"},signals.myPlayer.getState())
     //    signals.selectedData.setState(signals.selectedData.getState())
     })
     signals.activePlayer.listen(function(newstate){
