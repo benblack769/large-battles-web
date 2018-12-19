@@ -185,6 +185,16 @@ class GameBoard extends BaseComponent {
         this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.highlight_canvas = new HighlightCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.click_interface_canvas = new ClickInterfaceCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
+
+        this.handle_signals()
+    }
+    handle_signals(){
+        signals.analysis_signal.listen(()=>{
+            $(this.click_interface_canvas.basediv).hide()
+        })
+        signals.stop_analysis_signal.listen(()=>{
+            $(this.click_interface_canvas.basediv).show()
+        })
     }
 }
 module.exports = {
