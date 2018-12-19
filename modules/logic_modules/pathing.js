@@ -61,7 +61,7 @@ function get_shortest_path(map,start,target){
                 var nc = next_coords[j]
                 var hnc = hashable(nc)
                 if(!parents.has(hnc)){
-                    if(map[nc.y] && map[nc.y][nc.x] && map[nc.y][nc.x].category === "empty"){
+                    if(map[nc.y] && map[nc.y][nc.x] && map[nc.y][nc.x] === "E"){
                         next_list.push(nc)
                         parents.set(hnc,hashable(cur_list[i]))
                         if(hnc === htarget){
@@ -91,7 +91,7 @@ function get_possible_set(map,start,range,move_tos){
                 var nc = next_coords[j]
                 var hnc = hashable(nc)
                 if(!taken_coords.has(hnc)){
-                    if(map[nc.y] && map[nc.y][nc.x] && map[nc.y][nc.x].category === "empty"){
+                    if(map[nc.y] && map[nc.y][nc.x] && map[nc.y][nc.x] === "E"){
                         next_list.push(nc)
                         taken_coords.add(hnc)
                     }
@@ -135,7 +135,7 @@ function is_possible_attack(map, start, target, range){
             return false
         }
         for(var y = min_y+1; y <= max_y-1; y++){
-            if(map[y][x].category !== "empty"){
+            if(map[y][x] !== "E"){
                 return false
             }
         }
@@ -149,7 +149,7 @@ function is_possible_attack(map, start, target, range){
             return false
         }
         for(var x = min_x+1; x <= max_x-1; x++){
-            if(map[y][x].category !== "empty"){
+            if(map[y][x] !== "E"){
                 return false
             }
         }

@@ -16,6 +16,14 @@ var default_stats = {
             "max_HP": 2,
             "viable_attachments": ["horse"],
         },
+        "town_center": {
+            "attack_range": 0,
+            "move_range": 0,
+            "max_HP": 4,
+            "cost": 400,
+            "buildable": true,
+            "buildable_radius": 4,
+        },
         "farm": {
             "attack_range": 0,
             "move_range": 0,
@@ -134,6 +142,7 @@ var icons = {
         "sword_shop": "sword-shop.png",
         "pike_shop": "pike-shop.png",
         "stable": "stable.png",
+        "town_center": "stable.png",
     },
     "attach_icons": {
         "armor": "armor.png",

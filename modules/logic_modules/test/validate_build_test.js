@@ -15,6 +15,11 @@ function make_stats(){
                 "cost": 20,
                 "buildable": true,
             },
+            "buildable_around_building": {
+                "cost": 50,
+                "buildable": true,
+                "buildable_radius": 2,
+            },
         }
     }
 }
@@ -45,59 +50,19 @@ function ee(){
 function C1(){
     return create_utils.create_unit("cheap_building", "p1")
 }
-function U1(){
-    return create_utils.create_unit("unit_making_building", "p1")
+function T1(){
+    return create_utils.create_unit("buildable_around_building", "p1")
 }
-function E1(){
-    return create_utils.create_unit("attachment_making_building", "p1")
-}
-function A1(){
-    return create_utils.create_unit("attachable_unit", "p1")
+function T2(){
+    return create_utils.create_unit("buildable_around_building", "p2")
 }
 function make_game_map(){
     return [
         [ee(),ee(),ee(),C1()],
-        [ee(),ee(),ee(),A1()],
-        [ee(),ee(),ee(),E1()],
-        [ee(),U1(),C1(),ee()],
-    ]
-}
-function O1(){
-    return {
-        "p1": 100,
-        "p2": 1,
-    }
-}
-function O2(){
-    return {
-        "p1": 1,
-        "p2": 1000,
-    }
-}
-function SS(){
-    return {
-        "p1": 50,
-        "p2": 50,
-    }
-}
-function S1(){
-    return {
-        "p1": 5,
-        "p2": 0,
-    }
-}
-function oe(){
-    return {
-        "p1": 0,
-        "p2": 0,
-    }
-}
-function make_occ(state){
-    return [
-        [O1(),oe(),oe(),oe()],
-        [O2(),O1(),oe(),oe()],
-        [SS(),oe(),oe(),oe()],
-        [S1(),oe(),O1(),oe()],
+        [ee(),T1(),ee(),C1()],
+        [ee(),ee(),ee(),C1()],
+        [ee(),C1(),C1(),ee()],
+        [ee(),ee(),ee(),ee()],
     ]
 }
 function make_game_state(){
@@ -105,32 +70,15 @@ function make_game_state(){
         map: make_game_map(),
         players: make_player_state(120,120),
         stats: make_stats(),
-        occupied: make_occ(),
     }
     return state
 }
-
-test('validate_occpation', function (t) {
-    var game = make_game_state()
-    var instr1 = {
-        type: "BUILD",
-        coord: {x:0,y:0},
-        building_type: "cheap_building",
-    }
-    t.false(validate(game,instr1,"p1"),"GOOD")
-    instr1.coord = {x:0,y:1}
-    t.true(validate(game,instr1,"p1"),"OCCUPIED_BY_P2")
-    instr1.coord = {x:0,y:2}
-    t.true(validate(game,instr1,"p1"),"SPLIT_OCCUPATION")
-    instr1.coord = {x:0,y:2}
-    t.true(validate(game,instr1,"p1"),"SMALL_OCCUPATION")
-    t.end()
-})
 test('validate_build_over', function (t) {
     var game = make_game_state()
     var instr1 = {
         type: "BUILD",
         coord: {x:2,y:3},
+        builder_coord: {x:1,y:1},
         building_type: "cheap_building",
     }
     t.true(validate(game,instr1,"p1"),"BUILD_OVER")
@@ -140,10 +88,25 @@ test('validate_build_type', function (t) {
     var game = make_game_state()
     var instr1 = {
         type: "BUILD",
-        coord: {x:1,y:1},
+        coord: {x:1,y:2},
+        builder_coord: {x:1,y:1},
         building_type: "bad_build_type",
     }
     t.true(validate(game,instr1,"p1"),"BAD_BUILD_TYPE")
+    t.end()
+})
+
+test('validate_builder_proximity', function (t) {
+    var game = make_game_state()
+    var instr1 = {
+        type: "BUILD",
+        coord: {x:1,y:2},
+        builder_coord: {x:1,y:1},
+        building_type: "cheap_building",
+    }
+    t.false(validate(game,instr1,"p1"),"GOOD")
+    instr1.coord = {x:1,y:4}
+    t.true(validate(game,instr1,"p1"),"BUILDER_OUT_OF_RANGE")
     t.end()
 })
 
@@ -152,13 +115,16 @@ test('validate_active_player', function (t) {
     var instr1 = {
         type: "BUILD",
         coord: {x:0,y:0},
+        builder_coord: {x:1,y:1},
         building_type: "cheap_building",
     }
     t.false(validate(game,instr1,"p1"),"GOOD")
+    game.map[1][1] = T2()
+    t.true(validate(game,instr1,"p2"),"NOT_ACTIVE_PLAYER")
     game.players.active_player = "p2"
-    game.occupied[0][0] = O2()
-    t.true(validate(game,instr1,"p1"),"NOT_ACTIVE_PLAYER")
     t.false(validate(game,instr1,"p2"),"GOOD")
+    game.map[1][1] = T1()
+    t.true(validate(game,instr1,"p1"),"NOT_ACTIVE_PLAYER")
     t.end()
 })
 test('validate_money_build', function (t) {
@@ -166,6 +132,7 @@ test('validate_money_build', function (t) {
     var instr1 = {
         type: "BUILD",
         coord: {x:0,y:0},
+        builder_coord: {x:1,y:1},
         building_type: "cheap_building",
     }
     t.false(validate(game,instr1,"p1"),"GOOD")

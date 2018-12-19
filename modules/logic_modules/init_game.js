@@ -18,13 +18,6 @@ function init2d(gamesize,value){
 function init_map(gamesize){
     return init2d(gamesize,create_utils.create_empty())
 }
-function init_oppupied(gamesize,player_order){
-    var init_occ = {}
-    player_order.forEach(function(player){
-        init_occ[player] = 0
-    })
-    return init2d(gamesize,init_occ)
-}
 function rand_int(max_val){
     return Math.floor(Math.random()*max_val)
 }
@@ -79,15 +72,21 @@ function place_initial_units(gamesize,player_ids){
     for(var i = 0; i < num_players; i++){
         var cen = centers[i]
         var trans = transform[i]
-        var barracks = create_utils.create_unit("barracks",player_ids[i])
-        var barracks_coord = {
-            x: cen.x-1,
-            y: cen.y,
-        }
         all_messages.push({
             type: "CREATE",
-            data: barracks,
-            coord: trans(barracks_coord),
+            data: create_utils.create_unit("barracks",player_ids[i]),
+            coord: trans({
+                x: cen.x-1,
+                y: cen.y,
+            }),
+        })
+        all_messages.push({
+            type: "CREATE",
+            data: create_utils.create_unit("town_center",player_ids[i]),
+            coord: trans({
+                x: cen.x-1,
+                y: cen.y+1,
+            }),
         })
         farm_coords(cen).forEach(function(farm_coord){
             var farm = create_utils.create_unit("farm",player_ids[i])
@@ -97,21 +96,18 @@ function place_initial_units(gamesize,player_ids){
                 coord: trans(farm_coord),
             })
         })
-        var soldier_coord = {
-            x: cen.x,
-            y: cen.y-1
-        }
-        var soldier = create_utils.create_unit("soldier",player_ids[i])
         all_messages.push({
             type: "CREATE",
-            data: soldier,
-            coord: trans(soldier_coord),
+            data: create_utils.create_unit("soldier",player_ids[i]),
+            coord: trans({
+                x: cen.x,
+                y: cen.y-1
+            }),
         })
     }
     return all_messages
 }
 module.exports = {
     init_map: init_map,
-    init_oppupied: init_oppupied,
     place_initial_units: place_initial_units,
 }

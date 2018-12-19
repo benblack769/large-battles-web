@@ -24,7 +24,7 @@ function at(map,coord){
     return map[coord.y][coord.x]
 }
 function is_empty(map,coord){
-    return at(map,coord).category === "empty"
+    return at(map,coord) === "E"
 }
 function all_coords(game_state){
     var res = []
@@ -73,7 +73,19 @@ function is_moveable_unit(game_state,coord){
     if(!is_mine(game_state,coord)){
         return false
     }
-    if(!self.lib.get_move_range(game_state,coord)){
+    if(!module.exports.get_move_range(game_state,coord)){
+        return false
+    }
+    return true
+}
+function is_build_radius_unit(game_state,coord){
+    if(!is_unit(game_state.map,coord)){
+        return false
+    }
+    if(!is_mine(game_state,coord)){
+        return false
+    }
+    if(!module.exports.get_build_radius(game_state,coord)){
         return false
     }
     return true
@@ -98,6 +110,7 @@ module.exports = {
     distance: pathing.distance,
     get_move_range: get_stat_fn("move_range"),
     get_attack_range: get_stat_fn("attack_range"),
+    get_build_radius: get_stat_fn("buildable_radius"),
     get_make_equip: get_make_equip,
     get_make_unit: get_make_unit,
     is_empty: is_empty,
@@ -110,6 +123,7 @@ module.exports = {
     is_valid: is_valid,
     is_unit: is_unit,
     is_moveable_unit: is_moveable_unit,
+    is_build_radius_unit: is_build_radius_unit,
     is_mine: is_mine,
     deep_copy: deep_copy,
 }

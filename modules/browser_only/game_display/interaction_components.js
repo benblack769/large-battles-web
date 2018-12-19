@@ -85,12 +85,31 @@ class MoveHandler extends TwoClickHandler {
 class BuildHandler {
     constructor(buy_type,game_state){
         this.buy_type = buy_type
+        this.calc_buildable_units(game_state)
         this.draw_all(game_state)
+    }
+    calc_buildable_units(game_state){
+        var coord_map = new Map()
+        var hashable = JSON.stringify
+        lib.all_coords(game_state)
+            .filter((coord)=>lib.is_build_radius_unit(game_state,coord))
+            .forEach(function(buildable_coord){
+                var range = lib.get_build_radius(game_state,buildable_coord)
+                lib.get_possible_moves(game_state.map,buildable_coord,range)
+                    .forEach(function(target_coord){
+                        coord_map.set(hashable(target_coord),buildable_coord)
+                    })
+            })
+        this.coord_map = coord_map
+    }
+    get_builder(coord){
+        return this.coord_map.get(JSON.stringify(coord))
     }
     handleClick(click,game_state){
         var instr = {
             type: "BUILD",
             building_type: this.buy_type,
+            builder_coord: this.get_builder(click),
             coord: click,
         }
         postMessage(instr)
@@ -106,6 +125,7 @@ class BuildHandler {
         var instr = {
             type: "BUILD",
             building_type: this.buy_type,
+            builder_coord: this.get_builder(coord),
             coord: coord,
         }
         //console.log(lib.get_instr_err(game_state,instr,game_state.my_player))
@@ -473,29 +493,6 @@ function to_rgba(colorname,a){
         case "blue": return "rgba(0,0,255,"+a+")";
     }
 }
-function draw_occupation(game_state){
-    var player_colors = {}
-    player_colors[game_state.players.player_order[0]] = "red"
-    player_colors[game_state.players.player_order[1]] = "blue"
-
-    var all_highlights = []
-    lib.all_coords(game_state).forEach(function(coord){
-        var occ = lib.at(game_state.occupied,coord)
-        var tot_oc = Object.values(occ)
-                           .reduce((a,b)=>(a+b))
-        for(var player in occ){
-            var color = player_colors[player]
-            var val = occ[player]
-            var val_max = 20
-            var proportion = val / (tot_oc+0.00001)
-            var absolute_val = (Math.min(1,val/val_max))
-            var draw_val = Math.min(proportion,absolute_val)
-            var rgba = to_rgba(color,draw_val*0.5)
-            all_highlights.push(to_item(coord,rgba))
-        }
-    })
-    draw_list(all_highlights)
-}
 var move_handler = new MultiMoveHandler()
 var path_handler = new PathHandler()
 function make_handler(function_id,game_state){
@@ -511,11 +508,11 @@ function make_handler(function_id,game_state){
         case "build_pike_shop": return new BuildHandler("pike_shop",game_state);
         case "build_cat_factory": return new BuildHandler("catapult_factory",game_state);
         case "build_stable": return new BuildHandler("armory",game_state);
+        case "build_town_center": return new BuildHandler("town_center",game_state);
         case "buy": return new BuyHandler();
         case "attach": return new AttachHandler();
         case "move": return new MoveHandler();
         case "attack": return new AttackHandler();
-        case "draw_occupation": draw_occupation(game_state); return new NullHandler();
         case "move_multi": move_handler.switched(); return move_handler;
         case "move_path": path_handler.switched(); return path_handler;
         default: console.log("bad data type: "+function_id); break;

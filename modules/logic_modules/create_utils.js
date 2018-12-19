@@ -15,9 +15,7 @@ function create_unit(unit_type,player_id){
 }
 
 function create_empty(){
-    return {
-        "category": "empty"
-    }
+    return "E"
 }
 module.exports = {
     create_unit: create_unit,
