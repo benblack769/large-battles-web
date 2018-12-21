@@ -13,3 +13,4 @@ static_files/index.html
 *.min.css
 *.log
 game_records/
+static_files/tf.js

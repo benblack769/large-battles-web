@@ -9,7 +9,7 @@ def encodebase64(filename):
     contents = fin.read()
     data_url = base64.b64encode(contents)
     fin.close()
-    return data_url.decode("utf-8") 
+    return data_url.decode("utf-8")
 
 def make_data_url_png(filename):
 	prefix = 'data:image/png;base64,'
@@ -42,8 +42,8 @@ def get_remote_file(url):
     if os.path.exists(basename):
         return get_local_file(basename)
     else:
-        with urllib.request.urlopen('http://python.org/') as response:
-            html = response.read()
+        with urllib.request.urlopen(url) as response:
+            html = response.read().decode("utf-8")
         save_file(html,basename)
         return html
 
