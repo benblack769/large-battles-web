@@ -147,7 +147,7 @@ var icons = {
         "sword_shop": "sword-shop.png",
         "pike_shop": "pike-shop.png",
         "stable": "stable.png",
-        "town_center": "stable.png",
+        "town_center": "well.png",
     },
     "attach_icons": {
         "armor": "armor.png",
