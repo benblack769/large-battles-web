@@ -67,6 +67,19 @@ function fill_rect(ctx, coord, fillcolor){
                 sqr_size,
                 sqr_size);
 }
+function fill_center_rect(ctx, cen_coord, fillcolor, radius){
+    ctx.fillStyle=fillcolor;
+    ctx.fillRect((cen_coord.x-radius)*sqr_size,
+                (cen_coord.y-radius)*sqr_size,
+                sqr_size*(radius*2+1),
+                sqr_size*(radius*2+1));
+}
+function clear_center_rect(ctx, cen_coord, radius){
+    ctx.clearRect((cen_coord.x-radius)*sqr_size,
+                (cen_coord.y-radius)*sqr_size,
+                sqr_size*(radius*2+1),
+                sqr_size*(radius*2+1));
+}
 function draw_image(context,filename,coord){
     var image = document.getElementById(filename)
     context.drawImage(image,coord.x*sqr_size,coord.y*sqr_size)
@@ -89,6 +102,8 @@ module.exports = {
     draw_image: draw_image,
     copy_rect: copy_rect,
     stroke_rect: stroke_rect,
+    fill_center_rect: fill_center_rect,
+    clear_center_rect: clear_center_rect,
     fill_rect: fill_rect,
     draw_line: draw_line,
     draw_mini_circle: draw_mini_circle,

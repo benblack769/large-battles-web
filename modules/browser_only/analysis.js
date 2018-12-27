@@ -68,6 +68,12 @@ function map_to_state_changes(game_state){
     })
     return state_change_signals
 }
+function current_nav_state(){
+    return current_navigation_states[major_index].state
+}
+function save_analysis_choice(coordcen){
+
+}
 var current_navigation_states = []
 var major_index = 0
 function init_analysis_signals(record,game_state){
@@ -77,10 +83,13 @@ function init_analysis_signals(record,game_state){
         console.log("current_navigation_states")
         console.log(current_navigation_states)
         major_index = current_navigation_states.length - 1
-        draw_board(current_navigation_states[major_index].state)
+        draw_board(current_nav_state())
     })
     signals.stop_analysis_signal.listen(function(){
         draw_board(game_state)
+    })
+    signals.analysisClickOccurred.listen(function(coord){
+        save_analysis_choice(coord)
     })
     signals.analysis_navigation.listen(handle_analysis_navigation)
 }
@@ -90,7 +99,7 @@ function handle_analysis_navigation(nav_instr){
         case "FAST_BACKWARD": major_index = Math.max(major_index-1,0); break;
     }
     console.log(major_index)
-    draw_board(current_navigation_states[major_index].state)
+    draw_board(current_nav_state())
 }
 function draw_board(game_state){
     map_to_state_changes(game_state).forEach(function(change){

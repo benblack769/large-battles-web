@@ -108,15 +108,50 @@ class ClickInterfaceCanvas extends BaseComponent {
     }
     handleMove(moveevent){
         var xycoord = event_to_coord(moveevent)
-        if(this.hover_coord && !deep_equals(xycoord,this.hover_coord)){
+        if(!deep_equals(xycoord,this.hover_coord)){
             this.clearHover()
+            this.hover_coord = xycoord
+            display_board.stroke_rect(this.context, xycoord, "black")
         }
-        this.hover_coord = xycoord
-        display_board.stroke_rect(this.context, xycoord, "black")
     }
     clearHover(){
         if(this.hover_coord){
             display_board.clear_rect(this.context,this.hover_coord)
+            this.hover_coord = null
+        }
+    }
+}
+var analysis_radius = 3;
+class AnalysisCanvas extends BaseComponent {
+    constructor(parent, basediv, gamesize){
+        super(parent,basediv)
+        this.canvas = create_canvas_of_size(gamesize)
+        this.context = this.canvas.getContext('2d')
+        basediv.appendChild(this.canvas)
+        this.canvas.onclick = (event) => {
+            signals.analysisClickOccurred.fire(event_to_coord(event))
+        }
+        this.hover_coord = null
+        this.canvas.onmousemove = (event) => {
+            this.handleMove(event)
+        }
+        this.canvas.onmouseout = () => {
+            this.clearHover()
+        }
+    }
+    handleMove(moveevent){
+        var xycoord = event_to_coord(moveevent)
+        if(!deep_equals(xycoord,this.hover_coord)){
+            this.clearHover()
+            this.hover_coord = xycoord
+            var color = "rgba(0,0,0,0.2)"
+            display_board.fill_center_rect(this.context, xycoord, color, analysis_radius)
+            display_board.fill_rect(this.context, xycoord, color)
+        }
+    }
+    clearHover(){
+        if(this.hover_coord){
+            display_board.clear_center_rect(this.context,this.hover_coord,analysis_radius)
             this.hover_coord = null
         }
     }
@@ -185,15 +220,19 @@ class GameBoard extends BaseComponent {
         this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.highlight_canvas = new HighlightCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
         this.click_interface_canvas = new ClickInterfaceCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
+        this.analysis_canvas = new AnalysisCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
 
+        $(this.analysis_canvas.basediv).hide()
         this.handle_signals()
     }
     handle_signals(){
         signals.analysis_signal.listen(()=>{
             $(this.click_interface_canvas.basediv).hide()
+            $(this.analysis_canvas.basediv).show()
         })
         signals.stop_analysis_signal.listen(()=>{
             $(this.click_interface_canvas.basediv).show()
+            $(this.analysis_canvas.basediv).hide()
         })
     }
 }
