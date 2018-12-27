@@ -37,6 +37,21 @@ function make_stats(){
         "attachment_types": {
             "basic_attachment":{
                 "cost": 31,
+                "slot": "top_left",
+                "stat_alt": {
+                    "random_stat": 3,
+                }
+            },
+            "attach_2":{
+                "cost": 31,
+                "slot": "top_right",
+                "stat_alt": {
+                    "random_stat": 3,
+                }
+            },
+            "attach_3":{
+                "cost": 31,
+                "slot": "top_left",
                 "stat_alt": {
                     "random_stat": 3,
                 }
@@ -152,6 +167,15 @@ test('validate_equip_unit', function (t) {
     t.false(validate(game,instr,"p1"),"GOOD")
     instr.equip_type = "bad_equip"
     t.true(validate(game,instr,"p1"),"BAD_EQUIP_TYPE")
+    instr.equip_type = "basic_attachment"
+    t.false(validate(game,instr,"p1"),"GOOD")
+
+    at(game.map,instr.equip_coord).attachments.push("attach_2")
+    t.false(validate(game,instr,"p1"),"GOOD")
+    at(game.map,instr.equip_coord).attachments.push("attach_3")
+    t.true(validate(game,instr,"p1"),"HAS_DIFFERENT_ATTACHMENT_IN_SLOT")
+    at(game.map,instr.equip_coord).attachments.pop()
+    t.false(validate(game,instr,"p1"),"GOOD")
 
 
     t.end()

@@ -99,24 +99,28 @@ var default_stats = {
     "attachment_types": {
         "armor": {
             "cost": 30,
+            "slot": "top_right",
             "stat_alt": {
                 "max_HP": 2,
             }
         },
         "bow_and_arrow": {
             "cost": 20,
+            "slot": "top_left",
             "stat_alt": {
                 "attack_range": 2,
             }
         },
         "sword": {
             "cost": 10,
+            "slot": "top_left",
             "stat_alt": {
                 "attack_strength": 1,
             }
         },
         "pike": {
             "cost": 30,
+            "slot": "top_left",
             "stat_alt": {
                 "attack_range": 1,
                 "attack_strength": 1,
@@ -124,6 +128,7 @@ var default_stats = {
         },
         "horse": {
             "cost": 30,
+            "slot": "bottom_right",
             "stat_alt": {
                 "move_range": 2,
             }

@@ -205,8 +205,11 @@ function assert_target_can_be_equipped(gamestate, instr){
     if(!target_stats.viable_attachments || !target_stats.viable_attachments.includes(instr.equip_type)){
         throw new Error('Target unit: "'+target.unit_type+'" cannot equip equipment of type: "'+instr.equip_type+'"')
     }
-    if(target.attachments.includes(instr.equip_type)){
-        throw new Error('Target unit already has equipment of type: "'+instr.equip_type+'"')
+    var attach_types = gamestate.stats.attachment_types
+    var target_attachment_slots = target.attachments.map((o)=>attach_types[o].slot)
+    var myslot = attach_types[instr.equip_type].slot
+    if(target_attachment_slots.includes(myslot)) {
+        throw new Error('Target unit already has equipment in slot: "'+myslot+'"')
     }
 }
 function assert_valid_attachment_type(gamestate,equip_name){
