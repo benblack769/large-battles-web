@@ -4,12 +4,13 @@ This repository contains the client and server for a multiplayer browser based g
 
 The game client is currently deployed on a static web server [here](script-wars-deploy.s3-website-us-west-2.amazonaws.com). The multiplayer server is not currently deployed anywhere, but you can still start a single player game and play around with the controls.
 
-To give an impression of what it looks like, here is a screenshot of a game I played with myself:
+To give an impression of what it looks like, here is a screenshot of a starting position:
 
+![screenshot](docs/game_screenshot.PNG)
 
 ### Multiplayer features
 
-To allow for a small community to engage on multiplayer, there is a way to start games with other players based on mutual agreement, and a simple ranking system with win/loss records. The system also stores records of multiplayer games which in the future can be pursued after the game (the feature to pursue them is not implemented yet).
+To allow for a small community to engage on multiplayer, there is a way to start games with other players based on mutual agreement, and a simple ranking system with win/loss records. The system also stores records of multiplayer games which in the future can be pursued after the game (the feature to pursue them is not implemented yet, but they are stored anyways).
 
 ## Future development plan
 
