@@ -254,10 +254,8 @@ main page style
 }
 .canvas_holder {
     position:absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 80px;
+    left: 80px;
 }
 .lib_edit_button {
     background: red;
@@ -319,4 +317,13 @@ main page style
 }
 .selector_button:hover {
     background-color: blue;
+}
+.canvas_scroll_background {
+    background-color: gray;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
 }

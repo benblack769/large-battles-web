@@ -33,13 +33,13 @@ function switch_to_game_page(){
     $(".page_level").hide()
     $("#single_player_page").show()
     window.scrollTo(80, 40);
-    document.body.style["background-color"] = "gray"
+    ///document.body.style["background-color"] = "gray"
 }
 function switch_away_from_game_page(){
-    document.body.style["background-color"] = "white"
+    //document.body.style["background-color"] = "white"
 }
 function init_game_page(basediv,signals){
-    $(basediv).keyup(function(e) {
+    $(document).keyup(function(e) {
          if (e.key === "Escape" || e.keycode === 27) {
              signals.selectedData.setState(signals.selectedData.getState())
         }
@@ -65,7 +65,6 @@ function init_signals(game_state,signals){
     analysis.init_analysis_signals(local_game_record,game_state,signals)
 }
 function init_html_ui(gamesize,player_order,signals){
-    $(".player_info_bar").show()
     $("#game_not_started_message").hide()
     var basediv = document.getElementById("single_page_game_overlay")
     basediv.innerHTML = ""

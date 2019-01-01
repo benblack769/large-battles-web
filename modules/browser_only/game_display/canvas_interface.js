@@ -191,16 +191,7 @@ class GameBoard extends BaseComponent {
         var sizes = display_board.get_game_pixel_size(gamesize.xsize,gamesize.ysize)
         this.main_base_div = createDiv({
             parent: basediv,
-            style: {
-                position: "absolute",
-                top: "0",
-                left: "0",
-                right: "0",
-                bottom: "0",
-                overflow: "auto",
-                //width: sizes.xsize+300+"px",
-                //height: sizes.ysize+300+"px",
-            }
+            className: "canvas_scroll_background",
         })
         //takes up space, forcing div to scroll
         this.spacing_el = createEL("div",{
@@ -210,30 +201,7 @@ class GameBoard extends BaseComponent {
                 height: sizes.ysize+300+"px",
             }
         })
-        this.super_parent_div = createDiv({
-            parent: this.main_base_div,
-            style: {
-                position: "absolute",
-                top: "80px",
-                left: "80px",
-                right: "0",
-                bottom: "0",
-                width: sizes.xsize+300+"px",
-                height: sizes.ysize+300+"px",
-            }
-        })
-        this.parent_div = createDiv({
-            parent: this.super_parent_div,
-            style: {
-                position:"absolute",
-                width:sizes.xsize+"px",
-                height:sizes.ysize+"px",
-                top:-50,
-                left:-50,
-                "z-index": "1",
-                overflow: "hidden",
-            }
-        })
+        this.parent_div = this.main_base_div
         this.background_canvas = new BackgroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
         this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
         this.highlight_canvas = new HighlightCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
