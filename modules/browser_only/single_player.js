@@ -1,6 +1,6 @@
 var types = require("../logic_modules/types.js")
 var info_display = require("./game_display/info_display.js")
-var signals = require("./game_display/global_signals.js")
+var all_signals = require("./game_display/global_signals.js").all_signals
 var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
@@ -13,7 +13,7 @@ var single_player_players = [
     "Player B",
 ]
 
-function process_instruction_backend(game_state,instruction,player){
+function process_instruction_backend(game_state,instruction,player,signals){
     var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
     instr_parts.forEach(function(part){
         //change local game state
@@ -25,14 +25,13 @@ function process_instruction_backend(game_state,instruction,player){
         signals.selectedData.setState(signals.selectedData.getState())
     }
 }
-function process_instruction(game_state,instruction,player){
-    game_page.process_message_frontend(game_state,instruction,player,process_instruction_backend)
+function process_instruction(game_state,instruction,player,signals){
+    game_page.process_message_frontend(game_state,instruction,player,process_instruction_backend,signals)
 }
-function init_signals(game_state){
-    signals.clear_all_signals()
-    game_page.init_signals(game_state)
+function init_signals(game_state,signals){
+    game_page.init_signals(game_state,signals)
     signals.ended_turn.listen(() => {
-        process_instruction(game_state,{type:"END_TURN"},signals.myPlayer.getState())
+        process_instruction(game_state,{type:"END_TURN"},signals.myPlayer.getState(),signals)
     //    signals.selectedData.setState(signals.selectedData.getState())
     })
     signals.activePlayer.listen(function(newstate){
@@ -44,10 +43,10 @@ function init_signals(game_state){
         }
     })
     signals.interfaceInstruction.listen(function(message){
-        process_instruction(game_state,message,signals.myPlayer.getState())
+        process_instruction(game_state,message,signals.myPlayer.getState(),signals)
     })
 }
-function execute_init_instr(gamesize,game_state){
+function execute_init_instr(gamesize,game_state,signals){
     var player_order = single_player_players
     var init_instr = {
         type: "GAME_STARTED",
@@ -57,7 +56,7 @@ function execute_init_instr(gamesize,game_state){
         initial_money: 100,
         stats: types.default_stats,
     }
-    process_instruction(game_state,init_instr,"__server")
+    process_instruction(game_state,init_instr,"__server",signals)
     signals.selectedData.setState(signals.selectedData.getState())
 }
 function create_single_player(){
@@ -70,10 +69,11 @@ function create_single_player(){
         map: null,
         stats: null,
     }
-    init_signals(game_state)
+    var signals = new all_signals()
+    init_signals(game_state,signals)
 
-    game_page.init_html_ui(gamesize,single_player_players)
-    execute_init_instr(gamesize,game_state)
+    game_page.init_html_ui(gamesize,single_player_players,signals)
+    execute_init_instr(gamesize,game_state,signals)
     nav_signal.change_page.fire("game_naventry")
 }
 

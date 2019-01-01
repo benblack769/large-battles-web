@@ -2,40 +2,26 @@ var signal_lib = require("../../logic_modules/signals.js")
 var Signal = signal_lib.Signal
 var StateHolder = signal_lib.StateHolder
 
-function clear_all_signals(){
-    module.exports.clear_highlights.clear()
-    module.exports.clickOccurred.clear()
-    module.exports.analysisClickOccurred.clear()
-    module.exports.selectedData.clear()
-    module.exports.pannelSelector.clear()
-    module.exports.ended_turn.clear()
-    module.exports.playerColors.clear()
-    module.exports.activePlayer.clear()
-    module.exports.myPlayer.clear()
-    module.exports.gameStateChange.clear()
-    module.exports.highlightCommand.clear()
-    module.exports.interfaceInstruction.clear()
-    module.exports.analysis_navigation.clear()
-    module.exports.analysis_signal.clear()
-    module.exports.stop_analysis_signal.clear()
+function all_signals(){
+    this.clear_highlights = new Signal()
+    this.clickOccurred = new Signal()
+    this.analysisClickOccurred = new Signal()
+    this.selectedData = new StateHolder()
+    this.pannelSelector = new Signal()
+    this.playerColors = new StateHolder()
+    this.ended_turn = new Signal()
+    this.activePlayer = new StateHolder()
+    this.myPlayer = new StateHolder()
+    this.gameStateChange = new Signal()
+    this.highlightCommand = new Signal()
+    this.interfaceInstruction = new Signal()
+    this.analysis_navigation = new Signal()
+    this.analysis_signal = new Signal()
+    this.stop_analysis_signal = new Signal()
 }
 
 module.exports = {
     Signal: Signal,
-    clear_all_signals: clear_all_signals,
-    clear_highlights: new Signal(),
-    clickOccurred: new Signal(),
-    analysisClickOccurred: new Signal(),
-    selectedData: new StateHolder(),
-    pannelSelector: new Signal(),
-    playerColors: new StateHolder(),
-    ended_turn: new Signal(),
-    activePlayer: new StateHolder(),
-    myPlayer: new StateHolder(),
-    gameStateChange: new Signal(),
-    highlightCommand: new Signal(),
-    interfaceInstruction: new Signal(),
-    analysis_navigation: new Signal(),
-    analysis_signal: new Signal(),
-    stop_analysis_signal: new Signal(),
+    StateHolder: StateHolder,
+    all_signals: all_signals,
 }

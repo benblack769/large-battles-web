@@ -75,7 +75,7 @@ function save_analysis_choice(coordcen){
 }
 var current_navigation_states = []
 var major_index = 0
-function init_analysis_signals(record,game_state){
+function init_analysis_signals(record,game_state,signals){
     signals.analysis_signal.listen(function(){
         current_navigation_states = process_instruction_record(record)
         console.log(record)

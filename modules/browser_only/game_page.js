@@ -3,7 +3,6 @@ var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 var interaction_comps = require("./game_display/interaction_components.js")
 var base_inter = require("./game_display/base_component.js")
-var signals = require("./game_display/global_signals.js")
 var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
@@ -12,7 +11,7 @@ var nav_signal = require("./nav_signal.js")
 var analysis = require("./analysis.js")
 
 var local_game_record = []
-function set_player_colors(players_order){
+function set_player_colors(players_order,signals){
     var pcolors = {}
     var color_cycle = ["red","blue"]
     for(var i = 0; i < players_order.length; i++){
@@ -21,8 +20,8 @@ function set_player_colors(players_order){
     signals.playerColors.setState(pcolors)
 }
 class GameInterface extends base_inter.BaseComponent {
-    constructor(parent,basediv,gamesize,init_player_state){
-        super(parent,basediv)
+    constructor(parent,basediv,gamesize,init_player_state,signals){
+        super(parent,basediv,signals)
         this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize,signals)
         this.script_inter = new script_inter.ScriptInterface(this,(basediv),signals)
         this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals)
@@ -39,8 +38,8 @@ function switch_to_game_page(){
 function switch_away_from_game_page(){
     document.body.style["background-color"] = "white"
 }
-function init_game_page(){
-    $(document).keyup(function(e) {
+function init_game_page(basediv,signals){
+    $(basediv).keyup(function(e) {
          if (e.key === "Escape" || e.keycode === 27) {
              signals.selectedData.setState(signals.selectedData.getState())
         }
@@ -49,8 +48,8 @@ function init_game_page(){
         nav_signal.change_page.fire("live_connect_naventry")
     })
 }
+function init_signals(game_state,signals){
 var interaction_handler = new interaction_comps.InterfaceHandler(signals);
-function init_signals(game_state){
     signals.clickOccurred.listen((coord) => {
         interaction_handler.handle_click(coord,game_state,signals.myPlayer.getState())
     })
@@ -63,18 +62,18 @@ function init_signals(game_state){
             signals.activePlayer.setState(instr.player)
         }
     })
-    analysis.init_analysis_signals(local_game_record,game_state)
+    analysis.init_analysis_signals(local_game_record,game_state,signals)
 }
-function init_html_ui(gamesize,player_order){
+function init_html_ui(gamesize,player_order,signals){
     $(".player_info_bar").show()
     $("#game_not_started_message").hide()
     var basediv = document.getElementById("single_page_game_overlay")
     basediv.innerHTML = ""
-    set_player_colors(player_order)
-    var base = new GameInterface(null, basediv, gamesize, player_order)
+    set_player_colors(player_order,signals)
+    var base = new GameInterface(null, basediv, gamesize, player_order, signals)
 }
 
-function process_message_frontend(game_state,instruction,player,on_backend_message){
+function process_message_frontend(game_state,instruction,player,on_backend_message,signals){
     if(instruction.type === "DRAW_RECTS"){
         signals.highlightCommand.fire(instruction)
     }
@@ -88,7 +87,7 @@ function process_message_frontend(game_state,instruction,player,on_backend_messa
         }
         else{
             local_game_record.push(instruction)
-            on_backend_message(game_state,instruction,player)
+            on_backend_message(game_state,instruction,player,signals)
         }
     }
 }
