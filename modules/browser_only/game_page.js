@@ -8,7 +8,7 @@ var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
 var nav_signal = require("./nav_signal.js")
-var analysis = require("./analysis.js")
+var Analysis = require("./analysis.js").Analysis
 
 var local_game_record = []
 function set_player_colors(players_order,signals){
@@ -33,10 +33,8 @@ function switch_to_game_page(){
     $(".page_level").hide()
     $("#single_player_page").show()
     window.scrollTo(80, 40);
-    ///document.body.style["background-color"] = "gray"
 }
 function switch_away_from_game_page(){
-    //document.body.style["background-color"] = "white"
 }
 function init_game_page(basediv,signals){
     $(document).keyup(function(e) {
@@ -62,7 +60,7 @@ function init_signals(game_state,signals){
             signals.activePlayer.setState(instr.player)
         }
     })
-    analysis.init_analysis_signals(local_game_record,game_state,signals)
+    var cur_anaylsis = new Analysis(signals,local_game_record,game_state)
 }
 function init_html_ui(gamesize,player_order,signals){
     $("#game_not_started_message").hide()

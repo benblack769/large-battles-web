@@ -103,7 +103,30 @@ function deep_copy(obj){
     return JSON.parse(JSON.stringify(obj))
 }
 
+function map_to_state_changes(game_state){
+    var state_change_signals =  [{type:"CLEAR"}]
+    all_coords(game_state).forEach(function(coord){
+        if(is_unit(game_state.map,coord)){
+            var unit = at(game_state.map,coord)
+            state_change_signals.push({
+                type:"CREATE",
+                data:unit,
+                coord: coord,
+            })
+            unit.attachments.forEach(function(attach){
+                state_change_signals.push({
+                    type: "ADD_EQUIPMENT",
+                    coord: coord,
+                    equip_type: attach,
+                })
+            })
+        }
+    })
+    return state_change_signals
+}
+
 module.exports = {
+    map_to_state_changes: map_to_state_changes,
     get_possible_moves: pathing.get_possible_moves,
     is_possible_move: pathing.is_possible_move,
     get_shortest_path: pathing.get_shortest_path,
