@@ -1,35 +1,31 @@
 var basecomp = require("./base_component.js")
-var signals = require("./global_signals.js")
+var Signal = require("../../logic_modules/signals.js").Signal
 
 var BaseComponent = basecomp.BaseComponent
 var createEl = basecomp.createEL
 var createDiv = basecomp.createDiv
 var createSpan = basecomp.createSpan
 
-var Signal = signals.Signal
 
-var analysis_signal = signals.analysis_signal
-var stop_analysis_signal = signals.stop_analysis_signal
-
-function init_script_signals(){
+function init_script_signals(signals){
     signals.selectedData.listen(()=>signals.clear_highlights.fire())
-    analysis_signal.listen(()=>signals.clear_highlights.fire())
+    signals.analysis_signal.listen(()=>signals.clear_highlights.fire())
 }
 class ScriptInterface extends BaseComponent {
-    constructor(parent, basediv){
-        super(parent,basediv)
-        this.analysis_button = new AnalysisButton(this,basediv)
+    constructor(parent, basediv,signals){
+        super(parent,basediv,signals)
+        this.analysis_button = new AnalysisButton(this,basediv,signals)
         //this.analysis_overlay = new AnalysisOverlay(this,basediv)
-        this.mybuttonpannel = new PannelSelector(this,basediv)
+        this.mybuttonpannel = new PannelSelector(this,basediv,signals)
     }
 }
 function pretty_print(obj){
     return JSON.stringify(obj,null,2)
 }
 class AnalysisButton extends BaseComponent {
-    constructor(parent, basediv){
-        super(parent, basediv)
-        init_script_signals()
+    constructor(parent, basediv,signals){
+        super(parent, basediv,signals)
+        init_script_signals(signals)
         this.interface_div = createDiv({
             className: "lib_pannel_container",
         })
@@ -43,7 +39,7 @@ class AnalysisButton extends BaseComponent {
             innerText: "Stop Analysis",
             className: "lib_edit_button",
             parent: this.interface_div,
-            onclick: () => {stop_analysis_signal.fire()}
+            onclick: () => {this.signals.stop_analysis_signal.fire()}
         })
     }
     stop_edit(){
@@ -52,45 +48,26 @@ class AnalysisButton extends BaseComponent {
             innerText: "Start analysis",
             className: "lib_edit_button",
             parent: this.interface_div,
-            onclick: () => {analysis_signal.fire()}
+            onclick: () => {this.signals.analysis_signal.fire()}
         })
     }
     handle_signals(){
-        analysis_signal.listen(() => {this.start_edit()})
-        stop_analysis_signal.listen(() => {this.stop_edit()})
+        this.signals.analysis_signal.listen(() => {this.start_edit()})
+        this.signals.stop_analysis_signal.listen(() => {this.stop_edit()})
     }
 }
-/*class AnalysisOverlay extends BaseComponent {
-    constructor(parent, basediv){
-        super(parent,basediv)
-        this.overlay_div = createDiv({
-            className: "game_overlay",
-        })
-        basediv.appendChild(this.overlay_div)
-        $(this.overlay_div).hide()
-        this.overlay_div.onclick = this.overlay_gone.bind(this)
-        this.handle_signals()
-    }
-    handle_signals(){
-        analysis_signal.listen(() => {$(this.overlay_div).show()})
-        stop_analysis_signal.listen(() => {$(this.overlay_div).hide()})
-    }
-    overlay_gone(){
-        stop_analysis_signal.fire()
-    }
-}*/
 class PannelButton extends BaseComponent {
-    constructor(parent, basediv, pannel_id){
-        super(parent, basediv)
+    constructor(parent, basediv, pannel_id,signals){
+        super(parent, basediv,signals)
         this.pannel_id = pannel_id
         this.button = createDiv({
             className: "pannel_button",
         })
         basediv.appendChild(this.button)
         this.button.onclick = (click)=>{
-            signals.pannelSelector.fire(this.pannel_id)
+            this.signals.pannelSelector.fire(this.pannel_id)
         }
-        signals.pannelSelector.listen((pan_id)=>{
+        this.signals.pannelSelector.listen((pan_id)=>{
             if(pan_id === this.pannel_id){
                 this.button.style["background-color"] = "#bbbbbb"
             }
@@ -101,8 +78,8 @@ class PannelButton extends BaseComponent {
     }
 }
 class PannelSelector extends BaseComponent {
-    constructor(parent, basediv){
-        super(parent, basediv)
+    constructor(parent, basediv,signals){
+        super(parent, basediv,signals)
 
         this.pannels = []
         var layout_data = JSON.parse(document.getElementById("default_layout_src").innerHTML)
@@ -115,31 +92,31 @@ class PannelSelector extends BaseComponent {
         var pannel_buttons = []
         for(var i = 0; i < layout_data.length; i++){
             //console.log(layout_data[i])
-            pannel_buttons.push(new PannelButton(this,this.selector_div,i))
+            pannel_buttons.push(new PannelButton(this,this.selector_div,i,signals))
         }
-        var base_signal = signals.selectedData
-        this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal))
-        signals.pannelSelector.listen((pannel_idx)=>{
+        var base_signal = this.signals.selectedData
+        this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal,signals))
+        this.signals.pannelSelector.listen((pannel_idx)=>{
             $(".pannel_holder").hide()
             var mypannel = this.pannels[pannel_idx]
             $(mypannel.interface_div).show()
             mypannel.pannel_select_data.fire(mypannel.selected_id)
         })
-        signals.pannelSelector.fire(0)
+        this.signals.pannelSelector.fire(0)
         this.handleAnalysisRemoval()
     }
     handleAnalysisRemoval(){
-        analysis_signal.listen(()=>{
+        this.signals.analysis_signal.listen(()=>{
             $(this.selector_div).hide()
         })
-        stop_analysis_signal.listen(()=>{
+        this.signals.stop_analysis_signal.listen(()=>{
             $(this.selector_div).show()
         })
     }
 }
 class ScriptButtonPannel extends BaseComponent {
-    constructor(parent, basediv, pannel_data, out_signal){
-        super(parent, basediv)
+    constructor(parent, basediv, pannel_data, out_signal ,signals){
+        super(parent, basediv,signals)
         this.interface_div = createDiv({
             className: "pannel_holder"
             //className: "script_container",
@@ -158,13 +135,13 @@ class ScriptButtonPannel extends BaseComponent {
     }
     makeButtonsFromData(init_data){
         init_data.forEach((data) => {
-            this.buttons.push(new ScriptButton(this, this.interface_div, data, this.pannel_select_data))
+            this.buttons.push(new ScriptButton(this, this.interface_div, data, this.pannel_select_data,this.signals))
         })
     }
 }
 class ScriptButton extends BaseComponent {
-    constructor(parent, basediv, init_data, pannel_select_data){
-        super(parent, basediv)
+    constructor(parent, basediv, init_data, pannel_select_data,signals){
+        super(parent, basediv,signals)
         this.pannel_select_data = pannel_select_data
         this.state = {
             data: init_data,
@@ -218,8 +195,8 @@ class ScriptButton extends BaseComponent {
     }
 }
 class PlayerTableInfo extends BaseComponent {
-    constructor(parent, basediv, player_ids){
-        super(parent, basediv)
+    constructor(parent, basediv, player_ids,signals){
+        super(parent, basediv,signals)
         var player_rows = player_ids.map(this.makePlayerRow.bind(this))
         this.table_div = createEl('tbody',{})
         player_rows.forEach((row)=>this.table_div.appendChild(row))
@@ -255,12 +232,12 @@ class PlayerTableInfo extends BaseComponent {
         var circ = createSpan({
             className: "player_active_star",
         })
-        signals.activePlayer.listen(() => this.statusChanged(circ,player_id))
-        signals.myPlayer.listen(() => this.statusChanged(circ,player_id))
+        this.signals.activePlayer.listen(() => this.statusChanged(circ,player_id))
+        this.signals.myPlayer.listen(() => this.statusChanged(circ,player_id))
         return circ
     }
     statusChanged(circ,player_id){
-        var act_player = signals.activePlayer.getState()
+        var act_player = this.signals.activePlayer.getState()
 
         circ.innerHTML = (player_id === act_player) ? "☼" : "☽"
     }
@@ -275,7 +252,7 @@ class PlayerTableInfo extends BaseComponent {
                         createSpan({
                             className: "player_status_dot",
                             style: {
-                                "background-color": signals.playerColors.getState()[player_id]
+                                "background-color": this.signals.playerColors.getState()[player_id]
                             }
                         })
                     ]
@@ -294,7 +271,7 @@ class PlayerTableInfo extends BaseComponent {
     }
     makeMoney(player_id){
         var money = createSpan({})
-        signals.gameStateChange.listen(instr=>{
+        this.signals.gameStateChange.listen(instr=>{
             if(instr.type === "SET_MONEY" && instr.player === player_id){
                 money.innerText = instr.amount
             }
@@ -303,8 +280,8 @@ class PlayerTableInfo extends BaseComponent {
     }
 }
 class EndTurnButton extends BaseComponent {
-    constructor(parent, basediv){
-        super(parent, basediv)
+    constructor(parent, basediv,signals){
+        super(parent, basediv,signals)
 
         this.end_turn_button = createDiv({
             className: "player_info_button",
@@ -315,24 +292,24 @@ class EndTurnButton extends BaseComponent {
     }
     createEndTurnButton(){
         var $end_button = $(this.end_turn_button)
-        $end_button.click(function(){
-            signals.ended_turn.fire()
+        $end_button.click(()=>{
+            this.signals.ended_turn.fire()
         })
-        function status_changed(){
-            if(signals.activePlayer.getState() === signals.myPlayer.getState()){
+        var status_changed = ()=>{
+            if(this.signals.activePlayer.getState() === this.signals.myPlayer.getState()){
                 $end_button.show()
             }
             else{
                 $end_button.hide()
             }
         }
-        signals.activePlayer.listen(status_changed)
-        signals.myPlayer.listen(status_changed)
+        this.signals.activePlayer.listen(status_changed)
+        this.signals.myPlayer.listen(status_changed)
     }
 }
 class AnalysisNavigation extends BaseComponent {
-    constructor(parent, basediv, player_ids){
-        super(parent, basediv)
+    constructor(parent, basediv, signals){
+        super(parent, basediv,signals)
         this.fast_forward = createSpan({
             innerHTML:"⏩",
             onclick: this.navsignal("FAST_FORWARD"),
@@ -360,43 +337,44 @@ class AnalysisNavigation extends BaseComponent {
         })
     }
     navsignal(message){
-        return function(){
-            signals.analysis_navigation.fire(message)
+        var sigs = this.signals;
+        return ()=>{
+            sigs.analysis_navigation.fire(message)
         }
     }
 }
 class PlayerInfoPannel extends BaseComponent {
-    constructor(parent, basediv, player_ids){
-        super(parent, basediv)
+    constructor(parent, basediv, player_ids,signals){
+        super(parent, basediv,signals)
 
         this.main_table_div = createDiv({
             className: "player_info_bar",
             parent: basediv,
         })
-        this.pinfo_table = new PlayerTableInfo(this,this.main_table_div,player_ids)
+        this.pinfo_table = new PlayerTableInfo(this,this.main_table_div,player_ids,signals)
         this.end_turn_container = createDiv({
             parent: this.main_table_div,
             style: {
                 width: "100%"
             },
         })
-        this.end_turn_button = new EndTurnButton(this,this.end_turn_container)
+        this.end_turn_button = new EndTurnButton(this,this.end_turn_container,signals)
         this.analysis_nav_container = createDiv({
             parent: this.main_table_div,
             style: {
                 width: "100%"
             },
         })
-        this.analysis_nav = new AnalysisNavigation(this,this.analysis_nav_container)
+        this.analysis_nav = new AnalysisNavigation(this,this.analysis_nav_container,signals)
         $(this.analysis_nav_container).hide()
         this.set_signals()
     }
     set_signals(){
-        analysis_signal.listen(()=>{
+        this.signals.analysis_signal.listen(()=>{
             $(this.end_turn_container).hide()
             $(this.analysis_nav_container).show()
         })
-        stop_analysis_signal.listen(()=>{
+        this.signals.stop_analysis_signal.listen(()=>{
             $(this.end_turn_container).show()
             $(this.analysis_nav_container).hide()
         })

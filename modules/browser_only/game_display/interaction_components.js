@@ -1,7 +1,7 @@
 var lib = require("../../logic_modules/coord_lib.js")
-var signals = require("./global_signals.js")
+//var signals = require("./global_signals.js")
 
-function postMessage(message){
+function postMessage(signals,message){
     signals.interfaceInstruction.fire(message)
 }
 function coord_list_to_draws(clist,color){
@@ -22,32 +22,30 @@ function to_line(c1,c2){
         coord2: c2,
     }
 }
-function clear_highlights(){
-    postMessage({
+function clear_highlights(signals){
+    postMessage(signals,{
         type: "DRAW_RECTS",
         draw_list: [],
         line_list: []
     })
 }
-function draw_coord(coord,color){
-    draw_list([to_item(coord,color)])
-}
-function draw_list(fill_list,line_list){
-    postMessage({
+function draw_list(signals,fill_list,line_list){
+    postMessage(signals,{
         type: "DRAW_RECTS",
         draw_list: fill_list,
         line_list: (line_list ? line_list : []),
     })
 }
 class TwoClickHandler {
-    constructor(){
+    constructor(signals){
+        this.signals = signals
         this.first_click = null
     }
     handleClick(click,game_state){
         if(!this.first_click){
             var move_range = this.getRange(game_state,click)
             var possible_moves = this.get_all_valid_around(game_state,click,move_range)
-            draw_list(concat(
+            draw_list(this.signals,concat(
                 [to_item(click,"rgba(255,0,0,0.4)")],
                 coord_list_to_draws(possible_moves,"rgba(128,128,128,0.4)")
             ))
@@ -55,7 +53,7 @@ class TwoClickHandler {
         }
         else{
             this.execAction(click)
-            clear_highlights()
+            clear_highlights(this.signals)
             this.first_click = null
         }
     }
@@ -76,14 +74,15 @@ class MoveHandler extends TwoClickHandler {
         return lib.get_move_range(game_state,click)
     }
     execAction(click2){
-        exec_move([this.first_click,click2])
+        exec_move(this.signals,[this.first_click,click2])
     }
     get_all_valid_around(game_state,start,range){
         return lib.coords_around(game_state,start,range).filter((coord)=>is_valid_move(game_state,start,coord))
     }
 }
 class BuildHandler {
-    constructor(buy_type,game_state){
+    constructor(buy_type,game_state,signals){
+        this.signals = signals
         this.buy_type = buy_type
         this.calc_buildable_units(game_state)
         this.draw_all(game_state)
@@ -112,12 +111,12 @@ class BuildHandler {
             builder_coord: this.get_builder(click),
             coord: click,
         }
-        postMessage(instr)
+        postMessage(this.signals,instr)
         lib.simulate_instruction(game_state,instr,game_state.my_player)
         this.draw_all(game_state)
     }
     draw_all(game_state){
-        draw_list(lib.all_coords(game_state)
+        draw_list(this.signals,lib.all_coords(game_state)
            .filter((coord)=>this.is_valid_buy(game_state,coord))
            .map((coord)=>to_item(coord,"rgba(128,128,128,0.4)")))
     }
@@ -133,7 +132,8 @@ class BuildHandler {
     }
 }
 class BuySomethingHandler {
-    constructor(){
+    constructor(signals){
+        this.signals = signals
         this.first_click = null
         this.buy_type = null
     }
@@ -148,7 +148,7 @@ class BuySomethingHandler {
                 this.buy_type = buy_type
                 var move_range = this.getRange(game_state,click)
                 var possible_moves = this.get_all_valid_around(game_state,click,move_range)
-                draw_list(concat(
+                draw_list(this.signals,concat(
                     [to_item(click,"rgba(255,0,0,0.4)")],
                     coord_list_to_draws(possible_moves,"rgba(128,128,128,0.4)")
                 ))
@@ -156,7 +156,7 @@ class BuySomethingHandler {
         }
         else{
             this.execAction(click)
-            clear_highlights()
+            clear_highlights(this.signals)
             this.first_click = null
             this.buy_type = null
         }
@@ -164,8 +164,8 @@ class BuySomethingHandler {
 }
 
 class BuyHandler extends BuySomethingHandler {
-    constructor(){
-        super()
+    constructor(signals){
+        super(signals)
     }
     getRange(game_state,click){
         return 1
@@ -174,7 +174,7 @@ class BuyHandler extends BuySomethingHandler {
         return lib.get_make_unit(game_state,coord)
     }
     execAction(click2){
-        exec_buy([this.first_click,click2],this.buy_type)
+        exec_buy(this.signals,[this.first_click,click2],this.buy_type)
     }
     get_all_valid_around(game_state,start,range){
         return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_buy(game_state,start,coord))
@@ -190,8 +190,8 @@ class BuyHandler extends BuySomethingHandler {
     }
 }
 class AttachHandler extends BuySomethingHandler {
-    constructor(){
-        super()
+    constructor(signals){
+        super(signals)
     }
     getRange(game_state,click){
         return 1
@@ -200,7 +200,7 @@ class AttachHandler extends BuySomethingHandler {
         return lib.get_make_equip(game_state,coord)
     }
     execAction(click2){
-        exec_equip([this.first_click,click2],this.buy_type)
+        exec_equip(this.signals,[this.first_click,click2],this.buy_type)
     }
     get_all_valid_around(game_state,start,range){
         return lib.coords_around(game_state,start,range).filter((coord)=>this.is_valid_buy(game_state,start,coord))
@@ -220,7 +220,7 @@ class AttackHandler extends TwoClickHandler {
         return lib.get_attack_range(game_state,click)
     }
     execAction(click2){
-        postMessage({
+        postMessage(this.signals,{
             type: "ATTACK",
             source_coord: this.first_click,
             target_coord: click2,
@@ -278,7 +278,8 @@ function enumerate_map(array,callback){
     return res
 }
 class MultiMoveHandler{
-    constructor(){
+    constructor(signals){
+        this.signals = signals
         this.current_path = []
     }
     paths(){
@@ -340,7 +341,7 @@ class MultiMoveHandler{
     }
     draw_all(game_state){
         var all_fills = concat(this.current_path_highlights(),this.current_choice_highlights(game_state))
-        draw_list(all_fills,this.current_lines())
+        draw_list(this.signals,all_fills,this.current_lines())
     }
     current_lines(){
         var all_paths = concat(this.paths(),[this.current_path])
@@ -366,7 +367,7 @@ class MultiMoveHandler{
         var new_paths = []
         this.paths().forEach((path)=>{
             if(is_valid_move(game_state,path[0],path[1])){
-                exec_move([path[0],path[1]])
+                exec_move(this.signals,[path[0],path[1]])
                 if(path.length > 2){
                     path.shift()
                     new_paths.push(path)
@@ -397,7 +398,8 @@ class MultiMoveHandler{
     }
 }
 class PathHandler{
-    constructor(){
+    constructor(signals){
+        this.signals = signals
         this.paths = []
         this.first_click = null
     }
@@ -408,13 +410,13 @@ class PathHandler{
                 this.paths.push(new_path)
             }
             this.first_click = null
-            draw_list(this.current_path_highlights(),this.current_lines())
+            draw_list(this.signals,this.current_path_highlights(),this.current_lines())
         }
         else{
             if(lib.is_unit(game_state.map,click)){
                 this.first_click = click
                 this.deleteSource(click)
-                draw_list(concat(
+                draw_list(this.signals,concat(
                     [to_item(click,"rgba(255,0,0,0.4)")],
                     this.current_path_highlights()
                 ),this.current_lines())
@@ -423,7 +425,7 @@ class PathHandler{
     }
     switched(){
         this.first_click = null
-        draw_list(this.current_path_highlights())
+        draw_list(this.signals,this.current_path_highlights())
     }
     deleteSource(coord){
         for(var i = 0; i < this.paths.length; i++){
@@ -456,32 +458,24 @@ class PathHandler{
 }
 
 
-function make_building(clicks,type){
-    console.log("made building at: "+clicks)
-    postMessage({
-        type: "BUILD",
-        building_type: type,
-        coord: clicks,
-    })
-}
-function exec_buy(clicks,buy_type){
-    postMessage({
+function exec_buy(signals,clicks,buy_type){
+    postMessage(signals,{
         type: "BUY_UNIT",
         building_coord: clicks[0],
         placement_coord: clicks[1],
         buy_type: buy_type,
     })
 }
-function exec_equip(clicks,buy_type){
-    postMessage({
+function exec_equip(signals,clicks,buy_type){
+    postMessage(signals,{
         type: "BUY_ATTACHMENT",
         building_coord: clicks[0],
         equip_coord: clicks[1],
         equip_type: buy_type,
     })
 }
-function exec_move(clicks){
-    postMessage({
+function exec_move(signals,clicks){
+    postMessage(signals,{
         type: "MOVE",
         start_coord: clicks[0],
         end_coord: clicks[1],
@@ -493,45 +487,49 @@ function to_rgba(colorname,a){
         case "blue": return "rgba(0,0,255,"+a+")";
     }
 }
-var move_handler = new MultiMoveHandler()
-var path_handler = new PathHandler()
-function make_handler(function_id,game_state){
-    if(!game_state || !game_state.map){
-        return;
-    }
-    switch(function_id){
-        case "build_farm": return new BuildHandler("farm",game_state);
-        case "build_barracks": return new BuildHandler("barracks",game_state);
-        case "build_armory": return new BuildHandler("armory",game_state);
-        case "build_ba_shop": return new BuildHandler("BA_shop",game_state);
-        case "build_sword_shop": return new BuildHandler("sword_shop",game_state);
-        case "build_pike_shop": return new BuildHandler("pike_shop",game_state);
-        case "build_cat_factory": return new BuildHandler("catapult_factory",game_state);
-        case "build_stable": return new BuildHandler("armory",game_state);
-        case "build_town_center": return new BuildHandler("town_center",game_state);
-        case "buy": return new BuyHandler();
-        case "attach": return new AttachHandler();
-        case "move": return new MoveHandler();
-        case "attack": return new AttackHandler();
-        case "move_multi": move_handler.switched(); return move_handler;
-        case "move_path": path_handler.switched(); return path_handler;
-        default: console.log("bad data type: "+function_id); break;
-    }
-}
 function copy_game_state(game_state,myplayer){
     var new_game_state = lib.deep_copy(game_state)
     new_game_state.my_player = myplayer
     return new_game_state
 }
-var set_fn = function(set_data,game_state,myplayer){
-    myhandler = make_handler(set_data,copy_game_state(game_state,myplayer))
-}
-var handle_click = function(click,game_state,myplayer){
-    game_state.my_player = myplayer
-    //console.log(game_state)
-    myhandler.handleClick(click,copy_game_state(game_state,myplayer))
+class InterfaceHandler{
+    constructor(signals){
+        this.signals = signals
+        this.move_handler = new MultiMoveHandler(this.signals)
+        this.path_handler = new PathHandler(this.signals)
+    }
+    make_handler(function_id,game_state){
+        if(!game_state || !game_state.map){
+            return;
+        }
+        switch(function_id){
+            case "build_farm": return new BuildHandler("farm",game_state,this.signals);
+            case "build_barracks": return new BuildHandler("barracks",game_state,this.signals);
+            case "build_armory": return new BuildHandler("armory",game_state,this.signals);
+            case "build_ba_shop": return new BuildHandler("BA_shop",game_state,this.signals);
+            case "build_sword_shop": return new BuildHandler("sword_shop",game_state,this.signals);
+            case "build_pike_shop": return new BuildHandler("pike_shop",game_state,this.signals);
+            case "build_cat_factory": return new BuildHandler("catapult_factory",game_state,this.signals);
+            case "build_stable": return new BuildHandler("armory",game_state,this.signals);
+            case "build_town_center": return new BuildHandler("town_center",game_state,this.signals);
+            case "buy": return new BuyHandler(this.signals);
+            case "attach": return new AttachHandler(this.signals);
+            case "move": return new MoveHandler(this.signals);
+            case "attack": return new AttackHandler(this.signals);
+            case "move_multi": this.move_handler.switched(); return this.move_handler;
+            case "move_path": this.path_handler.switched(); return this.path_handler;
+            default: console.log("bad data type: "+function_id); break;
+        }
+    }
+    set_fn(set_data,game_state,myplayer){
+        this.myhandler = this.make_handler(set_data,copy_game_state(game_state,myplayer))
+    }
+    handle_click(click,game_state,myplayer){
+        game_state.my_player = myplayer
+        //console.log(game_state)
+        this.myhandler.handleClick(click,copy_game_state(game_state,myplayer))
+    }
 }
 module.exports = {
-    set_fn: set_fn,
-    handle_click: handle_click,
+    InterfaceHandler: InterfaceHandler,
 }

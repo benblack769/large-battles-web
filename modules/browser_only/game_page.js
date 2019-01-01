@@ -23,9 +23,9 @@ function set_player_colors(players_order){
 class GameInterface extends base_inter.BaseComponent {
     constructor(parent,basediv,gamesize,init_player_state){
         super(parent,basediv)
-        this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize)
-        this.script_inter = new script_inter.ScriptInterface(this,(basediv))
-        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state)
+        this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize,signals)
+        this.script_inter = new script_inter.ScriptInterface(this,(basediv),signals)
+        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals)
     }
 }
 
@@ -49,14 +49,14 @@ function init_game_page(){
         nav_signal.change_page.fire("live_connect_naventry")
     })
 }
-
+var interaction_handler = new interaction_comps.InterfaceHandler(signals);
 function init_signals(game_state){
     signals.clickOccurred.listen((coord) => {
-        interaction_comps.handle_click(coord,game_state,signals.myPlayer.getState())
+        interaction_handler.handle_click(coord,game_state,signals.myPlayer.getState())
     })
     signals.selectedData.listen(function(id){
         console.log(id+" selected")
-        interaction_comps.set_fn(id,game_state,signals.myPlayer.getState())
+        interaction_handler.set_fn(id,game_state,signals.myPlayer.getState())
     })
     signals.gameStateChange.listen(function(instr){
         if(instr.type === "SET_ACTIVE_PLAYER"){

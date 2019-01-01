@@ -1,7 +1,6 @@
 var types = require("../logic_modules/types.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
-var interaction_comps = require("./game_display/interaction_components.js")
 var base_inter = require("./game_display/base_component.js")
 var signals = require("./game_display/global_signals.js")
 var validate = require("../logic_modules/validate_instruction.js")

@@ -29,9 +29,10 @@ function createSpan(methods){
     return createEL("span", methods)
 }
 class BaseComponent {
-    constructor(parent, basediv){
+    constructor(parent, basediv, signals){
         this.__parent = parent;
         this.basediv = basediv;
+        this.signals = signals;
     }
     children(){
         return []

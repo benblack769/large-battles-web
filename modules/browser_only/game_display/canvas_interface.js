@@ -1,14 +1,11 @@
 var display_board = require("../display_board.js")
 var basecomp = require("./base_component.js")
-var signals = require("./global_signals.js")
 var icons = require("../../logic_modules/types.js").icons
 
 var BaseComponent = basecomp.BaseComponent
 var createEL = basecomp.createEL
 var createDiv = basecomp.createDiv
 var createSpan = basecomp.createSpan
-
-var Signal = signals.Signal
 
 function getxy_from_click(event){
     return {
@@ -34,12 +31,12 @@ class BackgroundCanvas extends BaseComponent {
     }
 }
 class ForegroundCanvas extends BaseComponent {
-    constructor(parent,basediv,gamesize){
-        super(parent,basediv)
+    constructor(parent,basediv,gamesize,signals){
+        super(parent,basediv,signals)
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
-        signals.gameStateChange.listen(this.onGameStateChange.bind(this))
+        this.signals.gameStateChange.listen(this.onGameStateChange.bind(this))
     }
     onGameStateChange(statechange){
         switch(statechange.type){
@@ -56,7 +53,7 @@ class ForegroundCanvas extends BaseComponent {
     }
     createChange(data, coord){
         display_board.draw_image(this.context,icons.unit_icons[data.unit_type],coord)
-        var player_color = signals.playerColors.getState()[data.player]
+        var player_color = this.signals.playerColors.getState()[data.player]
         display_board.draw_player_marker(this.context,coord,player_color)
     }
     onAddEquipment(equip_type, coord){
@@ -90,13 +87,13 @@ function deep_equals(obj1,obj2){
     return JSON.stringify(obj1) === JSON.stringify(obj2)
 }
 class ClickInterfaceCanvas extends BaseComponent {
-    constructor(parent, basediv, gamesize){
-        super(parent,basediv)
+    constructor(parent, basediv, gamesize,signals){
+        super(parent,basediv,signals)
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
         this.canvas.onclick = (event) => {
-            signals.clickOccurred.fire(event_to_coord(event))
+            this.signals.clickOccurred.fire(event_to_coord(event))
         }
         this.hover_coord = null
         this.canvas.onmousemove = (event) => {
@@ -123,13 +120,13 @@ class ClickInterfaceCanvas extends BaseComponent {
 }
 var analysis_radius = 3;
 class AnalysisCanvas extends BaseComponent {
-    constructor(parent, basediv, gamesize){
-        super(parent,basediv)
+    constructor(parent, basediv, gamesize,signals){
+        super(parent,basediv,signals)
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
         this.canvas.onclick = (event) => {
-            signals.analysisClickOccurred.fire(event_to_coord(event))
+            this.signals.analysisClickOccurred.fire(event_to_coord(event))
         }
         this.hover_coord = null
         this.canvas.onmousemove = (event) => {
@@ -164,13 +161,13 @@ function canvas_overlay_div(basediv){
     return el
 }
 class HighlightCanvas extends BaseComponent {
-    constructor(parent,basediv, gamesize){
-        super(parent,basediv)
+    constructor(parent,basediv, gamesize,signals){
+        super(parent,basediv,signals)
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
-        signals.highlightCommand.listen(this.onHighlightCommand.bind(this))
-        signals.clear_highlights.listen(this.clear.bind(this))
+        this.signals.highlightCommand.listen(this.onHighlightCommand.bind(this))
+        this.signals.clear_highlights.listen(this.clear.bind(this))
     }
     clear(){
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -186,8 +183,8 @@ class HighlightCanvas extends BaseComponent {
     }
 }
 class GameBoard extends BaseComponent {
-    constructor(parent, basediv, gamesize){
-        super(parent,basediv)
+    constructor(parent, basediv, gamesize,signals){
+        super(parent,basediv,signals)
         this.gamesize = gamesize
         this.x_pos = 0
         this.y_pos = 0
@@ -237,21 +234,21 @@ class GameBoard extends BaseComponent {
                 overflow: "hidden",
             }
         })
-        this.background_canvas = new BackgroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
-        this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
-        this.highlight_canvas = new HighlightCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
-        this.click_interface_canvas = new ClickInterfaceCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
-        this.analysis_canvas = new AnalysisCanvas(this,canvas_overlay_div(this.parent_div),gamesize)
+        this.background_canvas = new BackgroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
+        this.foreground_canvas = new ForegroundCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
+        this.highlight_canvas = new HighlightCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
+        this.click_interface_canvas = new ClickInterfaceCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
+        this.analysis_canvas = new AnalysisCanvas(this,canvas_overlay_div(this.parent_div),gamesize,signals)
 
         $(this.analysis_canvas.basediv).hide()
         this.handle_signals()
     }
     handle_signals(){
-        signals.analysis_signal.listen(()=>{
+        this.signals.analysis_signal.listen(()=>{
             $(this.click_interface_canvas.basediv).hide()
             $(this.analysis_canvas.basediv).show()
         })
-        signals.stop_analysis_signal.listen(()=>{
+        this.signals.stop_analysis_signal.listen(()=>{
             $(this.click_interface_canvas.basediv).show()
             $(this.analysis_canvas.basediv).hide()
         })
