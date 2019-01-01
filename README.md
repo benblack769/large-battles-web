@@ -4,7 +4,7 @@ This repository contains the client and server for a multiplayer browser based g
 
 The game client is currently deployed on a static web server [here](http://script-wars-deploy.s3-website-us-west-2.amazonaws.com/). The multiplayer server is not currently deployed anywhere, but you can still start a single player game and play around with the controls.
 
-To give an impression of what it looks like, here is a screenshot of a starting position:
+To give an impression of what it looks like, here is a screenshot of a position in a game I was playing by myself:
 
 ![screenshot](docs/game_screenshot.PNG)
 
