@@ -49,7 +49,7 @@ function init_game_page(basediv,signals){
     })
 }
 function init_signals(game_state,signals){
-var interaction_handler = new interaction_comps.InterfaceHandler(signals);
+    var interaction_handler = new interaction_comps.InterfaceHandler(signals);
     signals.clickOccurred.listen((coord) => {
         interaction_handler.handle_click(coord,game_state,signals.myPlayer.getState())
     })

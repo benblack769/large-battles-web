@@ -1,5 +1,5 @@
 var types = require("../logic_modules/types.js")
-var signals = require("./game_display/global_signals.js")
+var all_signals = require("./game_display/global_signals.js").all_signals
 var info_display = require("./game_display/info_display.js")
 var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
@@ -11,9 +11,9 @@ var nav_signal = require("./nav_signal.js")
 
 var server_socket = null
 
-function init_game_interface(game_state,started_instr){
-    init_signals(game_state)
-    game_page.init_html_ui(started_instr.game_size,started_instr.player_order)
+function init_game_interface(game_state,started_instr,signals){
+    init_signals(game_state,signals)
+    game_page.init_html_ui(started_instr.game_size,started_instr.player_order,signals)
     var creds = signup_login.get_credentials()
     signals.myPlayer.setState(creds.username)
     signals.selectedData.setState(signals.selectedData.getState())
@@ -30,14 +30,14 @@ function validate_websocket_instruction(game_state,instr,player){
     }
     return true
 }
-function process_instruction_backend(game_state,instruction,player){
+function process_instruction_backend(game_state,instruction,player,signals){
     //validate instruction
     var error = validate.validate_instruction(game_state,instruction,player)
     if(error){
         console.log("SERVER SENT BAD MESSAGE!!!"+error.name+": \n"+error.message)
     }
     if(instruction.type === "GAME_STARTED"){
-        init_game_interface(game_state,instruction)
+        init_game_interface(game_state,instruction,signals)
     }
     console.log(instruction)
     var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
@@ -57,9 +57,8 @@ function send_instruction(instr){
     console.log(JSON.stringify(instr,null,2))
     server_socket.send(JSON.stringify(instr))
 }
-function init_signals(game_state){
-    signals.clear_all_signals()
-    game_page.init_signals(game_state)
+function init_signals(game_state,signals){
+    game_page.init_signals(game_state,signals)
     signals.ended_turn.listen(() => {
         send_instruction({type:"END_TURN"})
     })
@@ -76,13 +75,13 @@ function init_signals(game_state){
     signals.interfaceInstruction.listen(function(message){
         game_page.process_message_frontend(game_state,message,signals.myPlayer.getState(),function(g,message,p){
             send_instruction(message)
-        })
+        },signals)
     })
 }
-function on_server_message(data,game_state){
+function on_server_message(data,game_state,signals){
     switch(data.type){
         case "ERROR_MSG": console.log("server error:");console.log(data); break;
-        case "VALIDATED_INSTR": process_instruction_backend(game_state,data.instr,data.player); break;
+        case "VALIDATED_INSTR": process_instruction_backend(game_state,data.instr,data.player,signals); break;
         case "GAME_DISCONNECTED": break;
     }
 }
@@ -94,6 +93,7 @@ function setup_multiplayer_connection(server_url){
         stats:null,
         players:null,
     }
+    var signals = new all_signals()
 
     server_socket.onclose = function(e) {
         console.log('Disconnected from game server!');
@@ -108,7 +108,7 @@ function setup_multiplayer_connection(server_url){
         server_socket.onmessage = function(message){
             var data = JSON.parse(message.data)
             console.log(data)
-            on_server_message(data,game_state)
+            on_server_message(data,game_state,signals)
         }
     }
 }
