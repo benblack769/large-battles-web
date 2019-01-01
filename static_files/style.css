@@ -154,13 +154,13 @@ main page style
     background-color: rgba(100,100,100,0.5);
 }
 .script_container {
-    position: fixed;
-    top: 45px;
+    position: absolute;
+    top: 0;
     left: 0;
     z-index: 10;
 }
 .lib_pannel_container {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     z-index: 100;
@@ -266,8 +266,8 @@ main page style
     background: blue;
 }
 .player_info_bar {
-    position: fixed;
-    top: 45px;
+    position: absolute;
+    top: 0;
     right: 0;
     z-index: 2;
     text-align: center;
@@ -301,13 +301,13 @@ main page style
     background-color: white;
 }
 .pannel_selector_container {
-    position: fixed;
-    top: 45px;
+    position: absolute;
+    top: 0;
     left: 0;
     z-index: 11;
 }
 .selector_container {
-    position: fixed;
+    position: absolute;
     top: 80px;
     left: 85px;
     z-index: 11;
