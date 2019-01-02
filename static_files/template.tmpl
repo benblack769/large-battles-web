@@ -11,6 +11,7 @@
     </style>
 
     <script id="default_layout_src" type="application/json">{{get_local_file("default_layout.json")}}</script>
+    <script id="long_game_record" type="application/json">{{get_local_file("../game_records/fixed_large_record.json")}}</script>
     <script charset="utf-8">{{get_local_file("bundle.js")}}</script>
 
     <link rel="icon" href="{{make_data_url_favicon("favicon.ico")}}" type="image/x-icon" />
@@ -25,6 +26,7 @@
         <span id="rankings_naventry" class="menu_entry">Rankings</span>
         <span id="live_connect_naventry" class="menu_entry">Start Game</span>
         <span id="game_naventry" class="menu_entry">Game</span>
+        <span id="train_naventry" class="menu_entry">Train</span>
     </div>
     <div id="profile">
         <div id="signup_login">
@@ -146,7 +148,7 @@
         </div>
     </div>
     <div id="single_player_page" class="page_level" hidden>
-        <div id="single_page_game_overlay" class="game_overlay">
+        <div id="single_page_game_overlay" class="game_overlay canvas_background">
         </div>
 
         <div id="game_not_started_message" class="gray_page_overlay">
@@ -159,6 +161,11 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="training_page" class="page_level" hidden>
+        <div id="train_pan_1" class="training_pannel1"> </div>
+        <div id="train_pan_2" class="training_pannel2"> </div>
     </div>
     <div id="anaylsis_page" class="page_level" hidden>
         <div id="analysis_overlay">

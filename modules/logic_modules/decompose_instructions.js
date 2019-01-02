@@ -30,7 +30,7 @@ function decomp_attack(gamestate,instr,player){
     var target_unit = at(gamestate.map, instr.target_coord)
     var new_hp = target_unit.status.HP - source_unit_attack
     if(new_hp <= 0){
-        console.log(new_hp)
+        //console.log(new_hp)
         decomp_list.push({
             type: "DESTROY_UNIT",
             coord: instr.target_coord,
@@ -206,7 +206,9 @@ function decomp_init_game(gamestate,instr,player){
 
     var all_resets = []
     instr.initial_creations.forEach(function(centry){
-        reset_status(all_resets,centry.data,centry.coord,instr.stats)
+        if(centry.type === "CREATE"){
+            reset_status(all_resets,centry.data,centry.coord,instr.stats)
+        }
     })
     return [{
             type: "INIT_GAME_STATE",

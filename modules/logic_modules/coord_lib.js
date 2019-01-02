@@ -125,8 +125,46 @@ function map_to_state_changes(game_state){
     return state_change_signals
 }
 
+function make_init_instr(state){
+    var state_changes = map_to_state_changes(state)
+    var money_changes = state.players.player_order.map(function(player){return{
+           type: "SET_MONEY",
+           player: player,
+           amount: state.players.player_info[player].money,
+    }})
+    var all_changes = state_changes.concat(money_changes)
+    var init_instr = {
+        type: "GAME_STARTED",
+        game_size: state.game_size,
+        initial_creations: all_changes,
+        player_order: state.players.player_order,
+        initial_money: -1,//overwritten by money_changes
+        stats: state.stats,
+    }
+    return init_instr;
+}
+function process_record_til_end(record){
+    var game_state = {}
+    var active_player = "__server"
+    record.forEach(function(instruction){
+        var error = validate_instruction(game_state,instruction,active_player)
+        if(error){
+            alert("Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message)
+        }
+        var instr_parts = decompose_instructions(game_state,instruction,active_player)
+        instr_parts.forEach(function(part){
+            //change local game state
+            consume_instructions(game_state,part)
+        })
+        active_player = game_state.players.active_player
+    })
+    return game_state
+}
+
 module.exports = {
     map_to_state_changes: map_to_state_changes,
+    make_init_instr: make_init_instr,
+    process_record_til_end: process_record_til_end,
     get_possible_moves: pathing.get_possible_moves,
     is_possible_move: pathing.is_possible_move,
     get_shortest_path: pathing.get_shortest_path,

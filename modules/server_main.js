@@ -103,10 +103,7 @@ function disperse_instruction(game_state,instr,player){
             instr: instr,
         }))
     })
-    full_validated_instruction_list.push({
-        player:player,
-        instr:instr,
-    })
+    full_validated_instruction_list.push(instr)
     consume_player_instr(game_state,instr,player)
 }
 function handle_player_message(game_state,message,player_id){

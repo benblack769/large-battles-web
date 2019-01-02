@@ -38,6 +38,7 @@ function consume_add_equip(game_state,instr){
 function init_game_state(game_state,instr){
     game_state.map = init_game.init_map(instr.game_size)
     game_state.stats = instr.stats
+    game_state.game_size = instr.game_size
     var player_info = {}
     instr.player_order.forEach(function(player){
         player_info[player] = {}
@@ -63,6 +64,7 @@ var consume_funcs = {
     "SET_MONEY": consume_money_change,
     "SET_ACTIVE_PLAYER": consume_set_active_player,
     "INIT_GAME_STATE": init_game_state,
+    "CLEAR": function(){},//no op because only for graphics
 }
 function consume_change(gamestate, instr){
     consume_funcs[instr.type](gamestate,instr)

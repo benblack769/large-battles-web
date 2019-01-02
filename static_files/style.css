@@ -151,7 +151,6 @@ main page style
     left: 0;
     right: 0;
     z-index: 20;
-    background-color: rgba(100,100,100,0.5);
 }
 .script_container {
     position: absolute;
@@ -319,11 +318,25 @@ main page style
     background-color: blue;
 }
 .canvas_scroll_background {
-    background-color: gray;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    background-color: gray;
     overflow: auto;
+}
+.training_pannel1 {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    right: 50%;
+    bottom: 0;
+}
+.training_pannel2 {
+    position: fixed;
+    top: 45px;
+    left: 50%;
+    right: 0;
+    bottom: 0;
 }

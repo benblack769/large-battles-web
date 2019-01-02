@@ -97,7 +97,9 @@ class PannelSelector extends BaseComponent {
         var base_signal = this.signals.selectedData
         this.pannels = layout_data.map((pannel_data)=>new ScriptButtonPannel(this,this.selector_div,pannel_data,base_signal,signals))
         this.signals.pannelSelector.listen((pannel_idx)=>{
-            $(".pannel_holder").hide()
+            this.pannels.forEach(function(pannel){
+                $(pannel.interface_div).hide()
+            })
             var mypannel = this.pannels[pannel_idx]
             $(mypannel.interface_div).show()
             mypannel.pannel_select_data.fire(mypannel.selected_id)
