@@ -46,7 +46,6 @@ function init_signals(game_state,signals,game_record){
         }
     })
     var analysis = new Analysis(signals,game_record,game_state)
-    analysis.init_analysis_signals(game_record,game_state,signals)
 }
 
 function init_html_ui(basediv,gamesize,player_order,signals){
@@ -103,7 +102,7 @@ function process_instruction(game_state,game_record,instruction,player,signals){
     process_message_frontend(game_state,game_record,instruction,player,process_instruction_backend,signals)
 }
 function init_signals_single_player(game_state,game_record,signals){
-    init_signals(game_state,signals)
+    init_signals(game_state,signals,game_record)
     signals.ended_turn.listen(() => {
         process_instruction(game_state,game_record,{type:"END_TURN"},signals.myPlayer.getState(),signals)
     //    signals.selectedData.setState(signals.selectedData.getState())
