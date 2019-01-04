@@ -59,7 +59,7 @@ class InvCoordMapper {
         this.status_invmapper = new InverseMapper(coordmapper.status_mapper)
     }
     invertCoordData(coordvec){
-        if(coordvec[0]){
+        if(!coordvec[0]){
             return undefined
         }
         else if(coordvec[1]){
@@ -130,7 +130,10 @@ function E1(){
     return (create_utils.create_unit("attachment_making_building", "p1"))
 }
 function A1(){
-    return (create_utils.create_unit("attachable_unit", "p1"))
+    return (create_utils.create_unit("attachment_making_building", "p1"))
+}
+function A2(){
+    return (create_utils.create_unit("attachment_making_building", "p2"))
 }
 function deep_equals(o1,o2){
     console.log(o1)
@@ -146,8 +149,15 @@ function validate_bidirection(unitdata,player){
 }
 test('validate_binary', function (t) {
     t.true(validate_bidirection(U1(),"p1"))
-    t.true(validate_bidirection(U1(),"p2"))
+    t.true(validate_bidirection(E1(),"p2"))
+    t.true(validate_bidirection(A2(),"p2"))
+    t.true(validate_bidirection(A2(),"p1"))
     t.true(validate_bidirection(ee(),"p2"))
+    var unit = A2()
+    unit.status.attacked = true
+    t.true(validate_bidirection(unit,"p1"))
+    unit.status.attacked = false
+    t.true(validate_bidirection(unit,"p1"))
     t.true(validate_bidirection(undefined,"p2"))
     t.end()
 })

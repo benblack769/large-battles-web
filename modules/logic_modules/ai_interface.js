@@ -26,7 +26,7 @@ function major_coord(instr){
     switch(instr.type){
         case "MOVE": return instr.start_coord;
         case "ATTACK": return instr.source_coord;
-        case "BUILD": return instr.coord;
+        case "BUILD": return null;//instr.coord;
         case "BUY_UNIT": return instr.building_coord;
         case "END_TURN": return null;
         case "BUY_ATTACHMENT": return instr.building_coord;
@@ -59,6 +59,8 @@ function extract_train_vectors(records,myplayer_name){
             clib.process_instruction(game_state,instr)
         })
     })
+    console.log(all_train_inputs)
+
     return {
         inputs: all_train_inputs,
         outputs: all_train_outputs,
@@ -94,31 +96,20 @@ class MainCoordLearner {
         var lay3size = 1;
         model.add(tf.layers.conv2d({
             filters: lay1size,
-            kernelSize: 3,
+            kernelSize: 1,
             activation: "relu",
             padding: "same",
             strides: 1,
             useBias: true,
-            kernelInitializer: 'VarianceScaling',
             inputShape: [game_size.ysize,game_size.xsize,channel_size],
         }))
         model.add(tf.layers.conv2d({
             filters: lay2size,
-            kernelSize: 3,
+            kernelSize: 1,
             padding: "same",
             strides: 1,
             activation: "relu",
             useBias: true,
-            kernelInitializer: 'VarianceScaling',
-        }))
-        model.add(tf.layers.conv2d({
-            filters: lay2size,
-            kernelSize: 3,
-            padding: "same",
-            strides: 1,
-            activation: "relu",
-            useBias: true,
-            kernelInitializer: 'VarianceScaling',
         }))
         model.add(tf.layers.conv2d({
             filters: lay3size,
@@ -127,14 +118,13 @@ class MainCoordLearner {
             strides: 1,
             activation: "sigmoid",
             useBias: true,
-            kernelInitializer: 'VarianceScaling',
         }))
         model.add(tf.layers.flatten())
-        const optimizer = tf.train.adam()
+        const optimizer = tf.train.adam();
         model.compile({
           optimizer: optimizer,
           loss: tf.losses.sigmoidCrossEntropy,
-         // metrics: ['accuracy'],
+          metrics: ['accuracy'],
         });
         this.model = model
     }
@@ -152,6 +142,7 @@ class MainCoordLearner {
     }
     train_on(records,myplayer_name,finished_callback){
         var ins_outs = extract_train_vectors(records,myplayer_name)
+        //return;
         this.train_assuming_best(ins_outs.inputs,ins_outs.outputs,finished_callback)
     }
     train_assuming_best(inputs,outputs,finished_callback) {
@@ -176,41 +167,8 @@ class MainCoordLearner {
           console.log("model failed!"); // Error: "It broke"
           console.log(err);
         });
-        /*for(var i = 0; i < num_batches; i++){
-            var batch = get_batch([inputs,outputs],batch_size)
-            var input_tensor = tf.tensor4d(batch[0])
-            var outputs_tensor = tf.tensor3d(batch[1])
-            var flat_outs_tensor = tf.reshape(outputs_tensor,[outputs.length*outputs[0].length*outputs[0][0].length])
-            var model_result = this.model.fit(
-                input_tensor,
-                flat_outs_tensor,
-                {
-                    batchSize: batch_size,
-                    epochs: 1,
-                }
-            )
-            model_result.then(function(result) {
-              console.log("model fitted!"); // "Stuff worked!"
-            }, function(err) {
-              console.log("model failed!"); // Error: "It broke"
-            });
-        }*/
     }
 }
-/*class TacticsAI {
-    constructor(all_current_weights){
-        this.weights = all_current_weights
-    }
-    best_coord_offset_probs(game_state,coord,move_type){
-
-    }
-    best_move_main_coord_probabilty(game_state){
-
-    }
-    train_assuming_best_moves(records){
-
-    }
-}*/
 function sample_main_coord_prob_map(prob_map){
 
 }

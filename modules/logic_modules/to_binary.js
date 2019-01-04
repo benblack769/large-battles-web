@@ -38,6 +38,9 @@ class CoordMapper {
             // always set, used to differentiate from convolution padding
             farr[start_idx+0] = 1.0
         }
+        if(cdata === undefined){
+            //put nothing in
+        }
         else if(cdata === "E"){
             farr[start_idx+1] = 1.0
         }

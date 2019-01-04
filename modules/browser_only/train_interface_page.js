@@ -89,17 +89,18 @@ function array_to_map(prob_array,game_size){
 function train_map_show(){
 
     var record = JSON.parse(document.getElementById("long_game_record").innerHTML)
+    //record = record.slice(0,record.length-25)
     var end_game_state = clib.process_record_til_end(record)
     //draw_prob_map(end_game_state,example_prob_map())
     var learner = new learning.MainCoordLearner(record[0].game_size);
-    var myplayer = "chromeuser";
+    var myplayer = "firefoxuser";
     learner.train_on([record],myplayer,function(){
        learner.get_prob_map(end_game_state,myplayer,function(prob_array){
            var prob_map = array_to_map(prob_array,end_game_state.game_size)
            console.log(prob_map)
            draw_prob_map(end_game_state,prob_map)
        })
-    })
+   })
 }
 function init_train_page(){
     //train_map_show()
