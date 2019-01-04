@@ -51,7 +51,7 @@ function init_signals(game_state,signals,game_record){
 function init_html_ui(basediv,gamesize,player_order,signals){
     basediv.innerHTML = ""
     set_player_colors(player_order,signals)
-    var base = new GameInterface(null, basediv, gamesize, player_order, signals)
+    return new GameInterface(null, basediv, gamesize, player_order, signals)
 }
 
 function process_message_frontend(game_state,game_record,instruction,player,on_backend_message,signals){
@@ -129,7 +129,7 @@ class SinglePlayerGame{
         this.game_record = []
 
         init_signals_single_player(game_state,this.game_record,signals)
-        init_html_ui(basediv,initial_instr.game_size,initial_instr.player_order,signals)
+        this.ui = init_html_ui(basediv,initial_instr.game_size,initial_instr.player_order,signals)
         init_buttons(basediv,signals)
 
         process_instruction(game_state,this.game_record,initial_instr,"__server",signals)

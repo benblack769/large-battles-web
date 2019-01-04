@@ -34,7 +34,8 @@ class CoordMapper {
     coord_to_vec(cdata){
         const start_idx = 0;
         var farr = new Float32Array(this.num_idxs)
-        if(cdata === undefined){
+        if(cdata !== undefined){
+            // always set, used to differentiate from convolution padding
             farr[start_idx+0] = 1.0
         }
         else if(cdata === "E"){
@@ -44,7 +45,7 @@ class CoordMapper {
             //is unit
             farr[start_idx+this.unit_mapper[cdata.unit_type]] = 1.0
             farr[start_idx+this.player_mapper[cdata.player]] = 1.0
-            cdata.attachments.forEach(function(attach){
+            cdata.attachments.forEach((attach)=>{
                 farr[start_idx+this.attach_mapper[attach]] = 1.0
             })
             for(var skey in cdata.status){
@@ -71,12 +72,16 @@ class CoordMapper {
         return res
     }
 }
+function num_idxs_generated(stats){
+    return (new CoordMapper(stats,["p1","p2"],"p1")).num_idxs
+}
 function map_to_vec(game_state,myplayer){
     var cmap = new CoordMapper(game_state.stats,game_state.players.player_order,myplayer)
     return cmap.map_to_vec(game_state.map)
 }
 
 module.exports = {
+    num_idxs_generated: num_idxs_generated,
     CoordMapper: CoordMapper,
     map_to_vec: map_to_vec,
 }

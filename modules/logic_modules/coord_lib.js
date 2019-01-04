@@ -143,20 +143,24 @@ function make_init_instr(state){
     }
     return init_instr;
 }
+function process_instruction(game_state,instr){
+    var active_player = (game_state.players && game_state.players.active_player)
+            ? game_state.players.active_player
+            : "__server";
+    var error = validate_instruction(game_state,instr,active_player)
+    if(error){
+        alert("Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message)
+    }
+    var instr_parts = decompose_instructions(game_state,instr,active_player)
+    instr_parts.forEach(function(part){
+        //change local game state
+        consume_instructions(game_state,part)
+    })
+}
 function process_record_til_end(record){
     var game_state = {}
-    var active_player = "__server"
     record.forEach(function(instruction){
-        var error = validate_instruction(game_state,instruction,active_player)
-        if(error){
-            alert("Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message)
-        }
-        var instr_parts = decompose_instructions(game_state,instruction,active_player)
-        instr_parts.forEach(function(part){
-            //change local game state
-            consume_instructions(game_state,part)
-        })
-        active_player = game_state.players.active_player
+        process_instruction(game_state,instruction)
     })
     return game_state
 }
@@ -164,6 +168,7 @@ function process_record_til_end(record){
 module.exports = {
     map_to_state_changes: map_to_state_changes,
     make_init_instr: make_init_instr,
+    process_instruction: process_instruction,
     process_record_til_end: process_record_til_end,
     get_possible_moves: pathing.get_possible_moves,
     is_possible_move: pathing.is_possible_move,
