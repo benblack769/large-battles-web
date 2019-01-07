@@ -382,7 +382,22 @@ class PlayerInfoPannel extends BaseComponent {
         })
     }
 }
+class UnitInfoPannel extends BaseComponent {
+    constructor(parent, basediv, signals){
+        super(parent, basediv,signals)
+
+        this.main_div = createDiv({
+            className: "unitinfo_box",
+            parent: basediv,
+        })
+        signals.display_unit_info.listen((unit_info)=>{
+            var display_str = JSON.stringify(unit_info,null,2)
+            this.main_div.innerText = display_str
+        })
+    }
+}
 module.exports = {
     ScriptInterface: ScriptInterface,
     PlayerInfoPannel: PlayerInfoPannel,
+    UnitInfoPannel: UnitInfoPannel,
 }

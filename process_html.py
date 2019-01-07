@@ -15,8 +15,8 @@ def make_data_url_png(filename):
 	prefix = 'data:image/png;base64,'
 	return prefix + encodebase64(filename)
 
-def make_data_url_favicon(filename):
-	prefix = 'data:image/x-icon;base64,'
+def make_data_url_of_type(filename,type):
+	prefix = 'data:{};base64,'.format(type)
 	return prefix + encodebase64(filename)
 
 def render_template():
@@ -27,7 +27,8 @@ def render_template():
         get_local_file=get_local_file,
         get_remote_file=get_remote_file,
         make_data_url_png=make_data_url_png,
-        make_data_url_favicon=make_data_url_favicon,
+        make_data_url_of_type=make_data_url_of_type,
+        encodebase64=encodebase64,
     )
     save_file(result,dest_file)
 

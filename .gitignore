@@ -14,3 +14,5 @@ static_files/index.html
 *.log
 game_records/
 static_files/tf.js
+cpp_module/a.out.js
+cpp_module/a.out.wasm

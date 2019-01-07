@@ -109,6 +109,7 @@ class ClickInterfaceCanvas extends BaseComponent {
             this.clearHover()
             this.hover_coord = xycoord
             display_board.stroke_rect(this.context, xycoord, "black")
+            this.signals.mouse_hover.fire(xycoord)
         }
     }
     clearHover(){

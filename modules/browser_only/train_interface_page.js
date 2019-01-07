@@ -93,7 +93,7 @@ function train_map_show(){
     var end_game_state = clib.process_record_til_end(record)
     //draw_prob_map(end_game_state,example_prob_map())
     var learner = new learning.MainCoordLearner(record[0].game_size);
-    var myplayer = "firefoxuser";
+    var myplayer = "chromeuser";
     learner.train_on([record],myplayer,function(){
        learner.get_prob_map(end_game_state,myplayer,function(prob_array){
            var prob_map = array_to_map(prob_array,end_game_state.game_size)

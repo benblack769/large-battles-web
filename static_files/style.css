@@ -317,6 +317,14 @@ main page style
 .selector_button:hover {
     background-color: blue;
 }
+.unitinfo_box {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background-color: white;
+}
 .canvas_scroll_background {
     position: absolute;
     top: 0;

@@ -5,12 +5,14 @@ var validate = require("../logic_modules/validate_instruction.js")
 var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
+var clib = require("../logic_modules/coord_lib.js")
 var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 //var game_page = require("./game_page.js")
 var nav_signal = require("./nav_signal.js")
 var Analysis = require("./analysis.js").Analysis
 var interaction_comps = require("./game_display/interaction_components.js")
+var binary = require("../logic_modules/to_binary.js")
 
 
 
@@ -78,6 +80,7 @@ class GameInterface {
         this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize,signals)
         this.script_inter = new script_inter.ScriptInterface(this,(basediv),signals)
         this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals)
+        this.unit_info = new script_inter.UnitInfoPannel(this,basediv,signals)
     }
 }
 
@@ -117,6 +120,9 @@ function init_signals_single_player(game_state,game_record,signals){
     })
     signals.interfaceInstruction.listen(function(message){
         process_instruction(game_state,game_record,message,signals.myPlayer.getState(),signals)
+    })
+    signals.mouse_hover.listen(function(xycoord){
+        signals.display_unit_info.fire(clib.at(game_state.map,xycoord))
     })
 }
 class SinglePlayerGame{

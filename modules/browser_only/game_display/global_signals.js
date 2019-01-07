@@ -18,6 +18,8 @@ function all_signals(){
     this.analysis_navigation = new Signal()
     this.analysis_signal = new Signal()
     this.stop_analysis_signal = new Signal()
+    this.mouse_hover = new Signal()
+    this.display_unit_info = new Signal()
 }
 
 module.exports = {

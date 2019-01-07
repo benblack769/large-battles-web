@@ -5,17 +5,6 @@ var default_stats =  require("./types.js").default_stats
 function deep_copy(o){
     return JSON.parse(JSON.stringify(o))
 }
-function generate_better_pairs(record){
-    var game_state = {}
-    process_instruction(game_state,record[0])
-    var pairs = []
-    for(var i = 1; i < record.length; i++){
-        var prev_game_state = deep_copy(game_state);
-        process_instruction(game_state,record[i])
-        pairs.push([prev_game_state,deep_copy(game_state)])
-    }
-    return pairs
-}
 function sample_prob_array(parr){
 
 }
@@ -39,6 +28,8 @@ function make_map_with_single_set(game_size,coord){
         res[y] = (new Float32Array(game_size.xsize))
     }
     res[coord.y][coord.x] = 1.0
+    //res[0][0] = 1.0
+    //console.log(res)
     return res
 }
 function extract_train_vectors(records,myplayer_name){
@@ -86,13 +77,63 @@ function randInt(max){
     }
     return res_lists
 }*/
+class ScalarMult extends tf.layers.Layer {
+    constructor(scalarval){
+        super({})
+        this._scalar_val = tf.scalar(scalarval)
+        this.supportsMasking = true;
+    }
+    call(inputs, kwargs) {
+        let input = inputs;
+        if (Array.isArray(input)) {
+          input = input[0];
+        }
+        this.invokeCallHook(inputs, kwargs);
+        return tf.mul(input,this._scalar_val)
+    }
+    getClassName() {
+        return 'ScalarMult';
+    }
+}
+
+class ScalarAdd extends tf.layers.Layer {
+    constructor(scalarval){
+        super({})
+        this._scalar_val = tf.scalar(scalarval)
+        this.supportsMasking = true;
+    }
+    call(inputs, kwargs) {
+        let input = inputs;
+        if (Array.isArray(input)) {
+          input = input[0];
+        }
+        this.invokeCallHook(inputs, kwargs);
+        return tf.add(input,this._scalar_val)
+    }
+    getClassName() {
+        return 'ScalarMult';
+    }
+}
+function deep_equals(o1,o2){
+    return JSON.stringify(o1) === JSON.stringify(o2)
+}
+function sample_prob_array(array){
+    array.sort((a,b)=>a-b)
+
+}
+function find_train_counterexamples(binary_map,prob_map,actual_coord,num_find){
+
+}
+
 class MainCoordLearner {
     constructor(game_size) {
         //tf.setBackend("cpu")
         var model = tf.sequential();
         var channel_size = binary.num_idxs_generated(default_stats)
-        var lay1size = 32;
-        var lay2size = 32;
+        console.log("channel_size")
+        console.log(channel_size)
+        var lay1size = 8;
+        var lay2size = 8;
         var lay3size = 1;
         model.add(tf.layers.conv2d({
             filters: lay1size,
@@ -101,6 +142,7 @@ class MainCoordLearner {
             padding: "same",
             strides: 1,
             useBias: true,
+            kernelInitializer: 'VarianceScaling',
             inputShape: [game_size.ysize,game_size.xsize,channel_size],
         }))
         model.add(tf.layers.conv2d({
@@ -110,17 +152,22 @@ class MainCoordLearner {
             strides: 1,
             activation: "relu",
             useBias: true,
+            kernelInitializer: 'VarianceScaling',
         }))
         model.add(tf.layers.conv2d({
             filters: lay3size,
             kernelSize: 1,
             padding: "same",
             strides: 1,
-            activation: "sigmoid",
+            //activation: "sigmoid",
             useBias: true,
+            kernelInitializer: 'VarianceScaling',
         }))
-        model.add(tf.layers.flatten())
-        const optimizer = tf.train.adam();
+        //model.add(new ScalarMult(0.1))
+        model.add(new ScalarAdd(-5))
+        model.add(tf.layers.activation({activation: 'sigmoid'}))
+        //model.add(tf.layers.flatten())
+        const optimizer = tf.train.rmsprop(0.01);
         model.compile({
           optimizer: optimizer,
           loss: tf.losses.sigmoidCrossEntropy,
@@ -143,21 +190,37 @@ class MainCoordLearner {
     train_on(records,myplayer_name,finished_callback){
         var ins_outs = extract_train_vectors(records,myplayer_name)
         //return;
+        //this.evaluate(ins_outs.inputs,ins_outs.outputs)
         this.train_assuming_best(ins_outs.inputs,ins_outs.outputs,finished_callback)
+        //this.evaluate(ins_outs.inputs,ins_outs.outputs)
+    }
+    evaluate(inputs,outputs){
+        var input_tensor = tf.tensor4d(inputs)
+        var outputs_tensor = tf.tensor3d(outputs)
+        var flat_outs_tensor = tf.reshape(outputs_tensor,[outputs.length,outputs[0].length,outputs[0][0].length,1])//t
+        var result = this.model.evaluate(input_tensor,flat_outs_tensor,{})
+        console.log(result)
+        result[0].print();
+        result.data().then(function(res){
+            console.log(res)
+        },function(){})
     }
     train_assuming_best(inputs,outputs,finished_callback) {
         var num_batches = 100;
-        var batch_size = 16;
+        var batch_size = 8;
         var input_tensor = tf.tensor4d(inputs)
         var outputs_tensor = tf.tensor3d(outputs)
-        var flat_outs_tensor = tf.layers.flatten().apply(outputs_tensor)//tf.reshape(outputs_tensor,[outputs.length,outputs[0].length*outputs[0][0].length])
+        var flat_outs_tensor = tf.reshape(outputs_tensor,[outputs.length,outputs[0].length,outputs[0][0].length,1])//t
+        //var flat_outs_tensor = tf.layers.flatten().apply(outputs_tensor)//tf.reshape(outputs_tensor,[outputs.length,outputs[0].length*outputs[0][0].length])
         var model_result = this.model.fit(
             input_tensor,
             flat_outs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 5,
-                shuffle: true,
+                epochs: 10,
+                //shuffle: true,
+                //verbose: true,
+                //validationSplit: 0.2,
             }
         )
         model_result.then(function(result) {
