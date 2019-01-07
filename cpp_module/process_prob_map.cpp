@@ -1,5 +1,7 @@
 #include <emscripten/emscripten.h>
 
+using namespace std;
+
 /*class ProbMap {
 
 }
@@ -20,7 +22,17 @@ extern "C"{
     int EMSCRIPTEN_KEEPALIVE add(int x, int y){
         return x + y;
     }
-}
-int main(){
-    
+    int * EMSCRIPTEN_KEEPALIVE malc(){
+        int * res =  new int[1000];
+        res[0] = 97;
+        res[1] = 192;
+        return res;
+    }
+    int EMSCRIPTEN_KEEPALIVE sum_array(double * array){
+        double sum = 0;
+        for(int i = 0; i < 3; i++){
+            sum += array[i];
+        }
+        return sum;
+    }
 }
