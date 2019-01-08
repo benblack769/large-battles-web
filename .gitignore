@@ -16,3 +16,6 @@ game_records/
 static_files/tf.js
 cpp_module/a.out.js
 cpp_module/a.out.wasm
+build-untitled*
+*.pro*
+a.exe
