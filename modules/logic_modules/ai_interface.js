@@ -1,5 +1,6 @@
 var clib = require("./coord_lib.js")
 var binary = require("./to_binary.js")
+var wrap_fns = require("./wrap_fns.js")
 var default_stats =  require("./types.js").default_stats
 
 function deep_copy(o){
@@ -43,7 +44,7 @@ function extract_train_vectors(records,myplayer_name){
             if(game_state.players && game_state.players.active_player === myplayer_name){
                 var main_coord = major_coord(instr)
                 if(main_coord){
-                    all_train_outputs.push(make_map_with_single_set(first_instr.game_size, main_coord))
+                    all_train_outputs.push(main_coord)
                     all_train_inputs.push(cmapper.map_to_vec(game_state.map))
                 }
             }
@@ -124,9 +125,28 @@ function sample_prob_array(array){
 function find_train_counterexamples(binary_map,prob_map,actual_coord,num_find){
 
 }
+function swap(arr,idx1,idx2){
+    var val = arr[idx1]
+    arr[idx1] = arr[idx2]
+    arr[idx2] = val
+}
+function shuffle_arrays_together(nested_data_1,nested_data_2){
+    console.assert(nested_data_1.length === nested_data_2.length)
+    for(var i = 0; i < nested_data_1.length; i++){
+        var swap_idx = randInt(nested_data_1.length)
+        swap(nested_data_1,i,swap_idx)
+        swap(nested_data_2,i,swap_idx)
+    }
+}
 
 class MainCoordLearner {
     constructor(game_size) {
+        this.game_size = game_size
+        var radius = 6
+        var num_samples = 16;
+        this.radius = radius
+        this.num_samples = num_samples
+        wrap_fns.wrap_fns()
         //tf.setBackend("cpu")
         var model = tf.sequential();
         var channel_size = binary.num_idxs_generated(default_stats)
@@ -164,7 +184,7 @@ class MainCoordLearner {
             kernelInitializer: 'VarianceScaling',
         }))
         //model.add(new ScalarMult(0.1))
-        model.add(new ScalarAdd(-5))
+        //model.add(new ScalarAdd(-5))
         model.add(tf.layers.activation({activation: 'sigmoid'}))
         //model.add(tf.layers.flatten())
         const optimizer = tf.train.rmsprop(0.01);
@@ -175,9 +195,10 @@ class MainCoordLearner {
         });
         this.model = model
     }
-    get_prob_map(game_state,myplayer,callback) {
-        var bin_map = binary.map_to_vec(game_state,myplayer)
-        var input = tf.tensor4d([bin_map])
+    get_prob_map(bin_map,callback) {
+        //var bin_map = binary.map_to_vec(game_state,myplayer)
+        var flat_bin_map = wrap_fns.flatten(bin_map)
+        var input = tf.tensor4d(flat_bin_map,[1,bin_map.length,bin_map[0].length,bin_map[0][0].length])
         var outarrray = this.model.predict(input)
         outarrray.data().then(function(result) {
           console.log("model infered!"); // "Stuff worked!"
@@ -205,10 +226,48 @@ class MainCoordLearner {
             console.log(res)
         },function(){})
     }
-    train_assuming_best(inputs,outputs,finished_callback) {
-        var num_batches = 100;
-        var batch_size = 8;
-        var input_tensor = tf.tensor4d(inputs)
+    train_callback_eval(idx,finished_callback){
+        if(idx > this.bin_maps.length){
+            finished_callback()
+            return;
+        }
+        var binmap = this.bin_maps[idx]
+        var main_coord = this.move_coord_list[idx]
+        var callback = (function(){
+            this.train_callback_eval(idx+1,finished_callback)
+        }).bind(this)
+        var get_callback = (function(prob_map_array){
+            var ins_outs = wrap_fns.get_sample_data(binmap,prob_map_array,main_coord,this.game_size,this.num_samples,this.radius);
+            this.train_single_callback(ins_outs.inputs,ins_outs.outputs,callback)
+
+        }).bind(this)
+        this.get_prob_map(binmap,get_callback)
+    }
+    train_single_callback(input_t,out_t,callback){
+        var model_result = this.model.fit(
+            input_t,
+            out_t,
+            {
+                batchSize: this.num_samples*2,
+            }
+        )
+        model_result.then(callback)
+    }
+    train_assuming_best(bin_maps,move_coord_list,finished_callback) {
+        var num_epocs = 1;
+        //var batch_size = 8;
+        for(var b = 0; b < num_epocs; b++){
+            shuffle_arrays_together(bin_maps,move_coord_list)
+            this.bin_maps = bin_maps
+            this.move_coord_list = move_coord_list
+            this.train_callback_eval(0,finished_callback)
+            /*for(var e = 0; e < bin_maps.length; e++){
+                var inputs = wrap_fns.get_sample_data(bin_maps[e],)
+            }*/
+        }
+        /*
+        var inp_shape = [inputs.length,inputs[0].length,inputs[0][0].length,inputs[0][0][0].length]
+        var input_tensor = tf.tensor4d(wrap_fns.flatten(inputs),inp_shape)
         var outputs_tensor = tf.tensor3d(outputs)
         var flat_outs_tensor = tf.reshape(outputs_tensor,[outputs.length,outputs[0].length,outputs[0][0].length,1])//t
         //var flat_outs_tensor = tf.layers.flatten().apply(outputs_tensor)//tf.reshape(outputs_tensor,[outputs.length,outputs[0].length*outputs[0][0].length])
@@ -229,7 +288,7 @@ class MainCoordLearner {
         }, function(err) {
           console.log("model failed!"); // Error: "It broke"
           console.log(err);
-        });
+      });*/
     }
 }
 function sample_main_coord_prob_map(prob_map){

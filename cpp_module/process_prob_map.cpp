@@ -19,6 +19,7 @@ using namespace std;
 
 
 int num_binary_dims=0;
+vector<float> ret_array;
 std::default_random_engine generator;
 
 class DiscreteFloatDistribution{
@@ -65,7 +66,32 @@ ArrayView2d example_prob_map(){
     }
     return map;
 }
-
+void make_train_example(Coord take_coord,ArrayView3d bin_map,ArrayView3d write_array,int radius){
+    static vector<float> zero_array(num_binary_dims);
+    zero_array.resize(num_binary_dims);
+    ArrayView1d zarr_view = to_array1d(zero_array.data(),zero_array.size());
+    iter_around(Coord{0,0},radius,[&](Coord c){
+        Coord mapc = c + take_coord;
+        ArrayView1d bin_data = in_bounds(bin_map,mapc) ? at(bin_map,mapc) : zarr_view;
+        ArrayView1d train_outs = at(write_array,c);
+        for(int j = 0; j < num_binary_dims; j++){
+            train_outs[j] = bin_data[j];
+        }
+    });
+}
+vector<Coord> sample_prob_map(float * prob_map_data,int num_samples,Coord act_coord){
+    ArrayView2d map = to_array2d(prob_map_data,game_size.y,game_size.x);
+    DiscreteFloatDistribution dist(map.data_ptr(),map.flatten().length());
+    vector<Coord> res(num_samples);
+    for(int i = 0; i < num_samples; i++){
+        Coord c;
+        do{
+            c = game_size.idx_to_coord(dist(generator));
+        }while(c == act_coord);
+        res[i] = c;
+    }
+    return res;
+}
 extern "C"{
     void EMSCRIPTEN_KEEPALIVE setGameSize(int x, int y){
         game_size.x = x;
@@ -90,38 +116,30 @@ extern "C"{
         }
         return sum;
     }
-    Coord * EMSCRIPTEN_KEEPALIVE sample_prob_map(ArrayView2d map,int num_samples){
-        DiscreteFloatDistribution dist(map.data_ptr(),map.flatten().length());
-        Coord * res = new Coord[num_samples];
-        for(int i = 0; i < num_samples; i++){
-            res[i] = game_size.idx_to_coord(dist(generator));
-        }
-        return res;
-    }
-    float * EMSCRIPTEN_KEEPALIVE make_train_comparitors(Coord * coords,float * calc_probs_data, int num_samples){
+    /*float * EMSCRIPTEN_KEEPALIVE make_train_comparitors(Coord * coords,float * calc_probs_data, int num_samples){
         ArrayView2d prob_map = to_array2d(calc_probs_data,game_size.y,game_size.x);
         float * res = new float[num_samples];
         for(int i = 0; i < num_samples; i++){
             res[i] = at(prob_map,coords[i]);
         }
         return res;
-    }
-    float * EMSCRIPTEN_KEEPALIVE make_train_examples(Coord * coords, float * bin_map_data, int num_samples,int radius){
+    }*/
+    float * EMSCRIPTEN_KEEPALIVE make_train_examples(float * prob_map_data, float * bin_map_data, int num_samples,int radius,int act_coord_x,int act_coord_y){
+        int train_size = radius * 2 + 1;
+        int arr_size = num_samples*2*train_size*train_size*num_binary_dims;
+        ret_array.resize(arr_size);
+        float * ret_data = ret_array.data();
+        Coord act_coord = {act_coord_x,act_coord_y};
+        vector<Coord> coords = sample_prob_map(prob_map_data,num_samples,act_coord);
         ArrayView3d bin_map = to_array3d(bin_map_data,game_size.y,game_size.x,num_binary_dims);
-        ArrayView4d train_ips = new_array4d(num_samples,game_size.y,game_size.x,num_binary_dims);
-        vector<float> zero_array(num_binary_dims);
-        ArrayView1d zarr_view = to_array1d(zero_array.data(),zero_array.size());
+        ArrayView4d train_ips = to_array4d(ret_data,num_samples*2,train_size,train_size,num_binary_dims);
         for(int i = 0; i < num_samples; i++){
-            iter_around(Coord{0,0},radius,[&](Coord c){
-                Coord mapc = c + coords[i];
-                ArrayView1d bin_data = in_bounds(bin_map,mapc) ? at(bin_map,mapc) : zarr_view;
-                ArrayView1d train_outs = at(train_ips[i],c);
-                for(int j = 0; j < num_binary_dims; j++){
-                    train_outs[j] = bin_data[j];
-                }
-            });
+            make_train_example(coords[i],bin_map,train_ips[i],radius);
         }
-        return train_ips.data_ptr();
+        for(int i = num_samples; i < num_samples*2; i++){
+            make_train_example(act_coord,bin_map,train_ips[i],radius);
+        }
+        return ret_data;
     }
 }
 #ifdef RUN_TEST
@@ -130,7 +148,7 @@ void print_coord(Coord c){
 }
 int main(){
     int num_samples = 10;
-    Coord * cs = sample_prob_map(example_prob_map(),num_samples);
+    vector<Coord> cs = sample_prob_map(example_prob_map().data_ptr(),num_samples,Coord{15,14});
     for(int i = 0; i < num_samples; i++){
         print_coord(cs[i]);
     }

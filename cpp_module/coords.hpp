@@ -7,6 +7,9 @@ struct Coord{
     Coord operator + (Coord o){
         return Coord{x+o.x,y+o.y};
     }
+    bool operator == (Coord o){
+        return x == o.x && y == o.y;
+    }
 };
 template<class iter_fn>
 void iter_around(Coord cen,int radius,iter_fn iter){
