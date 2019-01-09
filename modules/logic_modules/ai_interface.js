@@ -11,6 +11,23 @@ function sample_prob_array(parr){
 function make_tactics_ai(){
 
 }
+function flatten_rec(build_arr,nested_array){
+    if(typeof nested_array[0] === "number"){
+        for(var i = 0; i < nested_array.length; i++){
+            build_arr.push(nested_array[i])
+        }
+    }
+    else{
+        for(var i = 0; i < nested_array.length; i++){
+            flatten_rec(build_arr,nested_array[i])
+        }
+    }
+}
+function flatten(nested_array){
+    var res = []
+    flatten_rec(res,nested_array)
+    return new Float32Array(res)
+}
 function major_coord(instr){
     switch(instr.type){
         case "MOVE": return instr.start_coord;
@@ -124,6 +141,20 @@ function sample_prob_array(array){
 function find_train_counterexamples(binary_map,prob_map,actual_coord,num_find){
 
 }
+function my_loss_fn(labels,predictions){
+    //console.log(labels)
+    //console.log(predictions)
+    //var sub = tf.sub(labels,predictions)
+    //var rawcost = tf.mul(sub,sub)
+    //var adj_cost = tf.mul(rawcost, predictions)
+    //return adj_cost.sum()//()
+    //labels.print()
+    var sig_preds = tf.sigmoid(predictions)
+    var weights = tf.add(sig_preds,labels)
+    var costs = tf.losses.sigmoidCrossEntropy(labels,predictions,weights,0,tf.Reduction.SUM)
+    //costs.print()
+    return costs
+}
 
 class MainCoordLearner {
     constructor(game_size) {
@@ -132,12 +163,12 @@ class MainCoordLearner {
         var channel_size = binary.num_idxs_generated(default_stats)
         console.log("channel_size")
         console.log(channel_size)
-        var lay1size = 8;
-        var lay2size = 8;
+        var lay1size = 16;
+        var lay2size = 16;
         var lay3size = 1;
         model.add(tf.layers.conv2d({
             filters: lay1size,
-            kernelSize: 1,
+            kernelSize: 3,
             activation: "relu",
             padding: "same",
             strides: 1,
@@ -147,7 +178,7 @@ class MainCoordLearner {
         }))
         model.add(tf.layers.conv2d({
             filters: lay2size,
-            kernelSize: 1,
+            kernelSize: 3,
             padding: "same",
             strides: 1,
             activation: "relu",
@@ -163,14 +194,14 @@ class MainCoordLearner {
             useBias: true,
             kernelInitializer: 'VarianceScaling',
         }))
-        //model.add(new ScalarMult(0.1))
-        model.add(new ScalarAdd(-5))
-        model.add(tf.layers.activation({activation: 'sigmoid'}))
+        model.add(new ScalarMult(0.1))
+        //model.add(new ScalarAdd(-5))
+        //model.add(tf.layers.activation({activation: 'sigmoid'}))
         //model.add(tf.layers.flatten())
         const optimizer = tf.train.rmsprop(0.01);
         model.compile({
           optimizer: optimizer,
-          loss: tf.losses.sigmoidCrossEntropy,
+          loss: my_loss_fn,
           metrics: ['accuracy'],
         });
         this.model = model
@@ -178,7 +209,7 @@ class MainCoordLearner {
     get_prob_map(game_state,myplayer,callback) {
         var bin_map = binary.map_to_vec(game_state,myplayer)
         var input = tf.tensor4d([bin_map])
-        var outarrray = this.model.predict(input)
+        var outarrray = tf.sigmoid(this.model.predict(input))
         outarrray.data().then(function(result) {
           console.log("model infered!"); // "Stuff worked!"
           callback(result);
@@ -208,7 +239,7 @@ class MainCoordLearner {
     train_assuming_best(inputs,outputs,finished_callback) {
         var num_batches = 100;
         var batch_size = 8;
-        var input_tensor = tf.tensor4d(inputs)
+        var input_tensor = tf.tensor4d(flatten(inputs),[inputs.length,inputs[0].length,inputs[0][0].length,inputs[0][0][0].length])
         var outputs_tensor = tf.tensor3d(outputs)
         var flat_outs_tensor = tf.reshape(outputs_tensor,[outputs.length,outputs[0].length,outputs[0][0].length,1])//t
         //var flat_outs_tensor = tf.layers.flatten().apply(outputs_tensor)//tf.reshape(outputs_tensor,[outputs.length,outputs[0].length*outputs[0][0].length])
@@ -217,7 +248,7 @@ class MainCoordLearner {
             flat_outs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 10,
+                epochs: 20,
                 //shuffle: true,
                 //verbose: true,
                 //validationSplit: 0.2,

@@ -103,7 +103,7 @@ function train_map_show(){
    })
 }
 function init_train_page(){
-    //train_map_show()
+    train_map_show()
     //var end_game_state2 = clib.process_record_til_end(record.slice(0,record.length-1))
     //make_train_comparison(end_game_state,end_game_state2)
 }
