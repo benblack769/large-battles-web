@@ -1,22 +1,8 @@
-#include <random>
-#include <cassert>
-#include <vector>
-#include "array_view.hpp"
-#include "coords.hpp"
-
-#ifndef RUN_TEST
 #include <emscripten/emscripten.h>
-#else
-#define EMSCRIPTEN_KEEPALIVE
-#endif
-
-#ifdef RUN_TEST
-#include <iostream>
-#endif
-
 
 using namespace std;
 
+/*class ProbMap {
 
 int num_binary_dims=0;
 vector<float> ret_array;
@@ -93,13 +79,6 @@ vector<Coord> sample_prob_map(float * prob_map_data,int num_samples,Coord act_co
     return res;
 }
 extern "C"{
-    void EMSCRIPTEN_KEEPALIVE setGameSize(int x, int y){
-        game_size.x = x;
-        game_size.y = y;
-    }
-    void EMSCRIPTEN_KEEPALIVE setNumConvertDims(int ndims){
-        num_binary_dims = ndims;
-    }
     int EMSCRIPTEN_KEEPALIVE add(int x, int y){
         return x + y;
     }
@@ -154,4 +133,3 @@ int main(){
     }
     cout << add(1,2) << endl;
 }
-#endif
