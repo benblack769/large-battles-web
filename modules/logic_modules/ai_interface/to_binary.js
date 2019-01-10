@@ -1,4 +1,4 @@
-var create_utils = require("./create_utils.js")
+var create_utils = require("../create_utils.js")
 function order_element_first(player_order,myplayer){
     var order_copy = player_order.slice()
     var myidx = order_copy.indexOf(myplayer)

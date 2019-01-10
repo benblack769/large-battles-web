@@ -12,7 +12,7 @@ var script_inter = require("./game_display/script_interface.js")
 var nav_signal = require("./nav_signal.js")
 var Analysis = require("./analysis.js").Analysis
 var interaction_comps = require("./game_display/interaction_components.js")
-var binary = require("../logic_modules/to_binary.js")
+//var binary = require("../logic_modules/to_binary.js")
 
 
 

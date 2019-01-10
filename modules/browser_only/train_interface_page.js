@@ -3,7 +3,7 @@ var init_game = require("../logic_modules/init_game.js")
 var clib = require("../logic_modules/coord_lib.js")
 var nav_signal = require("./nav_signal.js")
 var SinglePlayerGame = require("./single_player_interface.js").SinglePlayerGame
-var learning = require("../logic_modules/ai_interface.js")
+var learning = require("../logic_modules/ai_interface/major_coord_learner.js")
 
 var single_player_players = [
     "Player A",
@@ -36,9 +36,6 @@ function to_high_color(propmax){
 function val_map_to_highlights(prob_map){
     var flat_probs = flatten(prob_map)
     var max = Math.max.apply(null,flat_probs)
-    console.log(prob_map)
-    console.log(flat_probs)
-    console.log(max)
     var highlight_list = []
     for(var y = 0; y < prob_map.length; y++){
         for(var x = 0; x < prob_map[y].length; x++){
@@ -97,7 +94,6 @@ function train_map_show(){
     learner.train_on([record],myplayer,function(){
        learner.get_prob_map(end_game_state,myplayer,function(prob_array){
            var prob_map = array_to_map(prob_array,end_game_state.game_size)
-           console.log(prob_map)
            draw_prob_map(end_game_state,prob_map)
        })
    })
