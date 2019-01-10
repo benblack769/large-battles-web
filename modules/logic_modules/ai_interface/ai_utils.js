@@ -17,6 +17,14 @@ function flatten(nested_array){
     return new Float32Array(res)
 }
 
+function make_map_with_single_set(game_size,coord){
+    var res = new Array(game_size.ysize)
+    for(var y = 0; y < game_size.ysize; y++){
+        res[y] = (new Array(game_size.xsize)).fill(0)
+    }
+    res[coord.y][coord.x] = 1.0
+    return res
+}
 class ScalarMult extends tf.layers.Layer {
     constructor(scalarval){
         super({})
@@ -36,6 +44,7 @@ class ScalarMult extends tf.layers.Layer {
     }
 }
 module.exports = {
+    make_map_with_single_set:make_map_with_single_set,
     flatten: flatten,
     ScalarMult: ScalarMult,
 }

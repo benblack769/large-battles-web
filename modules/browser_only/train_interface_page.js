@@ -3,7 +3,8 @@ var init_game = require("../logic_modules/init_game.js")
 var clib = require("../logic_modules/coord_lib.js")
 var nav_signal = require("./nav_signal.js")
 var SinglePlayerGame = require("./single_player_interface.js").SinglePlayerGame
-var learning = require("../logic_modules/ai_interface/major_coord_learner.js")
+//var learning = require("../logic_modules/ai_interface/major_coord_learner.js")
+var learning = require("../logic_modules/ai_interface/minor_coord_learner.js")
 
 var single_player_players = [
     "Player A",
@@ -89,10 +90,11 @@ function train_map_show(){
     //record = record.slice(0,record.length-25)
     var end_game_state = clib.process_record_til_end(record)
     //draw_prob_map(end_game_state,example_prob_map())
-    var learner = new learning.MainCoordLearner(record[0].game_size);
+    var learner = new learning.MinorCoordLearner(record[0].game_size);
     var myplayer = "chromeuser";
     learner.train_on([record],myplayer,function(){
-       learner.get_prob_map(end_game_state,myplayer,function(prob_array){
+        var major_coord = {x:14,y:19}
+       learner.get_prob_map(end_game_state,major_coord,myplayer,function(prob_array){
            var prob_map = array_to_map(prob_array,end_game_state.game_size)
            draw_prob_map(end_game_state,prob_map)
        })

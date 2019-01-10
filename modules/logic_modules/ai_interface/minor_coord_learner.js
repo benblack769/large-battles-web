@@ -4,6 +4,14 @@ var ai_utils = require("./ai_utils.js")
 var type_utils = require("./type_utils.js")
 var default_stats =  require("../types.js").default_stats
 
+function add_is_major_val(bin_map,major_coord){
+    for(var y = 0; y < bin_map.length; y++){
+        for(var x = 0; x < bin_map[y].length; x++){
+            var val = x == major_coord.x && y == major_coord.y ? 1 : 0;
+            bin_map[y][x].push(val)
+        }
+    }
+}
 function extract_train_vectors(records,myplayer_name){
     var all_train_inputs = []
     var all_train_outputs = []
@@ -14,9 +22,12 @@ function extract_train_vectors(records,myplayer_name){
         record.forEach(function(instr){
             if(game_state.players && game_state.players.active_player === myplayer_name){
                 var main_coord = type_utils.major_coord(instr)
-                if(main_coord){
-                    all_train_outputs.push(ai_utils.make_map_with_single_set(first_instr.game_size, main_coord))
-                    all_train_inputs.push(cmapper.map_to_vec(game_state.map))
+                var minor_coord = type_utils.minor_coord(instr)
+                if(main_coord && minor_coord){
+                    all_train_outputs.push(ai_utils.make_map_with_single_set(first_instr.game_size, minor_coord))
+                    var cur_inputs = cmapper.map_to_vec(game_state.map)
+                    add_is_major_val(cur_inputs,main_coord)
+                    all_train_inputs.push(cur_inputs)
                 }
             }
             clib.process_instruction(game_state,instr)
@@ -36,11 +47,11 @@ function my_loss_fn(labels,predictions){
     return costs
 }
 
-class MainCoordLearner {
+class MinorCoordLearner {
     constructor(game_size) {
         //tf.setBackend("cpu")
         var model = tf.sequential();
-        var channel_size = binary.num_idxs_generated(default_stats)
+        var channel_size = binary.num_idxs_generated(default_stats)+1
         var lay1size = 16;
         var lay2size = 16;
         var lay3size = 1;
@@ -84,14 +95,15 @@ class MainCoordLearner {
         });
         this.model = model
     }
-    get_prob_map(game_state,myplayer,callback) {
+    get_prob_map(game_state,major_coord,myplayer,callback) {
         var bin_map = binary.map_to_vec(game_state,myplayer)
+        add_is_major_val(bin_map,major_coord)
         var input = tf.tensor4d([bin_map])
         var outarrray = tf.sigmoid(this.model.predict(input))
-        console.log(outarrray)
-        console.log(Math.max.apply(null,outarrray))
         outarrray.data().then(function(result) {
           console.log("model infered!"); // "Stuff worked!"
+          console.log(result)
+          console.log(Math.max.apply(null,result))
           callback(result);
         }, function(err) {
           console.log("model failed!"); // Error: "It broke"
@@ -114,7 +126,7 @@ class MainCoordLearner {
             flat_outs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 10,
+                epochs: 20,
                 shuffle: true,
                 //verbose: true,
                 //validationSplit: 0.2,
@@ -131,5 +143,5 @@ class MainCoordLearner {
     }
 }
 module.exports = {
-    MainCoordLearner: MainCoordLearner,
+    MinorCoordLearner: MinorCoordLearner,
 }

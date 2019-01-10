@@ -33,7 +33,7 @@ class CoordMapper {
     }
     coord_to_vec(cdata){
         const start_idx = 0;
-        var farr = new Float32Array(this.num_idxs)
+        var farr = new Array(this.num_idxs).fill(0)
         if(cdata !== undefined){
             // always set, used to differentiate from convolution padding
             farr[start_idx+0] = 1.0
@@ -63,7 +63,6 @@ class CoordMapper {
     map_to_vec(map){
         var ylen = map.length
         var xlen = map[0].length
-        //var array = new Float32Array(this.num_idxs*ylen*xlen)
         var res = []
         for(var y = 0; y < ylen; y++){
             var xres = []
