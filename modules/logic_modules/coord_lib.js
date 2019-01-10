@@ -40,7 +40,7 @@ function is_valid(game_state,coord){
         return true
     }
     var map = game_state.map
-    return map[coord.y] && map[coord.y][coord.x];
+    return map && map[coord.y] && map[coord.y][coord.x];
 }
 function coords_around(game_state,center,range){
     var res = []
@@ -89,6 +89,17 @@ function is_build_radius_unit(game_state,coord){
         return false
     }
     return true
+}
+function max_buildable_range(game_state){
+    return Math.max.apply(null,
+        Object.values(game_state.stats.unit_types)
+        .filter(o=>o.buildable_radius)
+        .map(o=>o.buildable_radius))
+}
+function find_tc(game_state,build_coord){
+    var tc_list = coords_around(game_state,build_coord,max_buildable_range(game_state))
+        .filter((coord)=>is_build_radius_unit(game_state,coord))
+    return tc_list.length ? tc_list[0] : null
 }
 function first_if_there(arr){
     return arr ? arr[0] : null
@@ -172,6 +183,7 @@ module.exports = {
     process_record_til_end: process_record_til_end,
     get_possible_moves: pathing.get_possible_moves,
     is_possible_move: pathing.is_possible_move,
+    is_possible_attack: pathing.is_possible_attack,
     get_shortest_path: pathing.get_shortest_path,
     distance: pathing.distance,
     get_move_range: get_stat_fn("move_range"),
@@ -190,6 +202,7 @@ module.exports = {
     is_unit: is_unit,
     is_moveable_unit: is_moveable_unit,
     is_build_radius_unit: is_build_radius_unit,
+    find_tc: find_tc,
     is_mine: is_mine,
     deep_copy: deep_copy,
 }
