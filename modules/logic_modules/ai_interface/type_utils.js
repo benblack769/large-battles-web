@@ -98,7 +98,7 @@ function all_moves_from(game_state,major_coord,myplayer){
     if(!clib.is_valid(game_state,major_coord)){
         return [];
     }
-    else if (clib.is_unit(game_state.map,major_coord)) {
+    else if (clib.is_mine(game_state,major_coord,myplayer)) {
         var res = []
         all_moves_units_from(game_state,major_coord,res)
         all_attacks_from(game_state,major_coord,res)
@@ -106,7 +106,7 @@ function all_moves_from(game_state,major_coord,myplayer){
         all_equips_from(game_state,major_coord,res)
         return res
     }
-    else{
+    else if(clib.is_empty(game_state.map,major_coord)){
         var tc = clib.find_tc(game_state,major_coord)
         if(tc){
             return all_build_types(game_state.stats,money_amt).map(type=>({
@@ -119,6 +119,9 @@ function all_moves_from(game_state,major_coord,myplayer){
         else{
             return []
         }
+    }
+    else{
+        return []
     }
 }
 module.exports = {

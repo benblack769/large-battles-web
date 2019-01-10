@@ -57,11 +57,14 @@ function coords_around(game_state,center,range){
 function is_unit(map,coord){
     return at(map,coord).category === "unit"
 }
-function is_mine(game_state,coord){
+function is_mine(game_state,coord,myplayer){
+    if(!myplayer){
+        myplayer = game_state.my_player
+    }
     if(!is_unit(game_state.map,coord)){
         return false
     }
-    if(at(game_state.map,coord).player !== game_state.my_player){
+    if(at(game_state.map,coord).player !== myplayer){
         return false
     }
     return true

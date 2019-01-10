@@ -69,7 +69,7 @@ function sample_moves(game_state,major_prob_map,myplayer,num_moves_to_sample){
             console.log(JSON.stringify(instrs,null,2))
             var instr = sample_instruction_at(instrs,game_state,myplayer)
             sample_count++;
-            if(sample_count > num_moves_to_sample*10){
+            if(sample_count > num_moves_to_sample*30){
                 return moves
             }
         }while(!instr);

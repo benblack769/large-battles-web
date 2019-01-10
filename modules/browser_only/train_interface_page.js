@@ -103,11 +103,12 @@ function train_show_example_map(){
 }
 function train_map_show(){
     var record = JSON.parse(document.getElementById("long_game_record").innerHTML)
-    //record = record.slice(0,record.length-25)
+    record = record.slice(0,record.length-25)
+    var myplayer = "firefoxuser";
     var end_game_state = clib.process_record_til_end(record)
+    //return
     //draw_prob_map(end_game_state,example_prob_map())
     var learner = new learning.MainCoordLearner(record[0].game_size);
-    var myplayer = "chromeuser";
     learner.train_on([record],myplayer,function(){
         //var major_coord = {x:14,y:19}
        learner.get_prob_map(end_game_state,myplayer,function(prob_array){

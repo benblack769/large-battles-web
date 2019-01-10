@@ -122,7 +122,14 @@ function init_signals_single_player(game_state,game_record,signals){
         process_instruction(game_state,game_record,message,signals.myPlayer.getState(),signals)
     })
     signals.mouse_hover.listen(function(xycoord){
-        signals.display_unit_info.fire(clib.at(game_state.map,xycoord))
+        var unit_info = clib.deep_copy(clib.at(game_state.map,xycoord))
+        if(unit_info === "E"){
+            unit_info = {
+                category: "E"
+            }
+        }
+        unit_info.coord = xycoord
+        signals.display_unit_info.fire(unit_info)
     })
 }
 class SinglePlayerGame{
