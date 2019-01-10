@@ -83,7 +83,7 @@ class MinorCoordLearner {
             useBias: true,
             kernelInitializer: 'VarianceScaling',
         }))
-        model.add(new ai_utils.ScalarMult(0.1))
+        model.add(new (ai_utils.ScalarMult)(0.1))
         //model.add(new ScalarAdd(-5))
         //model.add(tf.layers.activation({activation: 'sigmoid'}))
         //model.add(tf.layers.flatten())

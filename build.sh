@@ -7,4 +7,6 @@ browserify modules/client_main.js > static_files/bundle.js
 #uglifycss static_files/style.css > static_files/style.min.css
 (cd static_files; python3 ../process_html.py .)
 gzip -9 -k -f static_files/index.html
+#gzip -9 -k -f static_files/tf.min.js
+
 #cp static_files/index.html docs/

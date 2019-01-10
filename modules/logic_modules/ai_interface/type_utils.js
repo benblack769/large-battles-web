@@ -3,7 +3,7 @@ function major_coord(instr){
     switch(instr.type){
         case "MOVE": return instr.start_coord;
         case "ATTACK": return instr.source_coord;
-        case "BUILD": return null;//instr.coord;
+        case "BUILD": return instr.coord;
         case "BUY_UNIT": return instr.building_coord;
         case "END_TURN": return null;
         case "BUY_ATTACHMENT": return instr.building_coord;

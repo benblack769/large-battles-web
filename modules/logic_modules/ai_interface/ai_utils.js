@@ -16,7 +16,42 @@ function flatten(nested_array){
     flatten_rec(res,nested_array)
     return new Float32Array(res)
 }
-
+function find_idx(arr,val,low,high){
+    let mid = (low + high) / 2;
+    if(prob_cumsum[mid+1] <= val){
+        return find_idx(arr,val,mid+1,high);
+    }
+    else if(prob_cumsum[mid] > val){
+        return find_idx(arr,val,low,mid);
+    }
+    else{
+        return mid;
+    }
+}
+class DiscreteDistribution {
+    constructor(val_array){
+        var length = val_array.length+1;
+        var prob_cumsum = new Array(length);
+        var sum = 0;
+        for(var i = 0; i < length; i++){
+            prob_cumsum[i] = sum;
+            sum += val_array[i];
+        }
+        prob_cumsum[length] = sum;
+        this.prob_cumsum = prob_cumsum
+    }
+    sample(){
+        var search_val = Math.random()*this.prob_cumsum[this.prob_cumsum.length-1]
+        var idx = find_idx(this.prob_cumsum,0,this.prob_cumsum.length)
+        return idx
+    }
+}
+function idx_to_coord(idx,game_size){
+    return {x:idx/game_size.xsize,y:idx%game_size.xsize}
+}
+function sample_prob_map(prob_map){
+    var dist = new DiscreteDistribution()
+}
 function make_map_with_single_set(game_size,coord){
     var res = new Array(game_size.ysize)
     for(var y = 0; y < game_size.ysize; y++){

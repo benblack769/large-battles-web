@@ -3,18 +3,22 @@ var init_game = require("../logic_modules/init_game.js")
 var clib = require("../logic_modules/coord_lib.js")
 var nav_signal = require("./nav_signal.js")
 var SinglePlayerGame = require("./single_player_interface.js").SinglePlayerGame
-//var learning = require("../logic_modules/ai_interface/major_coord_learner.js")
-var learning = require("../logic_modules/ai_interface/minor_coord_learner.js")
+var learning = require("../logic_modules/ai_interface/major_coord_learner.js")
+//var learning = require("../logic_modules/ai_interface/minor_coord_learner.js")
 
 var single_player_players = [
     "Player A",
     "Player B",
 ]
-
+var has_switched = false;
 function switch_to_train_page(){
     console.log("switched to train player")
     $(".page_level").hide()
     $("#training_page").show()
+    if(!has_switched){
+        train_map_show()
+        has_switched = true
+    }
 }
 /*function make_train_comparison(state1, state2){
     var basediv1 = document.getElementById("train_pan_1")
@@ -85,23 +89,21 @@ function array_to_map(prob_array,game_size){
     return res;
 }
 function train_map_show(){
-
     var record = JSON.parse(document.getElementById("long_game_record").innerHTML)
     //record = record.slice(0,record.length-25)
     var end_game_state = clib.process_record_til_end(record)
     //draw_prob_map(end_game_state,example_prob_map())
-    var learner = new learning.MinorCoordLearner(record[0].game_size);
+    var learner = new learning.MainCoordLearner(record[0].game_size);
     var myplayer = "chromeuser";
     learner.train_on([record],myplayer,function(){
         var major_coord = {x:14,y:19}
-       learner.get_prob_map(end_game_state,major_coord,myplayer,function(prob_array){
+       learner.get_prob_map(end_game_state,myplayer,function(prob_array){
            var prob_map = array_to_map(prob_array,end_game_state.game_size)
            draw_prob_map(end_game_state,prob_map)
        })
    })
 }
 function init_train_page(){
-    train_map_show()
     //var end_game_state2 = clib.process_record_til_end(record.slice(0,record.length-1))
     //make_train_comparison(end_game_state,end_game_state2)
 }

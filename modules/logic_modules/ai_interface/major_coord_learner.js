@@ -72,7 +72,7 @@ class MainCoordLearner {
             useBias: true,
             kernelInitializer: 'VarianceScaling',
         }))
-        model.add(new ai_utils.ScalarMult(0.1))
+        model.add(new (ai_utils.ScalarMult)(0.1))
         //model.add(new ScalarAdd(-5))
         //model.add(tf.layers.activation({activation: 'sigmoid'}))
         //model.add(tf.layers.flatten())
@@ -88,10 +88,10 @@ class MainCoordLearner {
         var bin_map = binary.map_to_vec(game_state,myplayer)
         var input = tf.tensor4d([bin_map])
         var outarrray = tf.sigmoid(this.model.predict(input))
-        console.log(outarrray)
-        console.log(Math.max.apply(null,outarrray))
         outarrray.data().then(function(result) {
           console.log("model infered!"); // "Stuff worked!"
+          console.log(result)
+          console.log(Math.max.apply(null,result))
           callback(result);
         }, function(err) {
           console.log("model failed!"); // Error: "It broke"
