@@ -149,6 +149,7 @@ function valid_build(gamestate, instr, player){
     assert_is_unit(gamestate.map, instr.builder_coord)
     assert_valid_unit_type(gamestate,instr.building_type)
     assert_active_player(gamestate,player)
+    assert_player_is(gamestate.map, instr.builder_coord, player)
     assert_empty(gamestate.map, instr.coord)
     assert_buildable(instr.building_type,gamestate.stats)
     assert_in_buildable_range(gamestate,instr.coord,instr.builder_coord,player)

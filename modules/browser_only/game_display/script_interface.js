@@ -396,8 +396,36 @@ class UnitInfoPannel extends BaseComponent {
         })
     }
 }
+class AIRecomendations extends BaseComponent {
+    constructor(parent, basediv, signals){
+        super(parent, basediv,signals)
+
+        this.main_div = createDiv({
+            className: "ai_recomendations",
+            parent: basediv,
+            children: [
+                createSpan({
+                    innerText: "AI recomendation: "
+                }),
+                createEl('button',{
+                    innerText: "Follow",
+                    onclick: function(){signals.follow_ai_move.fire()},
+                }),
+                createEl('button',{
+                    innerText: "Sample",
+                    onclick: function(){signals.ai_start_recomendation.fire()},
+                }),
+                createEl('button',{
+                    innerText: "MMDisplay",
+                    onclick: function(){signals.ai_start_major_move_display.fire()},
+                }),
+            ]
+        })
+    }
+}
 module.exports = {
     ScriptInterface: ScriptInterface,
     PlayerInfoPannel: PlayerInfoPannel,
+    AIRecomendations: AIRecomendations,
     UnitInfoPannel: UnitInfoPannel,
 }

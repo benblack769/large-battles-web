@@ -20,6 +20,10 @@ function all_signals(){
     this.stop_analysis_signal = new Signal()
     this.mouse_hover = new Signal()
     this.display_unit_info = new Signal()
+    this.follow_ai_move = new Signal()
+    this.ai_recomended_move = new StateHolder()
+    this.ai_start_recomendation = new Signal()
+    this.ai_start_major_move_display = new Signal()
 }
 
 module.exports = {

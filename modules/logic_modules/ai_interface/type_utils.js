@@ -24,6 +24,30 @@ function minor_coord(instr){
         case "GAME_STARTED": return null;
     }
 }
+Float32Array.prototype.concat = function(first, second){
+    var firstLength = first.length,
+        result = new Float32Array(firstLength + second.length);
+
+    result.set(first);
+    result.set(second, firstLength);
+
+    return result;
+}
+function concat_dim(arrnd1,arrnd2,dim){
+    if(dim === 0){
+        return arrnd1.concat(arrnd2)
+    }
+    else{
+        if(arrnd1.length !== arrnd2.length){
+            console.assert(false,"bad concat dims")
+        }
+        var res = new Array(arrnd1.length)
+        for(var i = 0; i < arrnd1.length; i++){
+            res[i] = concat_dim(arrnd1[i],arrnd2[i],dim-1)
+        }
+        return res
+    }
+}
 function all_build_types(stats,money){
     return Object.entries(stats.unit_types)
         .filter(a=>a[1].buildable && a[1].cost <= money)
@@ -125,7 +149,9 @@ function all_moves_from(game_state,major_coord,myplayer){
     }
 }
 module.exports = {
+    concat_dim: concat_dim,
     major_coord: major_coord,
     minor_coord: minor_coord,
     all_moves_from: all_moves_from,
+    concat_dim: concat_dim,
 }

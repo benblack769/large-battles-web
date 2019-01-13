@@ -348,3 +348,8 @@ main page style
     right: 0;
     bottom: 0;
 }
+.ai_recomendations {
+    position: absolute;
+    top: 0;
+    left: 50%;
+}

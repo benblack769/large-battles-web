@@ -12,6 +12,10 @@ var script_inter = require("./game_display/script_interface.js")
 var nav_signal = require("./nav_signal.js")
 var Analysis = require("./analysis.js").Analysis
 var interaction_comps = require("./game_display/interaction_components.js")
+var MainAI = require("../logic_modules/ai_interface/main_ai_inter.js").MainAI
+var ai_type_utils = require("../logic_modules/ai_interface/type_utils.js")
+var flatten = require("../logic_modules/ai_interface/ai_utils.js").flatten
+
 //var binary = require("../logic_modules/to_binary.js")
 
 
@@ -81,6 +85,7 @@ class GameInterface {
         this.script_inter = new script_inter.ScriptInterface(this,(basediv),signals)
         this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals)
         this.unit_info = new script_inter.UnitInfoPannel(this,basediv,signals)
+        this.ai_recomend = new script_inter.AIRecomendations(this,basediv,signals)
     }
 }
 
@@ -100,6 +105,7 @@ function process_instruction_backend(game_state,instruction,player,signals){
     if(instruction.type === "END_TURN"){
         signals.selectedData.setState(signals.selectedData.getState())
     }
+    signals.ai_start_recomendation.fire()
 }
 function process_instruction(game_state,game_record,instruction,player,signals){
     process_message_frontend(game_state,game_record,instruction,player,process_instruction_backend,signals)
@@ -131,6 +137,101 @@ function init_signals_single_player(game_state,game_record,signals){
         unit_info.coord = xycoord
         signals.display_unit_info.fire(unit_info)
     })
+    signals.follow_ai_move.listen(function(){
+        var instr = signals.ai_recomended_move.getState()
+        console.log("ai instr")
+        console.log(instr)
+        if(instr){
+            process_instruction(game_state,game_record,instr,signals.myPlayer.getState(),signals)
+        }
+        else{
+            alert("no instruction to follow")
+        }
+    })
+}
+
+function to_high_color(propmax){
+    return "rgba(255,0,0,"+(propmax*0.5)+")"
+}
+function val_map_to_highlights(prob_map){
+    var flat_probs = flatten(prob_map)
+    var max = Math.max.apply(null,flat_probs)
+    var highlight_list = []
+    for(var y = 0; y < prob_map.length; y++){
+        for(var x = 0; x < prob_map[y].length; x++){
+            var color = to_high_color(prob_map[y][x] / max)
+            var coord = {x:x,y:y}
+            highlight_list.push({
+                coord:coord,
+                color:color,
+            })
+        }
+    }
+    return {
+        draw_list: highlight_list,
+        line_list: [],
+    }
+}
+function init_main_ai(signals,game_state){
+    var train_myplayer = 'chromeuser'
+    var record_1 = JSON.parse(document.getElementById("long_game_record").innerHTML)
+    var record_2 = JSON.parse(document.getElementById("other_long_game_record").innerHTML)
+    var records = [record_1]
+    var main_ai = new MainAI(records,train_myplayer)
+    signals.ai_start_recomendation.listen(function(){
+        signals.ai_recomended_move.setState(null)
+        var myplayer = signals.myPlayer.getState()
+        if(main_ai.is_trained()){
+            main_ai.get_recomended_instr(game_state,myplayer,function(recomended){
+                signals.ai_recomended_move.setState(recomended)
+            })
+        }
+    })
+    signals.ai_recomended_move.listen(function(instr){
+        if(instr){
+            var major_coord = ai_type_utils.major_coord(instr)
+            var minor_coord = ai_type_utils.minor_coord(instr)
+            var color_major = "rgba(128,128,128,0.4)"
+            var color_minor = "rgba(255,0,0,0.4)"
+            function to_item(coord,color){
+                return {
+                    coord: coord,
+                    color: color,
+                }
+            }
+            function to_line(c1,c2){
+                return {
+                    coord1: c1,
+                    coord2: c2,
+                }
+            }
+            if(minor_coord){
+                var message = {
+                    draw_list: [to_item(major_coord,color_major),to_item(minor_coord,color_minor)],
+                    line_list: [to_line(minor_coord,major_coord)],
+                }
+            }
+            else{
+                var message = {
+                    draw_list: [to_item(major_coord,color_major)],
+                    line_list: [],
+                }
+            }
+            signals.highlightCommand.fire(message)
+        }
+        else{
+            signals.clear_highlights.fire()
+        }
+    })
+    signals.ai_start_major_move_display.listen(function(){
+        var myplayer = signals.myPlayer.getState()
+        main_ai.get_prob_map(game_state,myplayer,function(prob_map){
+            var highlights = val_map_to_highlights(prob_map)
+
+            signals.highlightCommand.fire(highlights)
+        })
+    })
+    return main_ai
 }
 class SinglePlayerGame{
     constructor(basediv,initial_instr){
@@ -147,6 +248,7 @@ class SinglePlayerGame{
 
         process_instruction(game_state,this.game_record,initial_instr,"__server",signals)
         signals.selectedData.setState(signals.selectedData.getState())
+        init_main_ai(signals,game_state)
     }
 }
 

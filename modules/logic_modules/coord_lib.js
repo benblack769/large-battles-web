@@ -116,6 +116,9 @@ function get_make_unit(gs,c){
 function deep_copy(obj){
     return JSON.parse(JSON.stringify(obj))
 }
+function deep_equals(o1,o2){
+    return JSON.stringify(o1) ===  JSON.stringify(o2)
+}
 
 function map_to_state_changes(game_state){
     var state_change_signals =  [{type:"CLEAR"}]
@@ -134,6 +137,14 @@ function map_to_state_changes(game_state){
                     equip_type: attach,
                 })
             })
+            for(var stat in unit.status){
+                state_change_signals.push({
+                    type: "SET_STATUS",
+                    coord: coord,
+                    status_key: stat,
+                    new_status: unit.status[stat],
+                })
+            }
         }
     })
     return state_change_signals
@@ -208,4 +219,5 @@ module.exports = {
     find_tc: find_tc,
     is_mine: is_mine,
     deep_copy: deep_copy,
+    deep_equals: deep_equals,
 }

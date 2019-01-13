@@ -3,8 +3,10 @@ var init_game = require("../logic_modules/init_game.js")
 var clib = require("../logic_modules/coord_lib.js")
 var nav_signal = require("./nav_signal.js")
 var SinglePlayerGame = require("./single_player_interface.js").SinglePlayerGame
-var learning = require("../logic_modules/ai_interface/major_coord_learner.js")
+var MainCoordLearner = require("../logic_modules/ai_interface/major_coord_learner.js").MainCoordLearner
+var StateComparitor = require("../logic_modules/ai_interface/state_comparitor.js").StateComparitor
 var sample_move = require("../logic_modules/ai_interface/sample_move.js")
+var flatten = require("../logic_modules/ai_interface/ai_utils.js").flatten
 //var learning = require("../logic_modules/ai_interface/minor_coord_learner.js")
 
 var single_player_players = [
@@ -17,9 +19,20 @@ function switch_to_train_page(){
     $(".page_level").hide()
     $("#training_page").show()
     if(!has_switched){
-        train_map_show()
+        old_record_show()
         has_switched = true
     }
+}
+function old_record_show(){
+    var record = JSON.parse(document.getElementById("long_game_record").innerHTML)
+    record = record.slice(0,record.length-25)
+    var myplayer = "firefoxuser";
+    var end_game_state = clib.process_record_til_end(record)
+    var basediv1 = document.getElementById("best_move_pannel")
+
+    var init_instr1 = clib.make_init_instr(end_game_state)
+
+    var g1 = new SinglePlayerGame(basediv1,init_instr1)
 }
 /*function make_train_comparison(state1, state2){
     var basediv1 = document.getElementById("train_pan_1")
@@ -33,31 +46,6 @@ function switch_to_train_page(){
 /*function make_best_move_page(record){
 
 }*/
-function flatten(map2d){
-    return [].concat.apply([], map2d);
-}
-function to_high_color(propmax){
-    return "rgba(255,0,0,"+(propmax*0.5)+")"
-}
-function val_map_to_highlights(prob_map){
-    var flat_probs = flatten(prob_map)
-    var max = Math.max.apply(null,flat_probs)
-    var highlight_list = []
-    for(var y = 0; y < prob_map.length; y++){
-        for(var x = 0; x < prob_map[y].length; x++){
-            var color = to_high_color(prob_map[y][x] / max)
-            var coord = {x:x,y:y}
-            highlight_list.push({
-                coord:coord,
-                color:color,
-            })
-        }
-    }
-    return {
-        draw_list: highlight_list,
-        line_list: [],
-    }
-}
 function example_prob_map(){
     const xsize = 35;
     const ysize = 35;
@@ -101,18 +89,36 @@ function train_show_example_map(){
     console.log(moves)
     //console.log(prob_map)
 }
+function train_compairitor(){
+    var record = JSON.parse(document.getElementById("long_game_record").innerHTML)
+    record = record.slice(0,record.length-25)
+    var myplayer = "firefoxuser";
+    var end_game_state = clib.process_record_til_end(record)
+    //draw_prob_map(end_game_state,example_prob_map())
+    var learner = new StateComparitor(record[0].game_size);
+    learner.train_on([record],myplayer,function(){
+        //var major_coord = {x:14,y:19}
+        console.log("callback called")
+       /*learner.get_prob_map(end_game_state,myplayer,function(prob_array){
+           var prob_map = prob_array
+           var moves = sample_move.sample_moves(end_game_state,prob_map,myplayer,20)
+           console.log("moves")
+           console.log(moves)
+           draw_prob_map(end_game_state,prob_map)
+       })*/
+   })
+}
 function train_map_show(){
     var record = JSON.parse(document.getElementById("long_game_record").innerHTML)
     record = record.slice(0,record.length-25)
     var myplayer = "firefoxuser";
     var end_game_state = clib.process_record_til_end(record)
-    //return
     //draw_prob_map(end_game_state,example_prob_map())
-    var learner = new learning.MainCoordLearner(record[0].game_size);
+    var learner = new MainCoordLearner(record[0].game_size);
     learner.train_on([record],myplayer,function(){
         //var major_coord = {x:14,y:19}
        learner.get_prob_map(end_game_state,myplayer,function(prob_array){
-           var prob_map = array_to_map(prob_array,end_game_state.game_size)
+           var prob_map = prob_array
            var moves = sample_move.sample_moves(end_game_state,prob_map,myplayer,20)
            console.log("moves")
            console.log(moves)

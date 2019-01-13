@@ -84,15 +84,31 @@ class MainCoordLearner {
         });
         this.model = model
     }
+    get_all_prob_maps(bin_maps,callback){
+        var input = tf.tensor4d(ai_utils.flatten(bin_maps),[bin_maps.length,bin_maps[0].length,bin_maps[0][0].length,bin_maps[0][0][0].length])
+        var outs = this.model.predict({
+            batchSize: 32,
+        })
+        var prob_outs = tf.sigmoid(outs)
+        prob_outs.data().then(function(result){
+            console.log("dim_spreads")
+            console.log(result.length)
+            console.log([bin_maps.length,bin_maps[0].length,bin_maps[0][0].length])
+            var dim_spread = ai_utils.spread_to_dim(result,[bin_maps.length,bin_maps[0].length,bin_maps[0][0].length])
+            callback(dim_spread)
+        })
+    }
     get_prob_map(game_state,myplayer,callback) {
         var bin_map = binary.map_to_vec(game_state,myplayer)
         var input = tf.tensor4d([bin_map])
         var outarrray = tf.sigmoid(this.model.predict(input))
         outarrray.data().then(function(result) {
           console.log("model infered!"); // "Stuff worked!"
-          console.log(result)
+          //console.log("dim_spreads")
+          var spread_res = ai_utils.spread_to_dim(result,[game_state.game_size.ysize,game_state.game_size.xsize])
+          //console.log(spread_res)
           console.log(Math.max.apply(null,result))
-          callback(result);
+          callback(spread_res);
         }, function(err) {
           console.log("model failed!"); // Error: "It broke"
           console.log(err);
@@ -114,7 +130,7 @@ class MainCoordLearner {
             flat_outs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 2,
+                epochs: 5,
                 shuffle: true,
                 //verbose: true,
                 //validationSplit: 0.2,
