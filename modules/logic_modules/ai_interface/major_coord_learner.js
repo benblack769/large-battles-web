@@ -3,29 +3,32 @@ var binary = require("./to_binary.js")
 var ai_utils = require("./ai_utils.js")
 var type_utils = require("./type_utils.js")
 var default_stats =  require("../types.js").default_stats
+var learn_utils = require("./learn_utils.js")
 
-function extract_train_vectors(records,myplayer_name){
-    var all_train_inputs = []
-    var all_train_outputs = []
-    records.forEach(function(record){
-        var first_instr = record[0]
-        var cmapper = new binary.CoordMapper(first_instr.stats,first_instr.player_order,myplayer_name)
-        var game_state = {}
-        record.forEach(function(instr){
-            if(game_state.players && game_state.players.active_player === myplayer_name){
-                var main_coord = type_utils.major_coord(instr)
-                if(main_coord){
-                    all_train_outputs.push(ai_utils.make_map_with_single_set(first_instr.game_size, main_coord))
-                    all_train_inputs.push(cmapper.map_to_vec(game_state.map))
-                }
-            }
-            clib.process_instruction(game_state,instr)
-        })
-    })
-
-    return {
-        inputs: all_train_inputs,
-        outputs: all_train_outputs,
+class MajorCoordLearnStreamer extends learn_utils.LearnStreamer{
+    constructor(records,myplayer){
+        super(records,myplayer)
+        this.game_size = records[0][0].game_size
+    }
+    get_data_batch(result_batch_size){
+        console.assert(result_batch_size%4 === 0)
+        var get_batch_size = result_batch_size/4
+        var small_batch_indicies = this.get_batch_idxs(get_batch_size,this.major_condition.bind(this))
+        var small_batch_inputs = small_batch_indicies
+            .map((idxs)=>this.getBinState(this.idxBefore(idxs)))
+        var small_batch_outputs = small_batch_indicies
+            .map((idxs)=>ai_utils.make_map_with_single_set(this.game_size,type_utils.major_coord(this.getInstr(idxs))))
+        return {
+            inputs: this.rotate_batch(small_batch_inputs),
+            outputs: this.rotate_batch(small_batch_outputs),
+        }
+    }
+    major_condition(idxs){
+        var game_state = this.getState(idxs)
+        return idxs[1] > 1
+            && game_state.players
+            && game_state.players.active_player === this.myplayer
+            && type_utils.major_coord(this.getInstr(idxs))
     }
 }
 
@@ -124,22 +127,30 @@ class MainCoordLearner {
         });
     }
     train_on(records,myplayer_name,finished_callback){
-        var ins_outs = extract_train_vectors(records,myplayer_name)
-        this.train_assuming_best(ins_outs.inputs,ins_outs.outputs,finished_callback)
+        var learn_streamer = new MajorCoordLearnStreamer(records,myplayer_name)
+        const data_batch_size = 1024;
+        const train_batch_size = 16;
+        var learn_step = 0
+        var recursive_train_callback = ()=>{
+            if(learn_step > 3){
+                finished_callback()
+                return
+            }
+            learn_step++
+            var batch_data = learn_streamer.get_data_batch(data_batch_size)
+            this.train_assuming_best(batch_data.inputs,batch_data.outputs,train_batch_size,recursive_train_callback)
+        }
+        recursive_train_callback()
     }
-    train_assuming_best(inputs,outputs,finished_callback) {
-        var num_batches = 100;
-        var batch_size = 8;
+    train_assuming_best(inputs,outputs,batch_size,finished_callback) {
         var input_tensor = tf.tensor4d(ai_utils.flatten(inputs),[inputs.length,inputs[0].length,inputs[0][0].length,inputs[0][0][0].length])
-        var outputs_tensor = tf.tensor3d(outputs)
-        var flat_outs_tensor = tf.reshape(outputs_tensor,[outputs.length,outputs[0].length,outputs[0][0].length,1])//t
-        //var flat_outs_tensor = tf.layers.flatten().apply(outputs_tensor)//tf.reshape(outputs_tensor,[outputs.length,outputs[0].length*outputs[0][0].length])
+        var outputs_tensor = tf.tensor4d(ai_utils.flatten(outputs),[outputs.length,outputs[0].length,outputs[0][0].length,1])
         var model_result = this.model.fit(
             input_tensor,
-            flat_outs_tensor,
+            outputs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 10,
+                epochs: 2,
                 shuffle: true,
                 //verbose: true,
                 //validationSplit: 0.2,

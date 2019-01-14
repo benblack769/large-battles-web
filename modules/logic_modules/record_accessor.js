@@ -3,7 +3,7 @@ var decompose = require("./decompose_instructions.js")
 var consume = require("./consume_instructions.js")
 var clib = require("./coord_lib.js")
 
-const instrs_per_state = 50
+const instrs_per_state = 30
 
 class MajorIndicies {
     constructor(record){
@@ -81,26 +81,25 @@ class RecordAccessor {
                 consume.consume_change(cur_game_state,part)
             })
             this.cached_decomped_instrs.push(instr_parts)
-            if(i % record.length === 0){
+            if(i % instrs_per_state === 0){
                 this.cached_states.push(clib.deep_copy(cur_game_state))
             }
         }
     }
+    size(){
+        return this.cached_decomped_instrs.length
+    }
     get_state(idx){
         var cached_state_idx = Math.floor(idx/instrs_per_state)
         var game_state = clib.deep_copy(this.cached_states[cached_state_idx])
-        for(var i = cached_state_idx+1; i <= idx; i++){
+        var start_idx = instrs_per_state * cached_state_idx + 1
+        for(var i = start_idx; i <= idx; i++){
             var decoped_instrs = this.cached_decomped_instrs[i]
             for(var j = 0; j < decoped_instrs.length; j++){
                 consume.consume_change(game_state,decoped_instrs[j])
             }
         }
         return game_state
-    }
-}
-class RandomRecordsAccessor{
-    constructor(records){
-
     }
 }
 module.exports = {

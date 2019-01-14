@@ -17,10 +17,10 @@ class MainAI{
             console.log("main_coord_learner trained")
             this.trained++
         })
-        this.state_comparitor.train_on(train_records,train_myplayer,()=>{
+        //this.state_comparitor.train_on(train_records,train_myplayer,()=>{
             console.log("state_comparitor trained")
             this.trained++
-        })
+        //})
     }
     is_trained(){
         return this.trained === 2

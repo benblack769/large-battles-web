@@ -57,6 +57,7 @@ class Analysis {
                 player: player,
             })
         })
+        signals.activePlayer.setState(game_state.players.active_player)
     }
 }
 module.exports = {
