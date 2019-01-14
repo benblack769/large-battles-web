@@ -98,16 +98,19 @@ function tournament_eval(instructions,game_state,state_comparitor,cmapper,final_
     var base_size = pow2_below(instructions.length)
     var base_instrs = instructions.slice(0,base_size)
     var compare_instrs = instructions.slice(base_size)
+    console.log("instructions")
+    console.log(instructions)
+    console.log(base_instrs)
+    console.log(compare_instrs)
     var batch_size = compare_instrs.length;
     var compare_pairs = new Array(batch_size)
+    console.assert(batch_size <= base_size)
     for(var i = 0; i < batch_size; i++){
         var base_bin = (copy_process_state(game_state,base_instrs[i],cmapper))
         var compare_bin = (copy_process_state(game_state,compare_instrs[i],cmapper))
         var concat = type_utils.concat_dim(base_bin,compare_bin,2)
         compare_pairs[i] = concat
     }
-    console.log("compare_pairs")
-    console.log(compare_pairs)
     state_comparitor.get_better_prob_batched(compare_pairs,function(result){
         console.log("tournament step finished")
         console.log(result)
@@ -121,12 +124,48 @@ function state_loss(labels,logits){
     var out = tf.losses.sigmoidCrossEntropy(labels,logits)
     return out
 }
+
+class GetChangedCoords extends tf.layers.Layer {
+    constructor(){
+        super({})
+        this.supportsMasking = true;
+        this.one = tf.scalar(1.0)
+    }
+    computeOutputShape(inputShape) {
+        return [inputShape[0],inputShape[1],inputShape[2],1]
+    }
+    call(inputs, kwargs) {
+        let input = inputs;
+        if (Array.isArray(input)) {
+            input = input[0];
+        }
+        if(inputs.length !== 2){
+            console.assert("bad inputs to ZeroOutUnnecessary")
+        }
+        //let main_output = inputs[1];
+        var shape = input.shape
+        var new_shape = shape.slice()
+        new_shape[3] = 2
+        new_shape.push(shape[3]/2)
+        this.invokeCallHook(inputs, kwargs);
+        //var subbed_data = tf.reshape(input,new_shape)
+        var split_data = tf.split(input,2,3)
+        var subbed_data = tf.abs(tf.sub(split_data[0],split_data[1]))
+        var summed_sub = tf.sum(subbed_data,3,true)
+        var minned_data = tf.minimum(summed_sub,this.one)
+
+        return minned_data
+    }
+    getClassName() {
+        return 'ZeroOutUnnecessary';
+    }
+}
 class StateComparitor {
     constructor(game_size) {
         //tf.setBackend("cpu")
         var channel_size = binary.num_idxs_generated(default_stats)*2
-        var lay1size = 16;
-        var lay2size = 16;
+        var lay1size = 32;
+        var lay2size = 32;
         var lay3size = 1;
         var input = tf.input({shape:[game_size.ysize,game_size.xsize,channel_size]});
         var sum_layer1 = tf.layers.conv2d({
@@ -148,18 +187,45 @@ class StateComparitor {
             useBias: true,
             kernelInitializer: 'VarianceScaling',
         }).apply(sum_layer1)
-        var flatten_layer = tf.layers.flatten().apply(sum_layer2)
-        var sum_layer_sum = new ai_utils.ArraySum().apply(flatten_layer)
+        var sum_layer3 = tf.layers.conv2d({
+            filters: lay1size,
+            kernelSize: 3,
+            activation: "relu",
+            padding: "same",
+            strides: 1,
+            useBias: true,
+            kernelInitializer: 'VarianceScaling',
+        }).apply(sum_layer1)
+
+        var final_layer = tf.layers.conv2d({
+            filters: 1,
+            kernelSize: 1,
+            //activation: "relu",
+            padding: "same",
+            strides: 1,
+            useBias: false,
+            kernelInitializer: 'VarianceScaling',
+        }).apply(sum_layer3)
+
+        var changed_coords = (new GetChangedCoords()).apply(input)
+        var muled_out = tf.layers.multiply().apply([changed_coords,final_layer])
+
+        var pooled_data = tf.layers.globalAveragePooling2d({
+            //poolSize: [game_size.ysize,game_size.xsize],
+        //    strides: null
+        }).apply(muled_out)
+        //var flatten_layer = tf.layers.flatten().apply(pooled_data)
+        //var sum_layer_sum = new ai_utils.ArraySum().apply(flatten_layer)
         //var sum_layer_sum = tf.sum(sum_layer2)
-        var scaled_sum = (new ai_utils.ScalarMult(0.1)).apply(sum_layer_sum)
+        //var scaled_sum = (new ai_utils.ScalarMult(0.1)).apply(pooled_data)
         //model.add(new ScalarAdd(-5))
         //model.add(tf.layers.activation({activation: 'sigmoid'}))
         //model.add(tf.layers.flatten())
         var model = tf.model({
             inputs: input,
-            outputs: scaled_sum,
+            outputs: pooled_data,
         });
-        const optimizer = tf.train.rmsprop(0.01);
+        const optimizer = tf.train.adam();
         model.compile({
           optimizer: optimizer,
           loss: state_loss,
@@ -208,7 +274,7 @@ class StateComparitor {
             outputs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 5,
+                epochs: 10,
                 shuffle: true,
                 //validationSplit: 0.3,
                 //verbose: true,

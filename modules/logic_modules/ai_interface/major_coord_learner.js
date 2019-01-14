@@ -41,8 +41,8 @@ class MainCoordLearner {
         //tf.setBackend("cpu")
         var model = tf.sequential();
         var channel_size = binary.num_idxs_generated(default_stats)
-        var lay1size = 16;
-        var lay2size = 16;
+        var lay1size = 32;
+        var lay2size = 32;
         var lay3size = 1;
         model.add(tf.layers.conv2d({
             filters: lay1size,
@@ -53,6 +53,15 @@ class MainCoordLearner {
             useBias: true,
             kernelInitializer: 'VarianceScaling',
             inputShape: [game_size.ysize,game_size.xsize,channel_size],
+        }))
+        model.add(tf.layers.conv2d({
+            filters: lay2size,
+            kernelSize: 3,
+            padding: "same",
+            strides: 1,
+            activation: "relu",
+            useBias: true,
+            kernelInitializer: 'VarianceScaling',
         }))
         model.add(tf.layers.conv2d({
             filters: lay2size,
@@ -130,7 +139,7 @@ class MainCoordLearner {
             flat_outs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 5,
+                epochs: 10,
                 shuffle: true,
                 //verbose: true,
                 //validationSplit: 0.2,

@@ -8,61 +8,24 @@ var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
 var clib = require("../logic_modules/coord_lib.js")
 var init_game = require("../logic_modules/init_game.js")
+var accessor = require("../logic_modules/record_accessor.js")
 var nav_signal = require("./nav_signal.js")
 
-function process_instruction_record(record){
-    var cur_game_state = {}
-    var state_list = []
-    var state_instr_list = []
-    var active_player = "__server"
-    record.forEach(function(instruction){
-        var error = validate.validate_instruction(cur_game_state,instruction,active_player)
-        if(error){
-            alert("Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message)
-        }
-        var instr_parts = decompose.decompose_instructions(cur_game_state,instruction,active_player)
-        instr_parts.forEach(function(part){
-            //change local game state
-            consume.consume_change(cur_game_state,part)
-        })
-        active_player = cur_game_state.players.active_player
-        if(instruction.type === "END_TURN" || instruction.type === "GAME_STARTED"){
-            state_list.push({
-                state: clib.deep_copy(cur_game_state),
-                instrs: state_instr_list,
-            })
-            state_instr_list = []
-        }
-        else if(record[record.length-1] === instruction){
-            state_list.push({
-                state: clib.deep_copy(cur_game_state),
-                instrs: state_instr_list,
-            })
-            state_instr_list = []
-        }
-        else{
-            state_instr_list.push(instruction)
-        }
-    })
-    return state_list
-}
 class Analysis {
     constructor(signals,record,game_state){
         this.signals = signals
-        this.current_navigation_states = []
-        this.major_index = 0
+        this.accessor = null
+        this.index_holder = null
         this.init_analysis_signals(record,game_state)
     }
     current_nav_state(){
-        return this.current_navigation_states[this.major_index].state
+        return this.accessor.get_state(this.index_holder.getMinor())
     }
     init_analysis_signals(record,game_state){
         this.signals.analysis_signal.listen(()=>{
-            this.current_navigation_states = process_instruction_record(record)
-            console.log(record)
-            console.log("current_navigation_states")
-            console.log(this.current_navigation_states)
-            this.major_index = this.current_navigation_states.length - 1
+            this.accessor = new accessor.RecordAccessor(record)
+            this.index_holder = new accessor.MajorIndicies(record)
+            this.index_holder.setMinor(this.index_holder.maxMinorIdx())
             this.draw_board(this.current_nav_state())
         })
         this.signals.stop_analysis_signal.listen(()=>{
@@ -75,10 +38,11 @@ class Analysis {
     }
     handle_analysis_navigation(nav_instr){
         switch(nav_instr){
-            case "FAST_FORWARD": this.major_index = Math.min(this.major_index+1,this.current_navigation_states.length-1); break;
-            case "FAST_BACKWARD": this.major_index = Math.max(this.major_index-1,0); break;
+            case "FAST_FORWARD": this.index_holder.incMajor(); break;
+            case "FAST_BACKWARD": this.index_holder.decMajor(); break;
+            case "FORWARD": this.index_holder.incMinor(); break;
+            case "BACKWARD": this.index_holder.decMinor(); break;
         }
-        console.log(this.major_index)
         this.draw_board(this.current_nav_state())
     }
     draw_board(game_state){

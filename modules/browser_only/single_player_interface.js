@@ -248,7 +248,7 @@ class SinglePlayerGame{
 
         process_instruction(game_state,this.game_record,initial_instr,"__server",signals)
         signals.selectedData.setState(signals.selectedData.getState())
-        init_main_ai(signals,game_state)
+        //init_main_ai(signals,game_state)
     }
 }
 
