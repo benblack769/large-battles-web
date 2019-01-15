@@ -5,6 +5,7 @@ var type_utils = require("./type_utils.js")
 var default_stats =  require("../types.js").default_stats
 var learn_utils = require("./learn_utils.js")
 
+
 class MajorCoordLearnStreamer extends learn_utils.LearnStreamer{
     constructor(records,myplayer){
         super(records,myplayer)
@@ -39,11 +40,22 @@ function my_loss_fn(labels,predictions){
     return costs
 }
 
+var main_model = null
+ tf.loadFrozenModel("web_model/tensorflowjs_model.pb","web_model/weights_manifest.json")
+      .then((model)=>{
+          main_model = model
+          console.log("model loaded")
+          console.log(model)
+      },(err)=>{
+          console.log("load model failed")
+          console.log(err)
+      })
+
 class MainCoordLearner {
     constructor(game_size) {
         //tf.setBackend("cpu")
-        var model = tf.sequential();
-        var channel_size = binary.num_idxs_generated(default_stats)
+        //var model = tf.sequential()
+        /*var channel_size = binary.num_idxs_generated(default_stats)
         var lay1size = 32;
         var lay2size = 32;
         var lay3size = 1;
@@ -84,7 +96,7 @@ class MainCoordLearner {
             useBias: true,
             kernelInitializer: 'VarianceScaling',
         }))
-        model.add(new (ai_utils.ScalarMult)(0.1))
+        model.add(new (ai_utils.make_scalar_mult())(0.1))
         //model.add(new ScalarAdd(-5))
         //model.add(tf.layers.activation({activation: 'sigmoid'}))
         //model.add(tf.layers.flatten())
@@ -93,13 +105,13 @@ class MainCoordLearner {
           optimizer: optimizer,
           loss: my_loss_fn,
           metrics: ['accuracy'],
-        });
-        this.model = model
+      });*/
     }
     get_all_prob_maps(bin_maps,callback){
         var input = tf.tensor4d(ai_utils.flatten(bin_maps),[bin_maps.length,bin_maps[0].length,bin_maps[0][0].length,bin_maps[0][0][0].length])
-        var outs = this.model.predict({
-            batchSize: 32,
+        var outs = main_model.execute({
+            //batchSize: 32,
+            input: input,
         })
         var prob_outs = tf.sigmoid(outs)
         prob_outs.data().then(function(result){
@@ -113,10 +125,13 @@ class MainCoordLearner {
     get_prob_map(game_state,myplayer,callback) {
         var bin_map = binary.map_to_vec(game_state,myplayer)
         var input = tf.tensor4d([bin_map])
-        var outarrray = tf.sigmoid(this.model.predict(input))
+        var outarrray = (main_model.execute({
+            //batchSize: 32,
+            input: input,
+        }))
         outarrray.data().then(function(result) {
           console.log("model infered!"); // "Stuff worked!"
-          //console.log("dim_spreads")
+          console.log(result)
           var spread_res = ai_utils.spread_to_dim(result,[game_state.game_size.ysize,game_state.game_size.xsize])
           //console.log(spread_res)
           console.log(Math.max.apply(null,result))
@@ -127,6 +142,7 @@ class MainCoordLearner {
         });
     }
     train_on(records,myplayer_name,finished_callback){
+        return
         var learn_streamer = new MajorCoordLearnStreamer(records,myplayer_name)
         const data_batch_size = 1024;
         const train_batch_size = 16;
@@ -168,4 +184,5 @@ class MainCoordLearner {
 }
 module.exports = {
     MainCoordLearner: MainCoordLearner,
+    MajorCoordLearnStreamer: MajorCoordLearnStreamer,
 }

@@ -4,6 +4,8 @@
     "description": "Highly programmable game",
     "dependencies": {
         "request": "*",
+        "tf": "^1.0.1",
+        "tfjs": "^0.6.0",
         "ws": "*"
     },
     "devDependencies": {

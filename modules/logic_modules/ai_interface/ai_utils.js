@@ -40,6 +40,7 @@ function make_map_with_single_set(game_size,coord){
     res[coord.y][coord.x] = 1.0
     return res
 }
+function make_scalar_mult(){
 class ScalarMult extends tf.layers.Layer {
     constructor(scalarval){
         super({})
@@ -58,32 +59,11 @@ class ScalarMult extends tf.layers.Layer {
         return 'ScalarMult';
     }
 }
-class ArraySum extends tf.layers.Layer {
-    constructor(){
-        super({})
-        //this._scalar_val = tf.scalar(scalarval)
-        this.supportsMasking = true;
-    }
-    computeOutputShape(inputShape) {
-        return [inputShape[0],1]
-    }
-    call(inputs, kwargs) {
-        let input = inputs;
-        if (Array.isArray(input)) {
-          input = input[0];
-        }
-        this.invokeCallHook(inputs, kwargs);
-        var sum = tf.mean(input,1,true)
-        return sum
-    }
-    getClassName() {
-        return 'ArraySum';
-    }
+    return ScalarMult
 }
 module.exports = {
     make_map_with_single_set:make_map_with_single_set,
     flatten: flatten,
     spread_to_dim: spread_to_dim,
-    ScalarMult: ScalarMult,
-    ArraySum: ArraySum,
+    make_scalar_mult: make_scalar_mult,
 }
