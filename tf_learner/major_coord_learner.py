@@ -3,6 +3,8 @@ import tensorflow as tf
 import argparse
 import random
 import os
+import shutil
+
 
 def make_model(input):
     lay1size = 32
@@ -98,4 +100,5 @@ if __name__ == "__main__":
     parser.add_argument('export_path', help='Path to destination of tensor graph.')
 
     args = parser.parse_args()
+    shutil.rmtree(args.export_path)
     learn_on_data(args.batch_data,args.export_path)

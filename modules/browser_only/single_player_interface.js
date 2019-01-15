@@ -95,6 +95,7 @@ var single_player_players = [
 ]
 
 function process_instruction_backend(game_state,instruction,player,signals){
+    var old_state = clib.deep_copy(game_state)
     var instr_parts = decompose.decompose_instructions(game_state,instruction,player)
     instr_parts.forEach(function(part){
         //change local game state
@@ -105,6 +106,7 @@ function process_instruction_backend(game_state,instruction,player,signals){
     if(instruction.type === "END_TURN"){
         signals.selectedData.setState(signals.selectedData.getState())
     }
+    signals.prev_game_state.setState(old_state)
     signals.ai_start_recomendation.fire()
 }
 function process_instruction(game_state,game_record,instruction,player,signals){
@@ -181,8 +183,9 @@ function init_main_ai(signals,game_state){
     signals.ai_start_recomendation.listen(function(){
         signals.ai_recomended_move.setState(null)
         var myplayer = signals.myPlayer.getState()
-        if(main_ai.is_trained()){
-            main_ai.get_recomended_instr(game_state,myplayer,function(recomended){
+        var old_game_state = signals.prev_game_state.getState()
+        if(main_ai.is_trained() && old_game_state && old_game_state.players){
+            main_ai.get_recomended_instr(game_state,old_game_state,myplayer,function(recomended){
                 signals.ai_recomended_move.setState(recomended)
             })
         }
@@ -225,11 +228,14 @@ function init_main_ai(signals,game_state){
     })
     signals.ai_start_major_move_display.listen(function(){
         var myplayer = signals.myPlayer.getState()
-        main_ai.get_prob_map(game_state,myplayer,function(prob_map){
-            var highlights = val_map_to_highlights(prob_map)
+        var old_game_state = signals.prev_game_state.getState()
+        if(old_game_state && old_game_state.players){
+            main_ai.get_prob_map(game_state,old_game_state,myplayer,function(prob_map){
+                var highlights = val_map_to_highlights(prob_map)
 
-            signals.highlightCommand.fire(highlights)
-        })
+                signals.highlightCommand.fire(highlights)
+            })
+        }
     })
     return main_ai
 }

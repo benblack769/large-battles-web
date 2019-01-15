@@ -153,5 +153,4 @@ module.exports = {
     major_coord: major_coord,
     minor_coord: minor_coord,
     all_moves_from: all_moves_from,
-    concat_dim: concat_dim,
 }

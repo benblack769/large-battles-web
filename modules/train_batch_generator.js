@@ -1,8 +1,13 @@
 var fs = require('fs')
 var MajorCoordLearnStreamer = require("./logic_modules/ai_interface/major_coord_learner.js").MajorCoordLearnStreamer
+
+console.assert(process.argv.length === 3, "needs 1 command line arguments, output_folder")
+
+const output_folder = process.argv[2]
+
+
 const data_batch_size = 512;
 const num_data_batches = 40;
-var folder = "myfolder"
 
 var records = [
     JSON.parse(fs.readFileSync("../game_records/fixed_large_record.json")),
@@ -32,10 +37,10 @@ function get_major_data(){
     return batch_data
 }
 function save_all_data(){
-    make_if_not_exists(folder)
+    make_if_not_exists(output_folder)
     for(var batch = 0; batch < num_data_batches; batch++){
-        var input_fname = folder+"/"+"input"+batch+".json"
-        var output_fname = folder+"/"+"output"+batch+".json"
+        var input_fname = output_folder+"/"+"input"+batch+".json"
+        var output_fname = output_folder+"/"+"output"+batch+".json"
         var ins_outs = get_major_data()
         save_data(ins_outs.inputs,input_fname)
         save_data(ins_outs.outputs,output_fname)

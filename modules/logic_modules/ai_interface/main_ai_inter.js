@@ -25,9 +25,9 @@ class MainAI{
     is_trained(){
         return this.trained === 2
     }
-    get_recomended_instr(game_state,myplayer,callback){
+    get_recomended_instr(game_state,old_game_state,myplayer,callback){
         var cmapper = new binary.CoordMapper(game_state.stats,game_state.players.player_order,myplayer)
-        this.main_coord_learner.get_prob_map(game_state,myplayer,(prob_map)=>{
+        this.main_coord_learner.get_prob_map(game_state,old_game_state,myplayer,(prob_map)=>{
             var num_samples = 0;
             const max_samples = 1000;
             var major_coords = sample_move.sample_prob_map(game_state,prob_map,max_samples)
@@ -42,8 +42,8 @@ class MainAI{
             return
         })
     }
-    get_prob_map(game_state,myplayer,callback){
-        this.main_coord_learner.get_prob_map(game_state,myplayer,callback)
+    get_prob_map(game_state,old_game_state,myplayer,callback){
+        this.main_coord_learner.get_prob_map(game_state,old_game_state,myplayer,callback)
     }
 }
 module.exports = {
