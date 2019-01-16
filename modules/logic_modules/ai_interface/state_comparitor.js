@@ -4,6 +4,9 @@ var ai_utils = require("./ai_utils.js")
 var type_utils = require("./type_utils.js")
 var default_stats =  require("../types.js").default_stats
 var sample_move = require("./sample_move.js")
+var learn_utils = require("./learn_utils.js")
+var random = require("../random_helpers.js")
+
 
 function copy_process_state(game_state,instr,cmapper){
     var new_state = clib.deep_copy(game_state)
@@ -26,39 +29,49 @@ function make_comparison_data(game_state,good_instr,bad_instr,cmapper){
     }
     return {inputs:concat,outputs:output}
 }
-function extract_train_vectors(records,myplayer_name){
-    var all_train_inputs = []
-    var all_train_outputs = []
-    records.forEach(function(record){
-        var first_instr = record[0]
-        var cmapper = new binary.CoordMapper(first_instr.stats,first_instr.player_order,myplayer_name)
-        var game_state = {}
-        record.forEach(function(instr){
-            if(game_state.players && game_state.players.active_player === myplayer_name){
-                var major_coord = type_utils.major_coord(instr)
-                if(major_coord){
-                    var num_to_sample = 2
-                    var false_move_samples = sample_move.all_moves_given_major(game_state,major_coord,myplayer_name)
+class StateCompareLearnStreamer extends learn_utils.LearnStreamer{
+    constructor(records,myplayer){
+        super(records,myplayer)
+        this.game_size = records[0][0].game_size
+    }
+    get_data_batch(result_batch_size){
+        var rotation_size = 4
+        console.assert(result_batch_size%4 === 0)
+        var get_batch_size = result_batch_size/4
+        var small_batch_indicies = this.get_batch_idxs(get_batch_size,this.major_condition.bind(this))
+        var small_batch_outputs = []
+        var small_batch_inputs = []
+        small_batch_indicies.forEach((idxs)=>{
+            var instr = this.getInstr(idxs)
+            var major_coord = type_utils.major_coord(instr)
+            var orig_state = this.getState(this.idxBefore(idxs))
+            var all_false_moves = sample_move.all_moves_given_major(orig_state,major_coord,this.myplayer)
                         .filter(false_instr=>!clib.deep_equals(instr,false_instr))
-                    if(false_move_samples.length){
-                        if(false_move_samples.length !== num_to_sample){
-                            false_move_samples = sample_move.sample_fixed_num(false_move_samples,num_to_sample)
-                        }
-                        var in_datas = false_move_samples
-                            .map(false_instr=>make_comparison_data(game_state,instr,false_instr,cmapper))
-                            .forEach(ins_outs=>{
-                                all_train_outputs.push(ins_outs.outputs)
-                                all_train_inputs.push(ins_outs.inputs)
-                            })
-                    }
-                }
-            }
-            clib.process_instruction(game_state,instr)
+            var false_instr_sample = random.sample_array(all_false_moves)
+            var compare_data = make_comparison_data(orig_state,instr,false_instr_sample,this.getCmapper(idxs))
+            small_batch_inputs.push(compare_data.inputs)
+            small_batch_outputs.push(compare_data.outputs)
         })
-    })
-    return {
-        inputs: all_train_inputs,
-        outputs: all_train_outputs,
+        return {
+            inputs: this.rotate_batch(small_batch_inputs),
+            outputs: [].concat(small_batch_outputs,small_batch_outputs,
+                               small_batch_outputs,small_batch_outputs),
+        }
+    }
+    major_condition(idxs){
+        if(idxs[1] < 2){
+            return false
+        }
+        var game_state = this.getState(idxs)
+        var before_state = this.getState(this.idxBefore(idxs))
+        var instr = this.getInstr(idxs)
+        var major_coord = type_utils.major_coord(instr)
+        return game_state.players
+            && game_state.players.active_player === this.myplayer
+            && major_coord
+            && sample_move.all_moves_given_major(before_state,major_coord,this.myplayer)
+                .filter((false_instr)=>!clib.deep_equals(instr,false_instr))
+                .length > 0 //can't compare with 0 options!
     }
 }
 function pow2(x){
@@ -259,7 +272,9 @@ class StateComparitor {
         });
     }*/
     train_on(records,myplayer_name,finished_callback){
-        var ins_outs = extract_train_vectors(records,myplayer_name)
+        var learn_streamer = new StateCompareLearnStreamer(records,myplayer_name)
+        var batch_size = 512
+        var ins_outs = learn_streamer.get_data_batch(batch_size)
         this.train_assuming_best(ins_outs.inputs,ins_outs.outputs,finished_callback)
     }
     train_assuming_best(inputs,outputs,finished_callback) {
@@ -274,7 +289,7 @@ class StateComparitor {
             outputs_tensor,
             {
                 batchSize: batch_size,
-                epochs: 10,
+                epochs: 2,
                 shuffle: true,
                 //validationSplit: 0.3,
                 //verbose: true,
@@ -293,5 +308,6 @@ class StateComparitor {
 }
 module.exports = {
     StateComparitor: StateComparitor,
+    StateCompareLearnStreamer: StateCompareLearnStreamer,
     tournament_eval: tournament_eval,
 }

@@ -36,6 +36,9 @@ function sample_fixed_num(array,num){
     }
     return res
 }
+function sample_array(array){
+    return array[randInt(array.length)]
+}
 
 function randInt(max){
     return Math.floor(Math.random()*max)
@@ -53,6 +56,7 @@ function shuffle(arr){
 module.exports = {
     randInt: randInt,
     shuffle: shuffle,
+    sample_array: sample_array,
     sample_fixed_num: sample_fixed_num,
     DiscreteDistribution: DiscreteDistribution
 }

@@ -1,10 +1,17 @@
 var fs = require('fs')
 var MajorCoordLearnStreamer = require("./logic_modules/ai_interface/major_coord_learner.js").MajorCoordLearnStreamer
+var StateCompareLearnStreamer = require("./logic_modules/ai_interface/state_comparitor.js").StateCompareLearnStreamer
 
-console.assert(process.argv.length === 3, "needs 1 command line arguments, output_folder")
+console.assert(process.argv.length === 4, "needs 2 command line arguments: model_constructor, output_folder")
 
-const output_folder = process.argv[2]
+const model_name = process.argv[2]
+const output_folder = process.argv[3]
 
+const model_constructor_mapper = {
+    "major_coord":MajorCoordLearnStreamer,
+    "state_compare": StateCompareLearnStreamer,
+}
+const model_constructor = model_constructor_mapper[model_name]
 
 const data_batch_size = 512;
 const num_data_batches = 40;
@@ -15,7 +22,7 @@ var records = [
 ]
 var myplayer_name = "chromeuser";
 
-var learn_streamer = new MajorCoordLearnStreamer(records,myplayer_name)
+var learn_streamer = new model_constructor(records,myplayer_name)
 
 function make_if_not_exists(dir){
     if (!fs.existsSync(dir)){

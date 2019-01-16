@@ -40,7 +40,7 @@ function make_map_with_single_set(game_size,coord){
     res[coord.y][coord.x] = 1.0
     return res
 }
-function make_scalar_mult(){
+/*function make_scalar_mult(){
 class ScalarMult extends tf.layers.Layer {
     constructor(scalarval){
         super({})
@@ -60,10 +60,9 @@ class ScalarMult extends tf.layers.Layer {
     }
 }
     return ScalarMult
-}
+}*/
 module.exports = {
     make_map_with_single_set:make_map_with_single_set,
     flatten: flatten,
     spread_to_dim: spread_to_dim,
-    make_scalar_mult: make_scalar_mult,
 }

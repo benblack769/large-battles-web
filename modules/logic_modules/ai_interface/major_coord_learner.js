@@ -47,9 +47,11 @@ function my_loss_fn(labels,predictions){
 class MainCoordLearner {
     constructor(game_size) {
       this.model = null
+      this.is_loaded = false
        tf.loadFrozenModel("web_model/tensorflowjs_model.pb","web_model/weights_manifest.json")
             .then((model)=>{
                 this.model = model
+                this.is_loaded = true
                 console.log("model loaded")
                 console.log(model)
             },(err)=>{

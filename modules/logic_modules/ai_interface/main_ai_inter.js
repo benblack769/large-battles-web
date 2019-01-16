@@ -13,17 +13,13 @@ class MainAI{
         this.main_coord_learner = new MainCoordLearner(this.game_size)
         this.state_comparitor = new StateComparitor(this.game_size)
         this.trained = 0
-        this.main_coord_learner.train_on(train_records,train_myplayer,()=>{
-            console.log("main_coord_learner trained")
-            this.trained++
-        })
-        //this.state_comparitor.train_on(train_records,train_myplayer,()=>{
+        this.state_comparitor.train_on(train_records,train_myplayer,()=>{
             console.log("state_comparitor trained")
             this.trained++
-        //})
+        })
     }
     is_trained(){
-        return this.trained === 2
+        return this.main_coord_learner.is_loaded && this.trained > 0
     }
     get_recomended_instr(game_state,old_game_state,myplayer,callback){
         var cmapper = new binary.CoordMapper(game_state.stats,game_state.players.player_order,myplayer)

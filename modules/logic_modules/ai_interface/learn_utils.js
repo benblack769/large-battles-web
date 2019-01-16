@@ -74,6 +74,10 @@ class LearnStreamer{
         }
         return [r_idx,idx-1]
     }
+    getCmapper(idxs){
+        var [r_idx,idx] = idxs
+        return this.binary_mappers[r_idx]
+    }
     getInstr(idxs){
         var [r_idx,idx] = idxs
         return this.records[r_idx][idx]
