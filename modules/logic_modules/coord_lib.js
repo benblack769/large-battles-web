@@ -174,7 +174,8 @@ function process_instruction(game_state,instr){
             : "__server";
     var error = validate_instruction(game_state,instr,active_player)
     if(error){
-        alert("Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message)
+        var alert_str = "Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message
+        console.assert(alert_str)
     }
     var instr_parts = decompose_instructions(game_state,instr,active_player)
     instr_parts.forEach(function(part){

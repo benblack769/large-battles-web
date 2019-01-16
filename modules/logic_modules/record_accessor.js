@@ -73,7 +73,8 @@ class RecordAccessor {
             var active_player = cur_game_state.players ? cur_game_state.players.active_player : "__server";
             var error = validate.validate_instruction(cur_game_state,instruction,active_player)
             if(error){
-                alert("Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message)
+                var alert_str = "Game record has an error. Possibly from an incompatable version of the game. Error message: "+error.message
+                console.assert(alert_str)
             }
             var instr_parts = decompose.decompose_instructions(cur_game_state,instruction,active_player)
             instr_parts.forEach(function(part){

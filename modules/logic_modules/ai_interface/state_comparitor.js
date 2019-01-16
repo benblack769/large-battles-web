@@ -137,7 +137,7 @@ function state_loss(labels,logits){
     var out = tf.losses.sigmoidCrossEntropy(labels,logits)
     return out
 }
-
+function get_get_changed_coords(){
 class GetChangedCoords extends tf.layers.Layer {
     constructor(){
         super({})
@@ -172,6 +172,8 @@ class GetChangedCoords extends tf.layers.Layer {
     getClassName() {
         return 'ZeroOutUnnecessary';
     }
+}
+return GetChangedCoords
 }
 class StateComparitor {
     constructor(game_size) {
@@ -220,7 +222,7 @@ class StateComparitor {
             kernelInitializer: 'VarianceScaling',
         }).apply(sum_layer3)
 
-        var changed_coords = (new GetChangedCoords()).apply(input)
+        var changed_coords = (new (get_get_changed_coords())).apply(input)
         var muled_out = tf.layers.multiply().apply([changed_coords,final_layer])
 
         var pooled_data = tf.layers.globalAveragePooling2d({

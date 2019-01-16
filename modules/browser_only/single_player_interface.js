@@ -178,7 +178,7 @@ function init_main_ai(signals,game_state){
     var train_myplayer = 'chromeuser'
     var record_1 = JSON.parse(document.getElementById("long_game_record").innerHTML)
     var record_2 = JSON.parse(document.getElementById("other_long_game_record").innerHTML)
-    var records = [record_1]
+    var records = [record_2]
     var main_ai = new MainAI(records,train_myplayer)
     signals.ai_start_recomendation.listen(function(){
         signals.ai_recomended_move.setState(null)
