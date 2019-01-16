@@ -177,80 +177,22 @@ return GetChangedCoords
 }
 class StateComparitor {
     constructor(game_size) {
-        //tf.setBackend("cpu")
-        var channel_size = binary.num_idxs_generated(default_stats)*2
-        var lay1size = 32;
-        var lay2size = 32;
-        var lay3size = 1;
-        var input = tf.input({shape:[game_size.ysize,game_size.xsize,channel_size]});
-        var sum_layer1 = tf.layers.conv2d({
-            filters: lay1size,
-            kernelSize: 3,
-            activation: "relu",
-            padding: "same",
-            strides: 1,
-            useBias: true,
-            kernelInitializer: 'VarianceScaling',
-            inputShape: [game_size.ysize,game_size.xsize,channel_size],
-        }).apply(input)
-        var sum_layer2 = tf.layers.conv2d({
-            filters: lay1size,
-            kernelSize: 3,
-            activation: "relu",
-            padding: "same",
-            strides: 1,
-            useBias: true,
-            kernelInitializer: 'VarianceScaling',
-        }).apply(sum_layer1)
-        var sum_layer3 = tf.layers.conv2d({
-            filters: lay1size,
-            kernelSize: 3,
-            activation: "relu",
-            padding: "same",
-            strides: 1,
-            useBias: true,
-            kernelInitializer: 'VarianceScaling',
-        }).apply(sum_layer1)
-
-        var final_layer = tf.layers.conv2d({
-            filters: 1,
-            kernelSize: 1,
-            //activation: "relu",
-            padding: "same",
-            strides: 1,
-            useBias: false,
-            kernelInitializer: 'VarianceScaling',
-        }).apply(sum_layer3)
-
-        var changed_coords = (new (get_get_changed_coords())).apply(input)
-        var muled_out = tf.layers.multiply().apply([changed_coords,final_layer])
-
-        var pooled_data = tf.layers.globalAveragePooling2d({
-            //poolSize: [game_size.ysize,game_size.xsize],
-        //    strides: null
-        }).apply(muled_out)
-        //var flatten_layer = tf.layers.flatten().apply(pooled_data)
-        //var sum_layer_sum = new ai_utils.ArraySum().apply(flatten_layer)
-        //var sum_layer_sum = tf.sum(sum_layer2)
-        //var scaled_sum = (new ai_utils.ScalarMult(0.1)).apply(pooled_data)
-        //model.add(new ScalarAdd(-5))
-        //model.add(tf.layers.activation({activation: 'sigmoid'}))
-        //model.add(tf.layers.flatten())
-        var model = tf.model({
-            inputs: input,
-            outputs: pooled_data,
-        });
-        const optimizer = tf.train.adam();
-        model.compile({
-          optimizer: optimizer,
-          loss: state_loss,
-          metrics: ['accuracy'],
-        });
-        this.model = model
+      this.model = null
+      this.is_loaded = false
+       tf.loadFrozenModel("state_web_model/tensorflowjs_model.pb","state_web_model/weights_manifest.json")
+            .then((model)=>{
+                this.model = model
+                this.is_loaded = true
+                console.log("state model loaded")
+                console.log(model)
+            },(err)=>{
+                console.log("load model failed")
+                console.log(err)
+            })
     }
     get_better_prob_batched(paired_bin_maps,callback){
         var input = tf.tensor4d(ai_utils.flatten(paired_bin_maps),[paired_bin_maps.length,paired_bin_maps[0].length,paired_bin_maps[0][0].length,paired_bin_maps[0][0][0].length])
-        var outarrray = tf.sigmoid(this.model.predict(input,{batch_size:16}))
+        var outarrray = tf.sigmoid(this.model.execute({input:input}))
 
         outarrray.data().then(function(result) {
           callback(result);
@@ -273,40 +215,6 @@ class StateComparitor {
           console.log(err);
         });
     }*/
-    train_on(records,myplayer_name,finished_callback){
-        var learn_streamer = new StateCompareLearnStreamer(records,myplayer_name)
-        var batch_size = 512
-        var ins_outs = learn_streamer.get_data_batch(batch_size)
-        this.train_assuming_best(ins_outs.inputs,ins_outs.outputs,finished_callback)
-    }
-    train_assuming_best(inputs,outputs,finished_callback) {
-        var num_batches = 100;
-        var batch_size = 8;
-        var input_tensor = tf.tensor4d(ai_utils.flatten(inputs),[inputs.length,inputs[0].length,inputs[0][0].length,inputs[0][0][0].length])
-        console.log("outputs.length")
-        console.log(outputs.length)
-        var outputs_tensor = tf.tensor2d(outputs,[outputs.length,1])
-        var model_result = this.model.fit(
-            input_tensor,
-            outputs_tensor,
-            {
-                batchSize: batch_size,
-                epochs: 2,
-                shuffle: true,
-                //validationSplit: 0.3,
-                //verbose: true,
-                //validationSplit: 0.2,
-            }
-        )
-        model_result.then((result)=> {
-          console.log("model fitted!"); // "Stuff worked!"
-          finished_callback();
-        }, function(err) {
-            alert("training failed!")
-          console.log("model failed!"); // Error: "It broke"
-          console.log(err);
-        });
-    }
 }
 module.exports = {
     StateComparitor: StateComparitor,

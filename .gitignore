@@ -19,4 +19,4 @@ cpp_module/a.out.wasm
 build-untitled*
 *.pro*
 a.exe
-web_model
+*web_model

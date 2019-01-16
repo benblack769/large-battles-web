@@ -12,14 +12,9 @@ class MainAI{
         //this.train_successes = 0
         this.main_coord_learner = new MainCoordLearner(this.game_size)
         this.state_comparitor = new StateComparitor(this.game_size)
-        this.trained = 0
-        this.state_comparitor.train_on(train_records,train_myplayer,()=>{
-            console.log("state_comparitor trained")
-            this.trained++
-        })
     }
     is_trained(){
-        return this.main_coord_learner.is_loaded && this.trained > 0
+        return this.main_coord_learner.is_loaded && this.state_comparitor.is_loaded
     }
     get_recomended_instr(game_state,old_game_state,myplayer,callback){
         var cmapper = new binary.CoordMapper(game_state.stats,game_state.players.player_order,myplayer)
