@@ -40,27 +40,6 @@ function make_map_with_single_set(game_size,coord){
     res[coord.y][coord.x] = 1.0
     return res
 }
-/*function make_scalar_mult(){
-class ScalarMult extends tf.layers.Layer {
-    constructor(scalarval){
-        super({})
-        this._scalar_val = tf.scalar(scalarval)
-        this.supportsMasking = true;
-    }
-    call(inputs, kwargs) {
-        let input = inputs;
-        if (Array.isArray(input)) {
-          input = input[0];
-        }
-        this.invokeCallHook(inputs, kwargs);
-        return tf.mul(input,this._scalar_val)
-    }
-    getClassName() {
-        return 'ScalarMult';
-    }
-}
-    return ScalarMult
-}*/
 module.exports = {
     make_map_with_single_set:make_map_with_single_set,
     flatten: flatten,

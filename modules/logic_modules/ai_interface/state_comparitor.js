@@ -137,44 +137,6 @@ function state_loss(labels,logits){
     var out = tf.losses.sigmoidCrossEntropy(labels,logits)
     return out
 }
-function get_get_changed_coords(){
-class GetChangedCoords extends tf.layers.Layer {
-    constructor(){
-        super({})
-        this.supportsMasking = true;
-        this.one = tf.scalar(1.0)
-    }
-    computeOutputShape(inputShape) {
-        return [inputShape[0],inputShape[1],inputShape[2],1]
-    }
-    call(inputs, kwargs) {
-        let input = inputs;
-        if (Array.isArray(input)) {
-            input = input[0];
-        }
-        if(inputs.length !== 2){
-            console.assert("bad inputs to ZeroOutUnnecessary")
-        }
-        //let main_output = inputs[1];
-        var shape = input.shape
-        var new_shape = shape.slice()
-        new_shape[3] = 2
-        new_shape.push(shape[3]/2)
-        this.invokeCallHook(inputs, kwargs);
-        //var subbed_data = tf.reshape(input,new_shape)
-        var split_data = tf.split(input,2,3)
-        var subbed_data = tf.abs(tf.sub(split_data[0],split_data[1]))
-        var summed_sub = tf.sum(subbed_data,3,true)
-        var minned_data = tf.minimum(summed_sub,this.one)
-
-        return minned_data
-    }
-    getClassName() {
-        return 'ZeroOutUnnecessary';
-    }
-}
-return GetChangedCoords
-}
 class StateComparitor {
     constructor(game_size) {
       this.model = null
@@ -198,23 +160,6 @@ class StateComparitor {
           callback(result);
       })
     }
-    /*get_better_prob(game_state1,game_state2,myplayer,callback) {
-        var bin_map1 = binary.map_to_vec(game_state1,myplayer)
-        var bin_map2 = binary.map_to_vec(game_state2,myplayer)
-        var tensor_shape = [1,bin_map1.length,bin_map1[0].length,bin_map1[0][0].length]
-        var i1 = tf.tensor4d(ai_utils.flatten(bin_map1),tensor_shape)
-        var i2 = tf.tensor4d(ai_utils.flatten(bin_map2),tensor_shape)
-        var input = tf.concat([i1,i2],3)
-        var outarrray = tf.sigmoid(this.model.predict(input))
-        outarrray.data().then(function(result) {
-          console.log("model infered!"); // "Stuff worked!"
-          console.log(result)
-          callback(result);
-        }, function(err) {
-          console.log("model failed!"); // Error: "It broke"
-          console.log(err);
-        });
-    }*/
 }
 module.exports = {
     StateComparitor: StateComparitor,
