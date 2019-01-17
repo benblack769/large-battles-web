@@ -50,3 +50,5 @@ def get_remote_file(url):
 
 if __name__ == "__main__":
     render_template()
+    # gets tensorflow for s3 upload
+    get_remote_file("https://cdnjs.cloudflare.com/ajax/libs/tensorflow/0.14.1/tf.min.js")

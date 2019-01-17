@@ -5,17 +5,11 @@ import random
 import os
 import shutil
 
-def unpool2x2(input,orig_shape):
-    base_shape = input.get_shape().as_list()
-    batch_size = tf.shape(input)[0]
-    reshaped_pool = tf.reshape(input,[batch_size,base_shape[1],base_shape[2],1,base_shape[3]])
-    x_concatted = tf.concat([reshaped_pool,reshaped_pool],3)
-    x_reshaped = tf.reshape(x_concatted,[batch_size,base_shape[1],1,base_shape[2]*2,base_shape[3]])
-    y_concatted = tf.concat([x_reshaped,x_reshaped],2)
-    y_reshaped = tf.reshape(y_concatted,[batch_size,base_shape[1]*2,base_shape[2]*2,base_shape[3]])
-    #sliced = y_reshaped[:,:orig_shape[1],:orig_shape[2]]
-    sliced = tf.slice(y_reshaped,[0,0,0,0],[batch_size,orig_shape[1],orig_shape[2],base_shape[3]])
-    return sliced
+def global_average_pool(map4d):
+    shape_list = map4d.get_shape().as_list()
+    batch_size = tf.shape(map4d)[0]
+    map_flattened = tf.reshape(map4d,[batch_size,shape_list[1]*shape_list[2],shape_list[3]])
+    return tf.reduce_mean(map_flattened,axis=1)
 
 def lay_pool_skip_method(input):
     lay1size = 64
@@ -26,8 +20,14 @@ def lay_pool_skip_method(input):
     basic_outs = []
     orig_reduction = tf.layers.dense(
         inputs=input,
-        units=lay1size
+        units=lay1size,
     )
+    orig_reduction = tf.layers.dense(
+        inputs=orig_reduction,
+        units=lay1size,
+    )
+    tot_out = global_average_pool(orig_reduction)
+
     cur_out = orig_reduction
     for x in range(DEPTH):
         lay1_outs = tf.layers.conv2d(
@@ -35,24 +35,56 @@ def lay_pool_skip_method(input):
             filters=lay1size,
             kernel_size=CONV1_SIZE,
             padding="same",
+            use_bias=True,
             activation=tf.nn.relu)
-        lay_1_pool = tf.layers.average_pooling2d(
+        lay1_outs = tf.layers.conv2d(
+            inputs=lay1_outs,
+            filters=lay1size,
+            kernel_size=CONV1_SIZE,
+            padding="same",
+            use_bias=True,
+            activation=tf.nn.relu)
+        lay_1_pool = tf.layers.max_pooling2d(
             inputs=lay1_outs,
             pool_size=POOL_SIZE,
             strides=POOL_STRIDES,
             padding='same',
         )
+        tot_out = tot_out + global_average_pool(lay1_outs)
         basic_outs.append(lay1_outs)
         cur_out = lay_1_pool
-        print(lay_1_pool.shape)
-
+        #print(lay_1_pool.shape)
+    flattened_deepest_out = tf.layers.flatten(cur_out)
+    fc_layer = tf.layers.dense(
+        inputs=flattened_deepest_out,
+        units=lay1size
+    )
+    tot_out = tot_out + fc_layer
+    refine_layer1 = tf.layers.dense(
+        use_bias=True,
+        inputs=fc_layer,
+        units=lay1size
+    )
+    refine_layer3 = tf.layers.dense(
+        inputs=refine_layer1,
+        units=1
+    )
+    '''
     old_val = basic_outs[DEPTH-1]
     for y in range(DEPTH-2,-1,-1):
         skip_val = basic_outs[y]
         depooled = unpool2x2(old_val,skip_val.get_shape().as_list())
         base_val = depooled + skip_val
-        old_val = base_val
-        print(depooled.shape,)
+
+        old_val = tf.layers.conv2d(
+            inputs=base_val,
+            filters=lay1size,
+            kernel_size=CONV1_SIZE,
+            padding="same",
+            activation=tf.nn.relu)
+
+        #old_val = base_val
+        #print(depooled.shape,)
 
 
     combined_input = old_val+orig_reduction
@@ -63,7 +95,7 @@ def lay_pool_skip_method(input):
     refine_layer3 = tf.layers.dense(
         inputs=refine_layer1,
         units=1
-    )
+    )'''
     return refine_layer3
 
 
@@ -96,6 +128,14 @@ def model_loss(act_outputs,model_outputs):
     cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(labels=act_outputs,logits=model_outputs)
     return tf.reduce_mean(cross_entropy)
 
+def rework_input(input):
+    base_shape = input.get_shape().as_list()
+    batch_size = tf.shape(input)[0]
+    part1 = tf.slice(input,[0,0,0,0],[batch_size,base_shape[1],base_shape[2],base_shape[3]//2])
+    part2 = tf.slice(input,[0,0,0,base_shape[3]//2],[batch_size,base_shape[1],base_shape[2],base_shape[3]//2])
+    reworked = part1 - part2
+    return tf.concat([reworked,input],axis=3)
+
 def learn_on_data(train_folder,export_path):
     current_inputs,current_outputs = get_batch_data(train_folder)
     BATCH_SIZE = 16
@@ -107,11 +147,11 @@ def learn_on_data(train_folder,export_path):
     act_output = tf.placeholder(tf.float32, (None,)+ current_outputs.shape[1:])
     #act_output_reshape = tf.reshape(act_output,(None,)+ current_outputs.shape[1:]+(1,))
     #print(current_outputs)
-    model_output = make_model(input)
+    model_output = make_model(rework_input(input))
     sig_out = tf.nn.sigmoid(model_output,name="sig_out")
 
     loss = model_loss(act_output,model_output)
-    optimizer = tf.train.RMSPropOptimizer(0.001)
+    optimizer = tf.train.AdamOptimizer(0.001)
     optim = optimizer.minimize(loss)
 
 
