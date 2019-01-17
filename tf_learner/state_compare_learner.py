@@ -4,6 +4,7 @@ import argparse
 import random
 import os
 import shutil
+import data_generator
 
 def global_average_pool(map4d):
     shape_list = map4d.get_shape().as_list()
@@ -12,7 +13,7 @@ def global_average_pool(map4d):
     return tf.reduce_mean(map_flattened,axis=1)
 
 def lay_pool_skip_method(input):
-    lay1size = 64
+    lay1size = 32
     CONV1_SIZE=[3,3]
     POOL_SIZE=[2,2]
     POOL_STRIDES=[2,2]
@@ -37,13 +38,13 @@ def lay_pool_skip_method(input):
             padding="same",
             use_bias=True,
             activation=tf.nn.relu)
-        lay1_outs = tf.layers.conv2d(
+        '''lay1_outs = tf.layers.conv2d(
             inputs=lay1_outs,
             filters=lay1size,
             kernel_size=CONV1_SIZE,
             padding="same",
             use_bias=True,
-            activation=tf.nn.relu)
+            activation=tf.nn.relu)'''
         lay_1_pool = tf.layers.max_pooling2d(
             inputs=lay1_outs,
             pool_size=POOL_SIZE,
@@ -62,7 +63,7 @@ def lay_pool_skip_method(input):
     tot_out = tot_out + fc_layer
     refine_layer1 = tf.layers.dense(
         use_bias=True,
-        inputs=fc_layer,
+        inputs=tot_out,
         units=lay1size
     )
     refine_layer3 = tf.layers.dense(
@@ -126,6 +127,7 @@ def get_batch_data(input_folder):
 
 def model_loss(act_outputs,model_outputs):
     cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(labels=act_outputs,logits=model_outputs)
+    weighted_loss = cross_entropy*tf.abs(act_outputs-tf.nn.sigmoid(model_outputs))
     return tf.reduce_mean(cross_entropy)
 
 def rework_input(input):
@@ -139,13 +141,14 @@ def rework_input(input):
 def learn_on_data(train_folder,export_path):
     current_inputs,current_outputs = get_batch_data(train_folder)
     BATCH_SIZE = 16
-    NUM_TRAIN_ITERS = 500
+    NUM_TRAIN_ITERS = 150
     BATCHES_PER_DATA = current_inputs.shape[0] // BATCH_SIZE
     #print("BATCHES_PER_DATA",BATCHES_PER_DATA)
 
     input = tf.placeholder(tf.float32, (None,)+ current_inputs.shape[1:],name="input")
     act_output = tf.placeholder(tf.float32, (None,)+ current_outputs.shape[1:])
     #act_output_reshape = tf.reshape(act_output,(None,)+ current_outputs.shape[1:]+(1,))
+    #input,act_output = data_generator.get_input_stream(train_folder)
     #print(current_outputs)
     model_output = make_model(rework_input(input))
     sig_out = tf.nn.sigmoid(model_output,name="sig_out")
@@ -158,15 +161,22 @@ def learn_on_data(train_folder,export_path):
     test_input = np.load(os.path.join(train_folder,"input0.json.npy"))
     test_output = np.load(os.path.join(train_folder,"output0.json.npy"))
 
+    train_input_stream = data_generator.get_np_input_stream(train_folder)
+
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         for x in range(NUM_TRAIN_ITERS):
             tot_loss = 0
             for idx in range(BATCHES_PER_DATA):
+                t_inputs,t_output = next(train_input_stream)
+                t_output = np.reshape(t_output,data_generator.TRAIN_BATCH_SIZE)
+
                 opt_val,loss_val = sess.run([optim,loss],feed_dict={
-                    input: current_inputs[BATCH_SIZE*idx:BATCH_SIZE*(idx+1)],
-                    act_output: current_outputs[BATCH_SIZE*idx:BATCH_SIZE*(idx+1)],
+                    input: t_inputs,
+                    act_output: t_output,
                 })
+                #print(model_val)
+
                 #print(model_val)
                 tot_loss += loss_val
                 #print(tot_loss/BATCHES_PER_DATA)

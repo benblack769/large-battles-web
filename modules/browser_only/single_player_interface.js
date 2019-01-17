@@ -12,8 +12,6 @@ var script_inter = require("./game_display/script_interface.js")
 var nav_signal = require("./nav_signal.js")
 var Analysis = require("./analysis.js").Analysis
 var interaction_comps = require("./game_display/interaction_components.js")
-var ai_type_utils = require("../logic_modules/ai_interface/type_utils.js")
-var flatten = require("../logic_modules/ai_interface/ai_utils.js").flatten
 var init_ai = require("./init_ai.js")
 
 //var binary = require("../logic_modules/to_binary.js")
