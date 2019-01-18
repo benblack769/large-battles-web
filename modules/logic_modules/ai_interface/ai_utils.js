@@ -16,6 +16,25 @@ function flatten(nested_array){
     flatten_rec(res,nested_array)
     return new Float32Array(res)
 }
+function center_map_at_with_filled_zeros(map,c){
+    var zeros = map[0][0].map(a=>0)
+    var r = 15;
+    var size = r*2+1;
+    var res_map = new Array(size)
+    for(var y = c.y-r; y <= c.y+r; y++){
+        var res_row = new Array(size)
+        for(var x = c.x-r; x <= c.x+r; x++){
+            if(map[y] && map[y][x]){
+                res_row[x-(c.x-r)] = map[y][x]
+            }
+            else{
+                res_row[x-(c.x-r)] = zeros
+            }
+        }
+        res_map[y-(c.y-r)] = res_row
+    }
+    return res_map
+}
 function spread_to_dim(arraynd,dims){
     var dim_num = dims[0]
     if(arraynd.length % dim_num !== 0){
@@ -32,6 +51,13 @@ function spread_to_dim(arraynd,dims){
     }
     return res
 }
+function expand_last_dim(map){
+    var res = new Array(map.length)
+    for(var y = 0; y < map.length; y++){
+        res[y] = map[y].map((val)=>[val])
+    }
+    return res
+}
 function make_map_with_single_set(game_size,coord){
     var res = new Array(game_size.ysize)
     for(var y = 0; y < game_size.ysize; y++){
@@ -43,5 +69,7 @@ function make_map_with_single_set(game_size,coord){
 module.exports = {
     make_map_with_single_set:make_map_with_single_set,
     flatten: flatten,
+    expand_last_dim: expand_last_dim,
     spread_to_dim: spread_to_dim,
+    center_map_at_with_filled_zeros: center_map_at_with_filled_zeros,
 }

@@ -39,6 +39,8 @@ function concat_dim(arrnd1,arrnd2,dim){
     }
     else{
         if(arrnd1.length !== arrnd2.length){
+            //console.log(arrnd1.length)
+            //console.log(arrnd2.length)
             console.assert(false,"bad concat dims")
         }
         var res = new Array(arrnd1.length)

@@ -2,16 +2,22 @@ import os
 import random
 import numpy as np
 import tensorflow as tf
+import gzip
+import io
+import multiprocessing
 
 SHUFFLE_BUFFER_SIZE = 2048
 TRAIN_BATCH_SIZE = 32
+
+def load_file(fname):
+    return np.load(io.BytesIO(gzip.open(fname,'rb').read()))
 
 def get_batch_data(input_folder):
     fnames = os.listdir(input_folder)
     input_names = [f for f in fnames if "input" in f]
     input_choice = random.choice(input_names[1:])
     output_choice = "output"+input_choice[5:]
-    return (np.load(os.path.join(input_folder,input_choice)),np.load(os.path.join(input_folder,output_choice)))
+    return (load_file(os.path.join(input_folder,input_choice)),load_file(os.path.join(input_folder,output_choice)))
 
 def file_generator(folder):
     fnames = os.listdir(folder)
@@ -20,8 +26,8 @@ def file_generator(folder):
     while True:
         input_choice = random.choice(use_input_fnames)
         output_choice = "output"+input_choice[5:]
-        np_input_data = np.load(os.path.join(folder,input_choice))
-        np_output_data = np.load(os.path.join(folder,output_choice))
+        np_input_data = load_file(os.path.join(folder,input_choice))
+        np_output_data = load_file(os.path.join(folder,output_choice))
         for x in range(np_input_data.shape[0]):
             yield np_input_data[x],np_output_data[x]
 
@@ -33,8 +39,8 @@ def make_file_generator(folder):
         while True:
             input_choice = random.choice(use_input_fnames)
             output_choice = "output"+input_choice[5:]
-            np_input_data = np.load(os.path.join(folder,input_choice))
-            np_output_data = np.load(os.path.join(folder,output_choice))
+            np_input_data = load_file(os.path.join(folder,input_choice))
+            np_output_data = load_file(os.path.join(folder,output_choice))
             for x in range(np_input_data.shape[0]):
                 yield np_input_data[x],np_output_data[x]
     return file_generator
@@ -71,9 +77,29 @@ def get_np_input_stream(folder):
     batch_gen = batch_generator(shuffle_gen,TRAIN_BATCH_SIZE)
     return batch_gen
 
+def multi_get_np_fn(folder,queue):
+    #samples_per_proc = 1000
+    input_gen = get_np_input_stream(folder)
+    while True:
+        inps_outps = [next(input_gen) for _ in range(100)]
+        inps = np.stack(inp for inp,outp in inps_outps)
+        outps = np.stack(outp for inp,outp in inps_outps)
+        queue.put((inps,outps))
+
+def multiproc_input_stream(folder):
+    CPU_COUNT = multiprocessing.cpu_count()//3+1
+    q = multiprocessing.Queue(30)
+    procs = [multiprocessing.Process(target=multi_get_np_fn, args=(folder,q)) for _ in range(CPU_COUNT)]
+    for proc in procs:
+        proc.start()
+    while True:
+        inps,outps = q.get()
+        for inp,outp in zip(inps,outps):
+            yield inp,outp
+
 def get_input_stream(folder):
-    input_shape = np.load(os.path.join(folder,"input0.json.npy")).shape
-    output_shape = np.load(os.path.join(folder,"output0.json.npy")).shape
+    input_shape = load_file(os.path.join(folder,"input0.npy.gz")).shape
+    output_shape = load_file(os.path.join(folder,"output0.npy.gz")).shape
     actual_generator = make_file_generator(folder)
     ds = tf.data.Dataset.from_generator(
         actual_generator, (tf.float32,tf.float32), (tf.TensorShape(input_shape[1:]),tf.TensorShape(output_shape[1:])))

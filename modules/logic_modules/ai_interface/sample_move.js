@@ -4,7 +4,7 @@ var type_utils = require("./type_utils.js")
 var random = require("../random_helpers.js")
 
 function idx_to_coord(idx,game_size){
-    return {x:Math.floor(idx/game_size.xsize),y:idx%game_size.xsize}
+    return {x:idx%game_size.xsize,y:Math.floor(idx/game_size.xsize)}
 }
 function sample_coord(map_dist,game_size){
     return idx_to_coord(map_dist.sample(),game_size)

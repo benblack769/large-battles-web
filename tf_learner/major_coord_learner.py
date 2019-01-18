@@ -26,7 +26,8 @@ def lay_pool_skip_method(input):
     basic_outs = []
     orig_reduction = tf.layers.dense(
         inputs=input,
-        units=lay1size
+        units=lay1size,
+        activation=tf.nn.relu
     )
     cur_out = orig_reduction
     for x in range(DEPTH):
@@ -58,7 +59,8 @@ def lay_pool_skip_method(input):
     combined_input = old_val+orig_reduction
     refine_layer1 = tf.layers.dense(
         inputs=combined_input,
-        units=lay1size
+        units=lay1size,
+        activation=tf.nn.relu
     )
     refine_layer3 = tf.layers.dense(
         inputs=refine_layer1,
@@ -75,39 +77,6 @@ def make_model(input):
 
     out = lay_pool_skip_method(input)
     return out
-    lay1_outs = tf.layers.conv2d(
-        inputs=input,
-        filters=lay1size,
-        kernel_size=CONV1_SIZE,
-        padding="same",
-        activation=tf.nn.relu)
-    lay_1_pool = tf.layers.average_pooling2d(
-        inputs=lay1_outs,
-        pool_size=POOL_SIZE,
-        strides=POOL_STRIDES,
-        padding='same',
-    )
-    lay2_outs = tf.layers.conv2d(
-        inputs=lay1_outs,
-        filters=lay1size,
-        kernel_size=CONV1_SIZE,
-        padding="same",
-        activation=tf.nn.relu)
-    lay3_outs = tf.layers.conv2d(
-        inputs=lay2_outs,
-        filters=lay1size,
-        kernel_size=CONV1_SIZE,
-        padding="same",
-        activation=tf.nn.relu)
-    lay4_outs = tf.layers.conv2d(
-        inputs=lay2_outs,
-        filters=1,
-        kernel_size=[1, 1],
-        padding="same",
-        activation=None)
-    lay4_outs = lay4_outs * 0.1
-    return tf.squeeze(lay4_outs)
-    #const optimizer = tf.train.rmsprop(0.01);
 
 def get_batch_data(input_folder):
     fnames = os.listdir(input_folder)

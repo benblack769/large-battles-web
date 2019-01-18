@@ -3,23 +3,24 @@ import argparse
 import shutil
 import os
 import multiprocessing
+import sys
 
 
 
-NUM_DATAS = 200
+NUM_DATAS = 100
 
-def gen_all_ins_outs(constructor_name):
+def gen_all_ins_outs(folder,constructor_name):
     arg_ll  = []
     for i in range(NUM_DATAS):
-        in_name = "input"+str(i)+".json.npy"
-        out_name = "output"+str(i)+".json.npy"
+        in_name = os.path.join(folder,"input"+str(i)+".npy.gz")
+        out_name = os.path.join(folder,"output"+str(i)+".npy.gz")
         arg_ll.append(["node","train_batch_generator.js",constructor_name,in_name,out_name])
     return arg_ll
 
 def exec_procs(args):
     proc_list = []
     for arg in args:
-        proc_list.append(subprocess.Popen(arg,cwd="../modules/"))
+        proc_list.append(subprocess.Popen(arg,cwd="../modules/",stdout=sys.stdout,stderr=sys.stdout))
     for proc in proc_list:
         proc.wait()
 
@@ -31,8 +32,6 @@ def execute_parellel(arg_lists):
 
     exec_procs(arg_lists[rlist[-1]:])
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
     parser.add_argument('out_folder', help='Path to output folder.')
@@ -41,5 +40,5 @@ if __name__ == "__main__":
     if os.path.exists(args.out_folder):
         shutil.rmtree(args.out_folder)
     os.mkdir(args.out_folder)
-    args = gen_all_ins_outs("state_compare")
+    args = gen_all_ins_outs(args.out_folder,"state_compare")
     execute_parellel(args)

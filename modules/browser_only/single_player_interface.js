@@ -105,7 +105,6 @@ function process_instruction_backend(game_state,instruction,player,signals){
         signals.selectedData.setState(signals.selectedData.getState())
     }
     signals.prev_game_state.setState(old_state)
-    signals.ai_start_recomendation.fire()
 }
 function process_instruction(game_state,game_record,instruction,player,signals){
     process_message_frontend(game_state,game_record,instruction,player,process_instruction_backend,signals)
@@ -143,6 +142,7 @@ function init_signals_single_player(game_state,game_record,signals){
         console.log(instr)
         if(instr){
             process_instruction(game_state,game_record,instr,signals.myPlayer.getState(),signals)
+            signals.ai_start_recomendation.fire()
         }
         else{
             alert("no instruction to follow")

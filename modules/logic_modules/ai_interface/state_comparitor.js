@@ -49,7 +49,11 @@ class StateCompareLearnStreamer extends learn_utils.LearnStreamer{
                         .filter(false_instr=>!clib.deep_equals(instr,false_instr))
             var false_instr_sample = random.sample_array(all_false_moves)
             var compare_data = make_comparison_data(orig_state,instr,false_instr_sample,this.getCmapper(idxs))
-            small_batch_inputs.push(compare_data.inputs)
+            var input_centered = ai_utils.center_map_at_with_filled_zeros(compare_data.inputs,major_coord)
+            //var major_coord_map = ai_utils.make_map_with_single_set(this.game_size,major_coord)
+            //var tot_input = type_utils.concat_dim(compare_data.inputs,ai_utils.expand_last_dim(major_coord_map),2)
+            //var out_val = out_filter
+            small_batch_inputs.push(input_centered)
             small_batch_outputs.push(compare_data.outputs)
         })
         return {
@@ -107,6 +111,7 @@ function tournament_eval(instructions,game_state,state_comparitor,cmapper,final_
         final_callback(instructions[0])
         return
     }
+    var major_coord = type_utils.major_coord(instructions[0])
     sample_move.shuffle(instructions)
     var base_size = pow2_below(instructions.length)
     var base_instrs = instructions.slice(0,base_size)
@@ -122,7 +127,7 @@ function tournament_eval(instructions,game_state,state_comparitor,cmapper,final_
         var base_bin = (copy_process_state(game_state,base_instrs[i],cmapper))
         var compare_bin = (copy_process_state(game_state,compare_instrs[i],cmapper))
         var concat = type_utils.concat_dim(base_bin,compare_bin,2)
-        compare_pairs[i] = concat
+        compare_pairs[i] = ai_utils.center_map_at_with_filled_zeros(concat,major_coord)
     }
     state_comparitor.get_better_prob_batched(compare_pairs,function(result){
         console.log("tournament step finished")
@@ -154,7 +159,7 @@ class StateComparitor {
     }
     get_better_prob_batched(paired_bin_maps,callback){
         var input = tf.tensor4d(ai_utils.flatten(paired_bin_maps),[paired_bin_maps.length,paired_bin_maps[0].length,paired_bin_maps[0][0].length,paired_bin_maps[0][0][0].length])
-        var outarrray = tf.sigmoid(this.model.execute({input:input}))
+        var outarrray = this.model.execute({input:input})
 
         outarrray.data().then(function(result) {
           callback(result);
