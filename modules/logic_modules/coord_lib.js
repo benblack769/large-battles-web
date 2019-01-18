@@ -100,9 +100,11 @@ function max_buildable_range(game_state){
         .map(o=>o.buildable_radius))
 }
 function find_tc(game_state,build_coord){
-    var tc_list = coords_around(game_state,build_coord,max_buildable_range(game_state))
-        .filter((coord)=>is_build_radius_unit(game_state,coord))
-    return tc_list.length ? tc_list[0] : null
+    var build_range = max_buildable_range(game_state)
+    var rough_possible_coords = coords_around(game_state,build_coord,build_range)
+    var possible_moves = pathing.get_possible_moves(game_state.map,build_coord,build_range,rough_possible_coords)
+    var possible_tcs = possible_moves.filter((coord)=>is_build_radius_unit(game_state,coord))
+    return possible_tcs.length ? possible_tcs[0] : null
 }
 function first_if_there(arr){
     return arr ? arr[0] : null

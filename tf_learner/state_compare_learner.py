@@ -108,7 +108,9 @@ def lay_pool_skip_method(input):
 def crop_to(input,rad_size):
     batch_size = tf.shape(input)[0]
     in_size = input.get_shape().as_list()
-    cen = (in_size[1]+1)//2
+    cen = (in_size[1])//2
+    print("in_size[1]")
+    print(in_size[1])
     return tf.slice(input,[0,cen-rad_size,cen-rad_size,0],[batch_size,rad_size*2+1,rad_size*2+1,in_size[3]])
 
 def reduce_input(inp,size):
@@ -125,6 +127,10 @@ def area_aggregation_method(input):
     AREA_SIZE = AREA_RAD * 2 + 1
     TACTICS_RAD = 4
     TACTICS_SIZE = TACTICS_RAD * 2 + 1
+    IMMIDIATE_RAD = 1
+    IMM_SIZE = IMMIDIATE_RAD * 2 + 1
+    ORIG_RAD = 0
+    ORIG_SIZE = ORIG_RAD * 2 + 1
     in_size = input.get_shape().as_list()
     assert in_size[1] == LARGEST_RAD*2+1
     largest_out_size = 5
@@ -184,12 +190,28 @@ def area_aggregation_method(input):
         padding="valid",
         use_bias=True,
         activation=tf.nn.relu)
-    concatted = tf.concat([
-        tf.layers.flatten(largest_aggr_pool),
-        tf.layers.flatten(area_aggr_pool),
-        tf.layers.flatten(tactics2)
-    ],axis=1)
 
+    immi_cropped = crop_to(input,IMMIDIATE_RAD)
+    immi1 = tf.layers.dense(
+        inputs=tf.layers.flatten(immi_cropped),
+        units=128,
+        activation=tf.nn.relu,
+    )
+    orig_cropped = crop_to(input,ORIG_SIZE)
+    orig1 = tf.layers.dense(
+        inputs=tf.layers.flatten(orig_cropped),
+        units=64,
+        activation=tf.nn.relu,
+    )
+
+
+    concatted = tf.concat([
+    tf.layers.flatten(largest_aggr_pool),
+    tf.layers.flatten(area_aggr_pool),
+    tf.layers.flatten(tactics2),
+    tf.layers.flatten(immi1),
+    tf.layers.flatten(orig1)
+    ],axis=1)
     print("input.shape")
     print(input.shape)
     print("largest_aggr_pool.shape")
@@ -198,6 +220,10 @@ def area_aggregation_method(input):
     print(area_aggr_pool.shape)
     print("tactics2.shape")
     print(tactics2.shape)
+    print("immi1.shape")
+    print(immi1.shape)
+    print("orig1.shape")
+    print(orig1.shape)
     print("concatted.shape")
     print(concatted.shape)
 
@@ -277,7 +303,7 @@ def learn_on_data(train_folder,export_path):
     test_input = load_file(os.path.join(train_folder,"input0.npy.gz"))
     test_output = load_file(os.path.join(train_folder,"output0.npy.gz"))
 
-    train_input_stream = data_generator.multiproc_input_stream(train_folder)
+    train_input_stream = data_generator.get_np_input_stream(train_folder)
     config = tf.ConfigProto(
         device_count = {'GPU': 0}
     )
@@ -300,7 +326,7 @@ def learn_on_data(train_folder,export_path):
                 #print(tot_loss/BATCHES_PER_DATA)
             print("train loss ",tot_loss/BATCHES_PER_DATA)
             #print(tot_loss/BATCHES_PER_DATA)
-            current_inputs,current_outputs = get_batch_data(train_folder)
+            #current_inputs,current_outputs = get_batch_data(train_folder)
 
             if x % 10 == 0:
                 tot_loss = 0

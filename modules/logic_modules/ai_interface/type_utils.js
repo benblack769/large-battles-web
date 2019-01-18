@@ -134,6 +134,7 @@ function all_moves_from(game_state,major_coord,myplayer){
     }
     else if(clib.is_empty(game_state.map,major_coord)){
         var tc = clib.find_tc(game_state,major_coord)
+        console.log(tc,major_coord)
         if(tc){
             return all_build_types(game_state.stats,money_amt).map(type=>({
                 type: "BUILD",

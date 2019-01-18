@@ -20,7 +20,7 @@ class MainAI{
         var cmapper = new binary.CoordMapper(game_state.stats,game_state.players.player_order,myplayer)
         this.main_coord_learner.get_prob_map(game_state,old_game_state,myplayer,(prob_map)=>{
             var num_samples = 0;
-            const max_samples = 1000;
+            const max_samples = 3000;
             var major_coords = sample_move.sample_prob_map(game_state,prob_map,max_samples)
             for(var i = 0; i < major_coords.length; i++){
                 var valid_moves = sample_move.all_moves_given_major(game_state,major_coords[i],myplayer)

@@ -34,7 +34,7 @@ function unique_coords(coords){
 function sample_prob_map(game_state,major_prob_map,num_samples){
     var flat_prob_map = ai_utils.flatten(major_prob_map)
     for(var i = 0; i < flat_prob_map.length; i++){
-    //    flat_prob_map[i] *= flat_prob_map[i]
+        flat_prob_map[i] *= flat_prob_map[i]
     }
     var dist = new random.DiscreteDistribution(flat_prob_map)
     var major_coords = (new Array(num_samples).fill(0))
