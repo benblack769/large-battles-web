@@ -14,20 +14,16 @@ var nav_signal = require("./nav_signal.js")
 class Analysis {
     constructor(signals,record,game_state){
         this.signals = signals
-        this.accessor = null
-        this.index_holder = null
+        this.accessor = new accessor.RecordAccessor(record)
+        this.index_holder = new accessor.MajorIndicies(record)
+        this.index_holder.setMinor(this.index_holder.maxMinorIdx())
+        this.draw_board(this.current_nav_state())
         this.init_analysis_signals(record,game_state)
     }
     current_nav_state(){
         return this.accessor.get_state(this.index_holder.getMinor())
     }
     init_analysis_signals(record,game_state){
-        this.signals.analysis_signal.listen(()=>{
-            this.accessor = new accessor.RecordAccessor(record)
-            this.index_holder = new accessor.MajorIndicies(record)
-            this.index_holder.setMinor(this.index_holder.maxMinorIdx())
-            this.draw_board(this.current_nav_state())
-        })
         this.signals.stop_analysis_signal.listen(()=>{
             this.draw_board(game_state)
         })
@@ -57,7 +53,7 @@ class Analysis {
                 player: player,
             })
         })
-        signals.activePlayer.setState(game_state.players.active_player)
+        this.signals.activePlayer.setState(game_state.players.active_player)
     }
 }
 module.exports = {

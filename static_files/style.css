@@ -340,9 +340,11 @@ main page style
     left: 0;
     right: 50%;
     bottom: 0;
+    overflow: auto;
 }
 .training_pannel2 {
     position: fixed;
+    background-color: gray;
     top: 45px;
     left: 50%;
     right: 0;
@@ -352,4 +354,10 @@ main page style
     position: absolute;
     top: 0;
     left: 50%;
+}
+.archive_link {
+    color: blue;
+}
+.archive_link:hover {
+    text-decoration: underline;
 }

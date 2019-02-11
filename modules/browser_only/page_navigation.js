@@ -1,6 +1,7 @@
 var display_board = require("./display_board.js")
 var signup_login = require("./signup_login.js")
 var rankings_page = require("./rankings_page.js")
+var archive_page = require("./archive_page.js")
 var live_connections = require("./live_connections_page.js")
 var train_page = require("./train_interface_page.js")
 var game_page = require("./game_page.js")
@@ -23,6 +24,9 @@ function setup_page_navigation(){
     $("#rankings_naventry").click(function(){
         switch_to_page("rankings_naventry")
     })
+    $("#archive_naventry").click(function(){
+        switch_to_page("archive_naventry")
+    })
     $("#live_connect_naventry").click(function(){
         switch_to_page("live_connect_naventry")
     })
@@ -40,10 +44,12 @@ function switch_to_page(page_id){
         case "login_naventry": signup_login.switch_to_login(); break;
         case "logout_naventry": signup_login.logout(); break;
         case "rankings_naventry": rankings_page.switch_to_rankings(); break;
+        case "archive_naventry": archive_page.switch_to_archive(); break;
         case "live_connect_naventry": live_connections.switch_to_live_games(); break;
         case "game_naventry": game_page.switch_to_game_page(); break;
         case "train_naventry": train_page.switch_to_train_page(); break;
-    }}
+    }
+}
 function init_page_switching(){
     nav_signal.change_page.listen(switch_to_page)
 }
@@ -52,6 +58,7 @@ function init_all(){
     setup_page_navigation()
     signup_login.init_signup_login()
     rankings_page.init_rankings()
+    archive_page.init_archive()
     live_connections.init_live_games()
     game_page.init_game_page()
     train_page.init_train_page()

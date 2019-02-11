@@ -24,6 +24,7 @@
     <div id="menu">
         <span id="home_naventry" class="menu_entry">Home</span>
         <span id="rankings_naventry" class="menu_entry">Rankings</span>
+        <span id="archive_naventry" class="menu_entry">Archive</span>
         <span id="live_connect_naventry" class="menu_entry">Start Game</span>
         <span id="game_naventry" class="menu_entry">Game</span>
         <span id="train_naventry" class="menu_entry">Train</span>
@@ -85,6 +86,22 @@
               </tbody>
             </table>
         </div>
+    </div>
+    <div id="archive_page" class="page_level" hidden>
+        <div class="training_pannel1">
+            <table id="archive-table">
+              <thead>
+                  <tr>
+                  <th>Date</th>
+                  <th>Result</th>
+                  <th>Record</th>
+                </tr>
+              </thead>
+              <tbody id="archive-body">
+              </tbody>
+            </table>
+        </div>
+        <div id="analysis_basediv" class="training_pannel2"> </div>
     </div>
     <div id="live_games" class="page_level" hidden>
         <div id="main_live_game_page">
@@ -162,7 +179,6 @@
             </div>
         </div>
     </div>
-
     <div id="training_page" class="page_level" hidden>
         <div id="best_move_pannel" class="game_overlay"> </div>
         <!--<div id="train_pan_1" class="training_pannel1"> </div>

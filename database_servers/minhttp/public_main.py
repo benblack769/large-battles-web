@@ -73,6 +73,39 @@ def new_info():
         "username": response_data['username'],
     })
 
+def request_credentials_valid(request):
+    return user_info_is_valid(request['username'],request['password'])
+
+def user_info_is_valid(username,password):
+    exists_query_result = db.session.query(db.exists().where(schema.User.username==username and schema.User.password==password)).scalar()
+    return exists_query_result
+
+def login_error_message():
+    return json.dumps({
+        "type": "login_error",
+        "error_message": "no such username, password combination found.",
+    })
+
+@app.route('/game_archive', methods=['GET'])
+def get_game_archive():
+    request_data = request.args
+    print(request_data)
+    if not request_credentials_valid(request_data):
+        return login_error_message()
+    else:
+        user = db.session.query(schema.User).filter(schema.User.username == request_data['username']).first()
+        return json.dumps({
+                "type": "success",
+                "data": [{
+                    "result":record.win_record,
+                    "record_id":record.full_record.game_id,
+                    "date": str(record.full_record.created_on),
+                } for record in user.game_user_records]
+            })
+
+
+
+
 @app.route('/verify_user', methods=['POST'])
 def verify_info():
     response_data = json.loads(request.get_data())
@@ -80,10 +113,7 @@ def verify_info():
     exists_query_result = db.session.query(db.exists().where(schema.User.username==response_data['username'] and schema.User.password==response_data['password'])).scalar()
     print(exists_query_result)
     if not exists_query_result:
-        return json.dumps({
-            "type": "login_error",
-            "error_message": "no such username, password combination found.",
-        })
+        return login_error_message()
     else:
         return json.dumps({
             "type": "login_success",

@@ -8,6 +8,12 @@ browserify modules/client_main.js > static_files/bundle.js
 (cd static_files; python3 ../process_html.py .)
 gzip -9 -k -f static_files/index.html
 gzip -9 -k -f static_files/tf.min.js
+rm -r static_files/game_records
+mkdir -p static_files/game_records
+cp game_records/* static_files/game_records/
+gzip -9 -k -f static_files/game_records/*
+
+
 #gzip -9 -k -f static_files/tf.min.js
 
 #cp static_files/index.html docs/

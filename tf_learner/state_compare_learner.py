@@ -307,6 +307,8 @@ def learn_on_data(train_folder,export_path):
     config = tf.ConfigProto(
         device_count = {'GPU': 0}
     )
+    print('total parameters = {}'.format(np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()])))
+    exit(1)
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         for x in range(NUM_TRAIN_ITERS):

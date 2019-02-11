@@ -428,4 +428,5 @@ module.exports = {
     PlayerInfoPannel: PlayerInfoPannel,
     AIRecomendations: AIRecomendations,
     UnitInfoPannel: UnitInfoPannel,
+    AnalysisButton: AnalysisButton,
 }
