@@ -54,6 +54,7 @@ class Analysis {
             })
         })
         this.signals.activePlayer.setState(game_state.players.active_player)
+        this.signals.game_state_changed.fire(game_state)
     }
 }
 module.exports = {

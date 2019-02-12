@@ -95,7 +95,7 @@ class RecordAccessor {
         var game_state = clib.deep_copy(this.cached_states[cached_state_idx])
         var start_idx = instrs_per_state * cached_state_idx + 1
         for(var i = start_idx; i <= idx; i++){
-            var decoped_instrs = this.cached_decomped_instrs[i]
+            var decoped_instrs = clib.deep_copy(this.cached_decomped_instrs[i])
             for(var j = 0; j < decoped_instrs.length; j++){
                 consume.consume_change(game_state,decoped_instrs[j])
             }

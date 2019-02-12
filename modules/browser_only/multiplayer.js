@@ -51,6 +51,7 @@ function process_instruction_backend(game_state,instruction,player,signals){
     if(instruction.type === "END_TURN" || instruction.type === "GAME_STARTED"){
         signals.selectedData.setState(signals.selectedData.getState())
     }
+    signals.game_state_changed.fire(game_state)
 }
 function send_instruction(instr){
     console.log("sent instr:")

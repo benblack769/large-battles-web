@@ -13,7 +13,6 @@ function set_player_colors(players_order,signals){
     }
     signals.playerColors.setState(pcolors)
 }
-
 class GameInterface {
     constructor(parent,basediv,gamesize,init_player_state,signals){
         this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize,signals)

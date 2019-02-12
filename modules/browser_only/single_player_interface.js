@@ -10,7 +10,7 @@ var canv_inter = require("./game_display/canvas_interface.js")
 var script_inter = require("./game_display/script_interface.js")
 //var game_page = require("./game_page.js")
 var nav_signal = require("./nav_signal.js")
-var Analysis = require("./analysis.js").Analysis
+//var Analysis = require("./analysis.js").Analysis
 var interaction_comps = require("./game_display/interaction_components.js")
 var init_ai = require("./init_ai.js")
 
@@ -49,7 +49,7 @@ function init_signals(game_state,signals,game_record){
             signals.activePlayer.setState(instr.player)
         }
     })
-    var analysis = new Analysis(signals,game_record,game_state)
+    //var analysis = new Analysis(signals,game_record,game_state)
 }
 
 function init_html_ui(basediv,gamesize,player_order,signals){
@@ -105,6 +105,7 @@ function process_instruction_backend(game_state,instruction,player,signals){
         signals.selectedData.setState(signals.selectedData.getState())
     }
     signals.prev_game_state.setState(old_state)
+    signals.game_state_changed.fire(game_state)
 }
 function process_instruction(game_state,game_record,instruction,player,signals){
     process_message_frontend(game_state,game_record,instruction,player,process_instruction_backend,signals)

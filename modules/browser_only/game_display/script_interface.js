@@ -1,4 +1,5 @@
 var basecomp = require("./base_component.js")
+var heristics = require("../../logic_modules/heuristics.js")
 var Signal = require("../../logic_modules/signals.js").Signal
 
 var BaseComponent = basecomp.BaseComponent
@@ -217,10 +218,16 @@ class PlayerTableInfo extends BaseComponent {
                                     innerText: "Color",
                                 }),
                                 createEl('th',{
-                                    innerText: "Money",
+                                    innerText: "Player",
                                 }),
                                 createEl('th',{
-                                    innerText: "Player",
+                                    innerText: "Cash",
+                                }),
+                                createEl('th',{
+                                    innerText: "Income",
+                                }),
+                                createEl('th',{
+                                    innerText: "Military",
                                 }),
                             ]
                         })
@@ -260,25 +267,35 @@ class PlayerTableInfo extends BaseComponent {
                     ]
                 }),
                 createEl('td',{
-                    children: [this.makeMoney(player_id)]
-                }),
-                createEl('td',{
                     children: [createSpan({
                         innerText: player_id
                     })]
+                }),
+                createEl('td',{
+                    children: [this.makeHeuristic(player_id,"cash")]
+                }),
+                createEl('td',{
+                    children: [this.makeHeuristic(player_id,"income")]
+                }),
+                createEl('td',{
+                    children: [this.makeHeuristic(player_id,"military_cost")]
                 }),
             ]
         })
         return player_box
     }
-    makeMoney(player_id){
-        var money = createSpan({})
-        this.signals.gameStateChange.listen(instr=>{
+    makeHeuristic(player_id, heuristc_name){
+        var dom_el = createSpan({})
+        this.signals.game_state_changed.listen((game_state)=>{
+            var val = heristics.get_heuristcs(game_state,player_id)[heuristc_name]
+            dom_el.innerText = val
+        })
+        /*this.signals.gameStateChange.listen(instr=>{
             if(instr.type === "SET_MONEY" && instr.player === player_id){
                 money.innerText = instr.amount
             }
-        })
-        return money
+        })*/
+        return dom_el
     }
 }
 class EndTurnButton extends BaseComponent {

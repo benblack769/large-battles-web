@@ -25,6 +25,7 @@ function all_signals(){
     this.ai_start_recomendation = new Signal()
     this.ai_start_major_move_display = new Signal()
     this.prev_game_state = new StateHolder()
+    this.game_state_changed = new Signal()
 }
 
 module.exports = {

@@ -8,7 +8,7 @@ var decompose = require("../logic_modules/decompose_instructions.js")
 var consume = require("../logic_modules/consume_instructions.js")
 var init_game = require("../logic_modules/init_game.js")
 var nav_signal = require("./nav_signal.js")
-var Analysis = require("./analysis.js").Analysis
+//var Analysis = require("./analysis.js").Analysis
 
 var local_game_record = []
 function set_player_colors(players_order,signals){
@@ -60,7 +60,7 @@ function init_signals(game_state,signals){
             signals.activePlayer.setState(instr.player)
         }
     })
-    var cur_anaylsis = new Analysis(signals,local_game_record,game_state)
+    //var cur_anaylsis = new Analysis(signals,local_game_record,game_state)
 }
 function init_html_ui(gamesize,player_order,signals){
     $("#game_not_started_message").hide()

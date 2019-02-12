@@ -1,5 +1,6 @@
 var create_utils = require('./create_utils.js')
 var types = require('./types.js')
+var base_ops = require("./base_ops.js")
 
 function at(map, coord){
     var res = map[coord.y][coord.x]
@@ -63,37 +64,6 @@ function next_player(player_state, active_player){
     var new_id = player_state.player_order[newidx]
     return new_id
 }
-function get_current_income(gamestate,instr,player){
-    var income = 0;
-    gamestate.map.forEach(function(row){
-        row.forEach(function(entry){
-            if(entry.category === "unit" && entry.player === player){
-                var unit_stats = gamestate.stats.unit_types[entry.unit_type]
-                if(unit_stats.income){
-                    income += unit_stats.income
-                }
-            }
-        })
-    })
-    return income
-}
-function all_units_on_board(gamestate){
-    var map = gamestate.map
-    var all_units = []
-    for(var y = 0; y < map.length; y++){
-        for(var x = 0; x < map[y].length; x++){
-            var coord = {x:x,y:y}
-            var entry = at(map, coord)
-            if(entry.category === "unit"){
-                all_units.push({
-                    coord: coord,
-                    unit: entry,
-                })
-            }
-        }
-    }
-    return all_units
-}
 function reset_entry(entry_stack,entry,coord,key,new_value){
     if(entry.status[key] !== undefined && entry.status[key] !== new_value){
         entry_stack.push({
@@ -115,7 +85,7 @@ function reset_status(reset_stack,unit,coord,stats){
 }
 function all_status_resets(gamestate){
     var all_resets = []
-    all_units_on_board(gamestate).forEach(function(centry){
+    base_ops.all_units_on_board(gamestate).forEach(function(centry){
         reset_status(all_resets,centry.unit,centry.coord,gamestate.stats)
     })
     return all_resets
@@ -156,7 +126,7 @@ function decomp_endturn(gamestate,instr,player){
     var money_entry = {
         type: "SET_MONEY",
         player: player,
-        amount: gamestate.players.player_info[player].money + get_current_income(gamestate,instr,player),
+        amount: gamestate.players.player_info[player].money + base_ops.get_current_income(gamestate,player),
     }
     var active_entry = {
         type: "SET_ACTIVE_PLAYER",

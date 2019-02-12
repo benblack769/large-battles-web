@@ -139,6 +139,37 @@ function map_to_state_changes(game_state){
     return state_change_signals
 }
 
+function get_current_income(gamestate,player){
+    var income = 0;
+    gamestate.map.forEach(function(row){
+        row.forEach(function(entry){
+            if(entry.category === "unit" && entry.player === player){
+                var unit_stats = gamestate.stats.unit_types[entry.unit_type]
+                if(unit_stats.income){
+                    income += unit_stats.income
+                }
+            }
+        })
+    })
+    return income
+}
+function all_units_on_board(gamestate){
+    var map = gamestate.map
+    var all_units = []
+    for(var y = 0; y < map.length; y++){
+        for(var x = 0; x < map[y].length; x++){
+            var coord = {x:x,y:y}
+            var entry = at(map, coord)
+            if(entry.category === "unit"){
+                all_units.push({
+                    coord: coord,
+                    unit: entry,
+                })
+            }
+        }
+    }
+    return all_units
+}
 function make_init_instr(state){
     var state_changes = map_to_state_changes(state)
     var money_changes = state.players.player_order.map(function(player){return{
@@ -172,6 +203,8 @@ module.exports = {
     get_make_equip: get_make_equip,
     get_make_unit: get_make_unit,
     is_empty: is_empty,
+    all_units_on_board: all_units_on_board,
+    get_current_income: get_current_income,
     at: at,
     all_coords: all_coords,
     coords_around: coords_around,

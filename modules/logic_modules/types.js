@@ -168,13 +168,15 @@ function calc_stat(stats,unit_info,stat_name){
     return stat_val
 }
 function get_cost(stats,unit){
-    var basecost = calc_stat(stats,unit,"cost")
-    var attach_cost = 0;
+    var tot_cost = calc_stat(stats,unit,"cost")
     unit.attachments.forEach(function(attachname){
-        var attachcost = stats.attachment_types[attachname].cost
-        attach_cost += attachcost
+        tot_cost += stats.attachment_types[attachname].cost
     })
-    return basecost+attach_cost
+    //console.log(tot_cost)
+    return tot_cost
+}
+function is_military(stats,unit){
+    return calc_stat(stats,unit,"attack_range") > 0
 }
 function get_player_cost(stats,map,player){
     var player_cost = 0;
@@ -190,6 +192,8 @@ function get_player_cost(stats,map,player){
 module.exports = {
     default_stats: default_stats,
     calc_stat: calc_stat,
+    get_cost: get_cost,
+    is_military: is_military,
     icons: icons,
     get_player_cost: get_player_cost,
 }
