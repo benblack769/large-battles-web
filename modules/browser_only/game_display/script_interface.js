@@ -15,47 +15,11 @@ function init_script_signals(signals){
 class ScriptInterface extends BaseComponent {
     constructor(parent, basediv,signals){
         super(parent,basediv,signals)
-        this.analysis_button = new AnalysisButton(this,basediv,signals)
-        //this.analysis_overlay = new AnalysisOverlay(this,basediv)
         this.mybuttonpannel = new PannelSelector(this,basediv,signals)
     }
 }
 function pretty_print(obj){
     return JSON.stringify(obj,null,2)
-}
-class AnalysisButton extends BaseComponent {
-    constructor(parent, basediv,signals){
-        super(parent, basediv,signals)
-        init_script_signals(signals)
-        this.interface_div = createDiv({
-            className: "lib_pannel_container",
-        })
-        basediv.appendChild(this.interface_div)
-        this.stop_edit()
-        this.handle_signals()
-    }
-    start_edit(){
-        $(this.interface_div).empty()
-        this.edit_button = createDiv({
-            innerText: "Stop Analysis",
-            className: "lib_edit_button",
-            parent: this.interface_div,
-            onclick: () => {this.signals.stop_analysis_signal.fire()}
-        })
-    }
-    stop_edit(){
-        $(this.interface_div).empty()
-        this.edit_button = createDiv({
-            innerText: "Start analysis",
-            className: "lib_edit_button",
-            parent: this.interface_div,
-            onclick: () => {this.signals.analysis_signal.fire()}
-        })
-    }
-    handle_signals(){
-        this.signals.analysis_signal.listen(() => {this.start_edit()})
-        this.signals.stop_analysis_signal.listen(() => {this.stop_edit()})
-    }
 }
 class PannelButton extends BaseComponent {
     constructor(parent, basediv, pannel_id,signals){
@@ -106,15 +70,6 @@ class PannelSelector extends BaseComponent {
             mypannel.pannel_select_data.fire(mypannel.selected_id)
         })
         this.signals.pannelSelector.fire(0)
-        this.handleAnalysisRemoval()
-    }
-    handleAnalysisRemoval(){
-        this.signals.analysis_signal.listen(()=>{
-            $(this.selector_div).hide()
-        })
-        this.signals.stop_analysis_signal.listen(()=>{
-            $(this.selector_div).show()
-        })
     }
 }
 class ScriptButtonPannel extends BaseComponent {
@@ -362,8 +317,26 @@ class AnalysisNavigation extends BaseComponent {
         }
     }
 }
+class SwichTabsButton extends BaseComponent {
+    constructor(parent, basediv,signals, text, click_fn){
+        super(parent, basediv,signals)
+        init_script_signals(signals)
+        this.interface_div = createDiv({
+            className: "lib_pannel_container",
+            parent: basediv,
+            children: [
+                createDiv({
+                    innerText: text,
+                    className: "lib_edit_button",
+                    parent: this.interface_div,
+                    onclick: click_fn,
+                })
+            ],
+        })
+    }
+}
 class PlayerInfoPannel extends BaseComponent {
-    constructor(parent, basediv, player_ids,signals){
+    constructor(parent, basediv, player_ids,signals, is_analysis){
         super(parent, basediv,signals)
 
         this.main_table_div = createDiv({
@@ -371,32 +344,24 @@ class PlayerInfoPannel extends BaseComponent {
             parent: basediv,
         })
         this.pinfo_table = new PlayerTableInfo(this,this.main_table_div,player_ids,signals)
-        this.end_turn_container = createDiv({
-            parent: this.main_table_div,
-            style: {
-                width: "100%"
-            },
-        })
-        this.end_turn_button = new EndTurnButton(this,this.end_turn_container,signals)
-        this.analysis_nav_container = createDiv({
-            parent: this.main_table_div,
-            style: {
-                width: "100%"
-            },
-        })
-        this.analysis_nav = new AnalysisNavigation(this,this.analysis_nav_container,signals)
-        $(this.analysis_nav_container).hide()
-        this.set_signals()
-    }
-    set_signals(){
-        this.signals.analysis_signal.listen(()=>{
-            $(this.end_turn_container).hide()
-            $(this.analysis_nav_container).show()
-        })
-        this.signals.stop_analysis_signal.listen(()=>{
-            $(this.end_turn_container).show()
-            $(this.analysis_nav_container).hide()
-        })
+        if(!is_analysis){
+            this.end_turn_container = createDiv({
+                parent: this.main_table_div,
+                style: {
+                    width: "100%"
+                },
+            })
+            this.end_turn_button = new EndTurnButton(this,this.end_turn_container,signals)
+        }
+        else {
+            this.analysis_nav_container = createDiv({
+                parent: this.main_table_div,
+                style: {
+                    width: "100%"
+                },
+            })
+            this.analysis_nav = new AnalysisNavigation(this,this.analysis_nav_container,signals)
+        }
     }
 }
 class UnitInfoPannel extends BaseComponent {
@@ -445,5 +410,5 @@ module.exports = {
     PlayerInfoPannel: PlayerInfoPannel,
     AIRecomendations: AIRecomendations,
     UnitInfoPannel: UnitInfoPannel,
-    AnalysisButton: AnalysisButton,
+    SwichTabsButton: SwichTabsButton,
 }

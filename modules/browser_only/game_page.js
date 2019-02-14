@@ -24,7 +24,7 @@ class GameInterface extends base_inter.BaseComponent {
         super(parent,basediv,signals)
         this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize,signals)
         this.script_inter = new script_inter.ScriptInterface(this,(basediv),signals)
-        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals)
+        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals,false)
     }
 }
 

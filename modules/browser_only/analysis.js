@@ -63,7 +63,21 @@ class Analysis {
     }
     draw(game_state,final_instr){
         this.draw_board(game_state)
+        this.display_unitinfo(game_state)
         this.highlight_move(final_instr)
+    }
+    display_unitinfo(game_state){
+        this.signals.mouse_hover.clear()
+        this.signals.mouse_hover.listen((xycoord)=>{
+            var unit_info = clib.deep_copy(clib.at(game_state.map,xycoord))
+            if(unit_info === "E"){
+                unit_info = {
+                    category: "E"
+                }
+            }
+            unit_info.coord = xycoord
+            this.signals.display_unit_info.fire(unit_info)
+        })
     }
     highlight_move(final_instr){
         var major_coord = type_utils.major_coord(final_instr)

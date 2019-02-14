@@ -214,11 +214,11 @@ class GameBoard extends BaseComponent {
     }
     handle_signals(){
         this.signals.analysis_signal.listen(()=>{
-            $(this.click_interface_canvas.basediv).hide()
+            //$(this.click_interface_canvas.basediv).hide()
             //$(this.analysis_canvas.basediv).show()
         })
         this.signals.stop_analysis_signal.listen(()=>{
-            $(this.click_interface_canvas.basediv).show()
+            //$(this.click_interface_canvas.basediv).show()
             //$(this.analysis_canvas.basediv).hide()
         })
     }

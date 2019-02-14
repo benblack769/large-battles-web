@@ -13,6 +13,7 @@ var nav_signal = require("./nav_signal.js")
 //var Analysis = require("./analysis.js").Analysis
 var interaction_comps = require("./game_display/interaction_components.js")
 var init_ai = require("./init_ai.js")
+var analysis_ui = require("./analysis_ui.js")
 
 //var binary = require("../logic_modules/to_binary.js")
 
@@ -81,7 +82,7 @@ class GameInterface {
     constructor(parent,basediv,gamesize,init_player_state,signals){
         this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize,signals)
         this.script_inter = new script_inter.ScriptInterface(this,(basediv),signals)
-        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals)
+        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals,false)
         this.unit_info = new script_inter.UnitInfoPannel(this,basediv,signals)
         this.ai_recomend = new script_inter.AIRecomendations(this,basediv,signals)
     }

@@ -17,7 +17,7 @@ class GameInterface {
     constructor(parent,basediv,gamesize,init_player_state,signals){
         this.gameboard = new canv_inter.GameBoard(this,basediv,gamesize,signals)
         //this.script_inter = new script_inter.ScriptInterface(this,(basediv),signals)
-        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals)
+        this.player_info = new script_inter.PlayerInfoPannel(this,basediv,init_player_state,signals,true)
         this.unit_info = new script_inter.UnitInfoPannel(this,basediv,signals)
         //this.ai_recomend = new script_inter.AIRecomendations(this,basediv,signals)
     }
@@ -27,7 +27,6 @@ function init_html_ui(basediv,gamesize,player_order,signals){
     set_player_colors(player_order,signals)
     return new GameInterface(null, basediv, gamesize, player_order, signals)
 }
-
 class AnalysisUI {
     constructor(record,basediv){
         var signals = new all_signals()
