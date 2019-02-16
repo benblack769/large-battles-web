@@ -125,7 +125,6 @@ function all_moves_from(game_state,major_coord,myplayer){
     }
 }
 module.exports = {
-    concat_dim: concat_dim,
     major_coord: major_coord,
     minor_coord: minor_coord,
     all_moves_from: all_moves_from,
