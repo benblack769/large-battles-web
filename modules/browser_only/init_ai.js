@@ -1,6 +1,6 @@
 var MainAI = require("../logic_modules/ai_interface/main_ai_inter.js").MainAI
 var ai_type_utils = require("../logic_modules/ai_interface/type_utils.js")
-var flatten = require("../logic_modules/ai_interface/ai_utils.js").flatten
+var flatten = require("../logic_modules/array_nd.js").flatten
 
 var ai_is_loaded = false
 var ai_load_callback = function(){}

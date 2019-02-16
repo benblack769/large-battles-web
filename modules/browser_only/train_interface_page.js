@@ -6,7 +6,7 @@ var SinglePlayerGame = require("./single_player_interface.js").SinglePlayerGame
 var MainCoordLearner = require("../logic_modules/ai_interface/major_coord_learner.js").MainCoordLearner
 var StateComparitor = require("../logic_modules/ai_interface/state_comparitor.js").StateComparitor
 var sample_move = require("../logic_modules/ai_interface/sample_move.js")
-var flatten = require("../logic_modules/ai_interface/ai_utils.js").flatten
+var flatten = require("../logic_modules/array_nd.js").flatten
 //var learning = require("../logic_modules/ai_interface/minor_coord_learner.js")
 
 var single_player_players = [
