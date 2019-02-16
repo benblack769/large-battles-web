@@ -2,7 +2,7 @@ var MainCoordLearner = require("./major_coord_learner.js").MainCoordLearner
 var state_compare = require("./state_comparitor.js")
 var sample_move = require("./sample_move.js")
 var binary = require("./to_binary.js")
-var flatten = require("./ai_utils.js").flatten
+var flatten = require("../array_nd.js").flatten
 var StateComparitor = state_compare.StateComparitor
 
 class MainAI{

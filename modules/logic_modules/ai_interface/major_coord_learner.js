@@ -1,6 +1,6 @@
 var clib = require("../coord_lib.js")
 var binary = require("./to_binary.js")
-var ai_utils = require("./ai_utils.js")
+var array_nd = require("../array_nd.js")
 var type_utils = require("./type_utils.js")
 var default_stats =  require("../types.js").default_stats
 var learn_utils = require("./learn_utils.js")
@@ -21,7 +21,7 @@ class MajorCoordLearnStreamer extends learn_utils.LearnStreamer{
             .map((idxs)=>this.getBinState(this.idxBefore(this.idxBefore(idxs))))
         var concatted = type_utils.concat_dim(small_batch_inputs,small_batch_inputs_bef,3)
         var small_batch_outputs = small_batch_indicies
-            .map((idxs)=>ai_utils.make_map_with_single_set(this.game_size,type_utils.major_coord(this.getInstr(idxs))))
+            .map((idxs)=>array_nd.make_map_with_single_set(this.game_size,type_utils.major_coord(this.getInstr(idxs))))
         return {
             inputs: this.rotate_batch(concatted),
             outputs: this.rotate_batch(small_batch_outputs),
@@ -60,7 +60,7 @@ class MainCoordLearner {
             })
     }
     get_all_prob_maps(bin_maps,callback){
-        var input = tf.tensor4d(ai_utils.flatten(bin_maps),[bin_maps.length,bin_maps[0].length,bin_maps[0][0].length,bin_maps[0][0][0].length])
+        var input = tf.tensor4d(array_nd.flatten(bin_maps),[bin_maps.length,bin_maps[0].length,bin_maps[0][0].length,bin_maps[0][0][0].length])
         var outs = this.model.execute({
             //batchSize: 32,
             input: input,
@@ -70,7 +70,7 @@ class MainCoordLearner {
             console.log("dim_spreads")
             console.log(result.length)
             console.log([bin_maps.length,bin_maps[0].length,bin_maps[0][0].length])
-            var dim_spread = ai_utils.spread_to_dim(result,[bin_maps.length,bin_maps[0].length,bin_maps[0][0].length])
+            var dim_spread = array_nd.spread_to_dim(result,[bin_maps.length,bin_maps[0].length,bin_maps[0][0].length])
             callback(dim_spread)
         })
     }
@@ -86,7 +86,7 @@ class MainCoordLearner {
         outarrray.data().then(function(result) {
           console.log("model infered!"); // "Stuff worked!"
           //console.log(result)
-          var spread_res = ai_utils.spread_to_dim(result,[game_state.game_size.ysize,game_state.game_size.xsize])
+          var spread_res = array_nd.spread_to_dim(result,[game_state.game_size.ysize,game_state.game_size.xsize])
           //console.log(spread_res)
           console.log(Math.max.apply(null,result))
           callback(spread_res);

@@ -1,5 +1,4 @@
 var clib = require("../coord_lib.js")
-var ai_utils = require("./ai_utils.js")
 var type_utils = require("./type_utils.js")
 var random = require("../random_helpers.js")
 
@@ -32,7 +31,7 @@ function unique_coords(coords){
         .map(JSON.parse)
 }
 function sample_prob_map(game_state,major_prob_map,num_samples){
-    var flat_prob_map = ai_utils.flatten(major_prob_map)
+    var flat_prob_map = array_nd.flatten(major_prob_map)
     for(var i = 0; i < flat_prob_map.length; i++){
         flat_prob_map[i] *= flat_prob_map[i]
     }
@@ -44,7 +43,7 @@ function sample_prob_map(game_state,major_prob_map,num_samples){
     return unique_majors
 }
 function sample_moves(game_state,major_prob_map,myplayer,num_moves_to_sample){
-    var flat_prob_map = ai_utils.flatten(major_prob_map)
+    var flat_prob_map = array_nd.flatten(major_prob_map)
     var dist = new random.DiscreteDistribution(flat_prob_map)
     var moves = []
     var sample_count = 0;
