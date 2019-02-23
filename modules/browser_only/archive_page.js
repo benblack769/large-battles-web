@@ -59,7 +59,47 @@ function create_table(archive_data){
     })
 }
 
+function make_draggable_div(){
+    var dragging = false;
+    //    console.log("make_draggable_div")
+    $("#archive_width_control").mousedown(function(){
+        //console.log("mousedown")
+        dragging = true;
+    })
+    $(document.body).mouseup(function(){
+        //console.log("mouseup")
+        dragging = false;
+    })
+    $(document.body).mouseleave(function(){
+        //console.log("mouseout")
+        dragging = false;
+    })
+    $(document.body).mousemove(function(event){
+        if(dragging){
+            //console.log("moved")
+            //console.log(event)
+            var xval = event.clientX
+            var body_size = $(document.body).width()
+            var percent = xval / body_size
+            if (percent < 0.1 || percent > 0.9){
+                dragging = false;
+                return;
+            }
+            //console.log(xval)
+            //console.log(body_size)
+            //console.log(percent)
+            document.getElementById('archive_table_div').style.right = (1.0-percent)*100 + "%"
+            document.getElementById('analysis_basediv').style.left = percent*100 + "%"
+
+            var bar_width_off = 20 / body_size/2;
+            var el = document.getElementById('archive_width_control')
+            el.style.left = (percent-bar_width_off)*100 + "%"
+            el.style.right = "auto"
+        }
+    })
+}
 function init_archive(){
+    make_draggable_div()
     refresh_archive()
 }
 function switch_to_archive(){

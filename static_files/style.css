@@ -350,6 +350,20 @@ main page style
     right: 0;
     bottom: 0;
 }
+.training_width_control {
+    position: fixed;
+    top: 45px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 20px;
+    z-index: 500000;
+    cursor: ew-resize;
+}
+.training_width_control:hover {
+    background-color: rgba(0,0,0,0.5);
+}
 .ai_recomendations {
     position: absolute;
     top: 0;
