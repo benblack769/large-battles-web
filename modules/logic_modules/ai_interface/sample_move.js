@@ -1,5 +1,6 @@
 var clib = require("../coord_lib.js")
 var type_utils = require("./type_utils.js")
+var array_nd = require("../array_nd.js")
 var random = require("../random_helpers.js")
 
 function idx_to_coord(idx,game_size){

@@ -30,6 +30,7 @@ function all_build_types(stats,money){
         .map(a=>a[0])
 }
 function all_moves_units_from(game_state,major_coord,instr_list){
+    var unit_info = clib.at(game_state.map,major_coord)
 
     if(unit_info.status.moved || !calc_stat(game_state.stats,unit_info,"move_range")){
         return;

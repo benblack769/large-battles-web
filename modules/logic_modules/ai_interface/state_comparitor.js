@@ -18,12 +18,12 @@ function make_comparison_data(game_state,good_instr,bad_instr,cmapper){
     var good_bin = (copy_process_state(game_state,good_instr,cmapper))
     var bad_bin = (copy_process_state(game_state,bad_instr,cmapper))
     if(good_state_first){
-        var concat = type_utils.concat_dim(good_bin,bad_bin,2)
+        var concat = array_nd.concat_dim(good_bin,bad_bin,2)
         var output = 1
         good_state_first = false
     }
     else{
-        var concat = type_utils.concat_dim(bad_bin,good_bin,2)
+        var concat = array_nd.concat_dim(bad_bin,good_bin,2)
         var output = 0
         good_state_first = true
     }
@@ -51,7 +51,7 @@ class StateCompareLearnStreamer extends learn_utils.LearnStreamer{
             var compare_data = make_comparison_data(orig_state,instr,false_instr_sample,this.getCmapper(idxs))
             var input_centered = array_nd.center_map_at_with_filled_zeros(compare_data.inputs,major_coord)
             //var major_coord_map = array_nd.make_map_with_single_set(this.game_size,major_coord)
-            //var tot_input = type_utils.concat_dim(compare_data.inputs,array_nd.expand_last_dim(major_coord_map),2)
+            //var tot_input = array_nd.concat_dim(compare_data.inputs,array_nd.expand_last_dim(major_coord_map),2)
             //var out_val = out_filter
             small_batch_inputs.push(input_centered)
             small_batch_outputs.push(compare_data.outputs)
@@ -126,7 +126,7 @@ function tournament_eval(instructions,game_state,state_comparitor,cmapper,final_
     for(var i = 0; i < batch_size; i++){
         var base_bin = (copy_process_state(game_state,base_instrs[i],cmapper))
         var compare_bin = (copy_process_state(game_state,compare_instrs[i],cmapper))
-        var concat = type_utils.concat_dim(base_bin,compare_bin,2)
+        var concat = array_nd.concat_dim(base_bin,compare_bin,2)
         compare_pairs[i] = array_nd.center_map_at_with_filled_zeros(concat,major_coord)
     }
     state_comparitor.get_better_prob_batched(compare_pairs,function(result){

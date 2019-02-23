@@ -127,6 +127,20 @@ function deep_equals_arrnd(o1,o2){
         return o1 == o2
     }
 }
+function arraynd_to_str(arr){
+    return JSON.stringify({
+        shape: get_dims(arr),
+        data: Buffer.from(flatten(arr)).toString('base64'),
+    })
+}
+
+function from_arraynd_str(data){
+    var d = JSON.parse(data)
+    var arr = new Float32Array(Buffer.from(d.data, 'base64'))
+    var spread_arr = spread_to_dim(arr,d.shape)
+    return spread_arr
+}
+
 
 module.exports = {
     make_map_with_single_set: make_map_with_single_set,
@@ -137,4 +151,6 @@ module.exports = {
     center_map_at_with_filled_zeros: center_map_at_with_filled_zeros,
     concat_dim: concat_dim,
     deep_equals_arrnd: deep_equals_arrnd,
+    arraynd_to_str: arraynd_to_str,
+    from_arraynd_str: from_arraynd_str,
 }

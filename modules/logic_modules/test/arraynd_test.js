@@ -74,3 +74,15 @@ test('validate_arrnd', function (t) {
     t.true(arraynd.deep_equals_arrnd(arraynd.concat_dim(a1,a2,1), concated))
     t.end()
 })
+
+test('arraynd_string_test', function (t) {
+    var a1 = [
+        [[1,2], [3,4]],
+        [[1,2], [3,4]],
+    ]
+    var arr_str = arraynd.arraynd_to_str(a1)
+    var conv_a1 = arraynd.from_arraynd_str(arr_str)
+    t.true(arraynd.deep_equals_arrnd(conv_a1, a1))
+    t.true((typeof arr_str) === "string")
+    t.end()
+})

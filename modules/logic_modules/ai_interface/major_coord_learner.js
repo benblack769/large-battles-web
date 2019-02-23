@@ -19,7 +19,7 @@ class MajorCoordLearnStreamer extends learn_utils.LearnStreamer{
             .map((idxs)=>this.getBinState(this.idxBefore(idxs)))
         var small_batch_inputs_bef = small_batch_indicies
             .map((idxs)=>this.getBinState(this.idxBefore(this.idxBefore(idxs))))
-        var concatted = type_utils.concat_dim(small_batch_inputs,small_batch_inputs_bef,3)
+        var concatted = array_nd.concat_dim(small_batch_inputs,small_batch_inputs_bef,3)
         var small_batch_outputs = small_batch_indicies
             .map((idxs)=>array_nd.make_map_with_single_set(this.game_size,type_utils.major_coord(this.getInstr(idxs))))
         return {
@@ -77,7 +77,7 @@ class MainCoordLearner {
     get_prob_map(game_state,old_game_state,myplayer,callback) {
         var bin_map = binary.map_to_vec(game_state,myplayer)
         var bin_map2 = binary.map_to_vec(old_game_state,myplayer)
-        var concatted = type_utils.concat_dim(bin_map,bin_map2,2)
+        var concatted = array_nd.concat_dim(bin_map,bin_map2,2)
         var input = tf.tensor4d([concatted])
         var outarrray = (this.model.execute({
             //batchSize: 32,
