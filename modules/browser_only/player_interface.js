@@ -36,23 +36,6 @@ function init_buttons(basediv,signals){
     });
 }
 
-function init_signals(game_state,signals,game_record){
-    var interaction_handler = new interaction_comps.InterfaceHandler(signals);
-    signals.clickOccurred.listen((coord) => {
-        interaction_handler.handle_click(coord,game_state,signals.myPlayer.getState())
-    })
-    signals.selectedData.listen(function(id){
-        console.log(id+" selected")
-        interaction_handler.set_fn(id,game_state,signals.myPlayer.getState())
-    })
-    signals.gameStateChange.listen(function(instr){
-        if(instr.type === "SET_ACTIVE_PLAYER"){
-            signals.activePlayer.setState(instr.player)
-        }
-    })
-    //var analysis = new Analysis(signals,game_record,game_state)
-}
-
 function init_html_ui(basediv,gamesize,player_order,signals){
     basediv.innerHTML = ""
     set_player_colors(player_order,signals)
@@ -111,66 +94,96 @@ function process_instruction_backend(game_state,instruction,player,signals){
 function process_instruction(game_state,game_record,instruction,player,signals){
     process_message_frontend(game_state,game_record,instruction,player,process_instruction_backend,signals)
 }
-function init_signals_single_player(game_state,game_record,signals){
-    init_signals(game_state,signals,game_record)
-    signals.ended_turn.listen(() => {
-        process_instruction(game_state,game_record,{type:"END_TURN"},signals.myPlayer.getState(),signals)
-    //    signals.selectedData.setState(signals.selectedData.getState())
-    })
-    signals.activePlayer.listen(function(newstate){
-        signals.myPlayer.setState(newstate)
-    })
-    signals.gameStateChange.listen(function(change){
-        if (change.type === "VICTORY") {
-            info_display.make_info_display("Player: '" +change.win_player+"' won the game.")
-        }
-    })
-    signals.interfaceInstruction.listen(function(message){
-        process_instruction(game_state,game_record,message,signals.myPlayer.getState(),signals)
-    })
-    signals.mouse_hover.listen(function(xycoord){
-        var unit_info = clib.deep_copy(clib.at(game_state.map,xycoord))
-        if(unit_info === "E"){
-            unit_info = {
-                category: "E"
-            }
-        }
-        unit_info.coord = xycoord
-        signals.display_unit_info.fire(unit_info)
-    })
-    signals.follow_ai_move.listen(function(){
-        var instr = signals.ai_recomended_move.getState()
-        console.log("ai instr")
-        console.log(instr)
-        if(instr){
-            process_instruction(game_state,game_record,instr,signals.myPlayer.getState(),signals)
-            signals.ai_start_recomendation.fire()
-        }
-        else{
-            alert("no instruction to follow")
-        }
-    })
-}
-
-class SinglePlayerGame{
-    constructor(basediv,initial_instr){
+class MainGame {
+    constructor(basediv){
         var signals = new all_signals()
         var game_state = {}
         this.basediv = basediv
         this.signals = signals
         this.game_state = game_state
         this.game_record = []
+    }
+    on_init(initial_instr){
+        this.init_signals_single_player(this.game_state,this.game_record,this.signals)
+        this.ui = init_html_ui(this.basediv,initial_instr.game_size,initial_instr.player_order,this.signals)
+        init_buttons(this.basediv,this.signals)
+        this.single_in(initial_instr,"__server")
 
-        init_signals_single_player(game_state,this.game_record,signals)
-        this.ui = init_html_ui(basediv,initial_instr.game_size,initial_instr.player_order,signals)
-        init_buttons(basediv,signals)
+        this.signals.selectedData.setState(this.signals.selectedData.getState())
+        init_ai.delayed_init_main_ai(this.signals,this.game_state)
+    }
+    single_in(instr,player){
+        process_instruction(this.game_state,this.game_record,instr,player,this.signals)
+    }
+    single_out(instr){
+        console.assert("not implemented")
+    }
+    init_signals_single_player(game_state,game_record,signals){
+        var interaction_handler = new interaction_comps.InterfaceHandler(signals);
+        signals.clickOccurred.listen((coord) => {
+            interaction_handler.handle_click(coord,game_state,signals.myPlayer.getState())
+        })
+        signals.selectedData.listen((id) => {
+            console.log(id+" selected")
+            interaction_handler.set_fn(id,game_state,signals.myPlayer.getState())
+        })
+        signals.gameStateChange.listen((instr) => {
+            if(instr.type === "SET_ACTIVE_PLAYER"){
+                signals.activePlayer.setState(instr.player)
+            }
+        })
+        signals.ended_turn.listen(() => {
+            var instr = {type:"END_TURN"}
+            this.single_out(instr,signals.myPlayer.getState())
+        //    signals.selectedData.setState(signals.selectedData.getState())
+        })
+        signals.activePlayer.listen((newstate) => {
+            signals.myPlayer.setState(newstate)
+        })
+        signals.gameStateChange.listen((change) => {
+            if (change.type === "VICTORY") {
+                info_display.make_info_display("Player: '" +change.win_player+"' won the game.")
+            }
+        })
+        signals.interfaceInstruction.listen((message)=>{
+            this.single_out(message,signals.myPlayer.getState())
+        })
+        signals.mouse_hover.listen((xycoord) => {
+            var unit_info = clib.deep_copy(clib.at(game_state.map,xycoord))
+            if(unit_info === "E"){
+                unit_info = {
+                    category: "E"
+                }
+            }
+            unit_info.coord = xycoord
+            signals.display_unit_info.fire(unit_info)
+        })
+        signals.follow_ai_move.listen(() => {
+            var instr = signals.ai_recomended_move.getState()
+            console.log("ai instr")
+            console.log(instr)
+            if(instr){
+                this.single_out(instr,signals.myPlayer.getState())
+                signals.ai_start_recomendation.fire()
+            }
+            else{
+                alert("no instruction to follow")
+            }
+        })
+    }
+}
 
-        process_instruction(game_state,this.game_record,initial_instr,"__server",signals)
-        signals.selectedData.setState(signals.selectedData.getState())
-        init_ai.delayed_init_main_ai(signals,game_state)
+class SinglePlayerGame extends MainGame {
+    constructor(basediv,initial_instr){
+        super(basediv)
+        this.on_init(initial_instr)
+    }
+    single_out(instr,player){
+        this.single_in(instr,player)
     }
 }
 
 module.exports = {
+    MainGame: MainGame,
     SinglePlayerGame: SinglePlayerGame,
 }

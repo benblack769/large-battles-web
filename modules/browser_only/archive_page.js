@@ -61,33 +61,26 @@ function create_table(archive_data){
 
 function make_draggable_div(){
     var dragging = false;
-    //    console.log("make_draggable_div")
     $("#archive_width_control").mousedown(function(){
-        //console.log("mousedown")
         dragging = true;
     })
     $(document.body).mouseup(function(){
-        //console.log("mouseup")
         dragging = false;
     })
     $(document.body).mouseleave(function(){
-        //console.log("mouseout")
         dragging = false;
     })
     $(document.body).mousemove(function(event){
         if(dragging){
-            //console.log("moved")
-            //console.log(event)
             var xval = event.clientX
             var body_size = $(document.body).width()
             var percent = xval / body_size
-            if (percent < 0.1 || percent > 0.9){
-                dragging = false;
-                return;
+            if (percent < 0.1){
+                percent = 0.1
             }
-            //console.log(xval)
-            //console.log(body_size)
-            //console.log(percent)
+            if (percent > 0.9){
+                percent = 0.9
+            }
             document.getElementById('archive_table_div').style.right = (1.0-percent)*100 + "%"
             document.getElementById('analysis_basediv').style.left = percent*100 + "%"
 
@@ -107,24 +100,6 @@ function switch_to_archive(){
     $("#archive_page").show()
     refresh_archive()
 }
-/*function display_rankings(data){
-    $('#archive-table').dynatable({
-      dataset: {
-        records: JSON.parse(data)
-      }
-    })
-}
-function process_game_id(id){
-    return '<a href="/game_records/'+id+'.json">link</a>'
-}
-function process_ids(download_data){
-    return download_data.map(function(d){
-        return {
-            result:d.result,
-            game: process_game_id
-        }
-    })
-}*/
 function refresh_archive(){
     if(login_info.is_logged_in()) {
         //add_button(row,request_button())

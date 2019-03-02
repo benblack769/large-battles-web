@@ -1,7 +1,7 @@
 var types = require("../logic_modules/types.js")
 var init_game = require("../logic_modules/init_game.js")
 var nav_signal = require("./nav_signal.js")
-var SinglePlayerGame = require("./single_player_interface.js").SinglePlayerGame
+var SinglePlayerGame = require("./player_interface.js").SinglePlayerGame
 
 var single_player_players = [
     "Player A",

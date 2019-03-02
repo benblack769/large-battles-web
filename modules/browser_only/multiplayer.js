@@ -8,8 +8,8 @@ var init_game = require("../logic_modules/init_game.js")
 var signup_login = require("./signup_login.js")
 var game_page = require("./game_page.js")
 var nav_signal = require("./nav_signal.js")
+var MainGame = require("./player_interface.js").MainGame
 
-var server_socket = null
 
 function init_game_interface(game_state,started_instr,signals){
     init_signals(game_state,signals)
@@ -23,7 +23,7 @@ function validate_websocket_instruction(game_state,instr,player){
     var error = validate.validate_instruction(game_state,instr,player)
     if(error){
         console.log("ERROR "+error.name+": \n"+error.message)
-        if(error.name !== "Error"){
+        if(error.name !== "Error") {
             console.log(error)
         }
         return false
@@ -86,7 +86,67 @@ function on_server_message(data,game_state,signals){
         case "GAME_DISCONNECTED": break;
     }
 }
+
+
+class MultiPlayerGame extends MainGame {
+    constructor(basediv,server_url){
+        super(basediv)
+        this.server_socket = new WebSocket(server_url)
+
+
+        this.server_socket.onclose = (e) => {
+            console.log('Disconnected from game server!');
+            alert('Disconnected from game server!');
+        };
+        this.server_socket.onopen = ()=>{
+            var creds = signup_login.get_credentials()
+            this.server_socket.send(JSON.stringify({
+                type: "CREDENTIALS",
+                password: creds.password,
+                username: creds.username,
+            }))
+            console.log("socket opened argvar")
+            this.server_socket.onmessage = (message)=>{
+                var data = JSON.parse(message.data)
+                console.log(data)
+                this.on_server_message(data)
+            }
+        }
+    }
+    on_init(init_instr){
+        super.on_init(init_instr)
+        $("#game_not_started_message").hide()
+        nav_signal.change_page.fire("game_naventry")
+    }
+    //single_in(instr,player){
+    //    process_instruction(this.game_state,this.game_record,instr,player,this.signals)
+    //}
+    single_out(instr,player){
+        if(instr.type !== "DRAW_RECTS"){
+            this.server_socket.send(JSON.stringify(instr))
+        }
+        //this.single_in(instr,player)
+    }
+    on_server_message(data){
+        switch(data.type){
+            case "ERROR_MSG": console.log("server error:");console.log(data); break;
+            case "VALIDATED_INSTR":
+                if(data.instr.type === "GAME_STARTED"){
+                    this.on_init(data.instr)
+                }
+                else{
+                    this.single_in(data.instr,data.player);
+                }
+                break;
+            case "GAME_DISCONNECTED": break;
+        }
+    }
+}
+
 function setup_multiplayer_connection(server_url){
+    //var basediv = document.getElementById("single_page_game_overlay")
+    //var game = new MultiPlayerGame(basediv,server_url)
+    //return
     server_socket = new WebSocket(server_url)
     var creds = signup_login.get_credentials()
     var game_state = {

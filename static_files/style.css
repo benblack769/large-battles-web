@@ -360,6 +360,10 @@ main page style
     width: 20px;
     z-index: 500000;
     cursor: ew-resize;
+
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
 }
 .training_width_control:hover {
     background-color: rgba(0,0,0,0.5);
