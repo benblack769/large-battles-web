@@ -74,6 +74,16 @@ function reset_entry(entry_stack,entry,coord,key,new_value){
         })
     }
 }
+function decrement_activation_time(entry_stack,entry){
+    if(entry.status.turns_til_active > 0){
+        entry_stack.push({
+            type: "SET_STATUS",
+            status_key: "turns_til_active",
+            new_status: entry.status.turns_til_active-1,
+            coord: coord,
+        })
+    }
+}
 function reset_status(reset_stack,unit,coord,stats){
     reset_entry(reset_stack,unit,coord,"moved",false)
     reset_entry(reset_stack,unit,coord,"attacked",false)
@@ -82,6 +92,7 @@ function reset_status(reset_stack,unit,coord,stats){
         reset_entry(reset_stack,unit,coord,"buys_left",buys_per_turn)
     }
     reset_entry(reset_stack,unit,coord,"HP",types.calc_stat(stats,unit,"max_HP"))
+    //decrement_activation_time(reset_stack,unit)
 }
 function all_status_resets(gamestate){
     var all_resets = []
@@ -96,10 +107,15 @@ function winning_player(gamestate){
     var WIN_RATIO = 10
     var players_money = gamestate.players.player_order.map(function(player){
         var player_assets = types.get_player_cost(gamestate.stats,gamestate.map,player)
-        var player_money = gamestate.players.player_info[player].money + player_assets
+        var player_cash = gamestate.players.player_info[player].money
+        var player_money = player_cash + player_assets
 
         //if player has no assets, then they are also lost, no matter how much cash
         if(player_assets === 0){
+            player_money = 0
+        }
+        // is a player is deeply in debt, they also lose the game
+        if(player_cash < -500){
             player_money = 0
         }
         return {player:player,money:player_money}

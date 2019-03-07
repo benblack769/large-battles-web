@@ -6,6 +6,7 @@ var default_stats = {
             "attack_strength": 1,
             "cost": 20,
             "max_HP": 2,
+            "upkeep": 5,
             "viable_attachments": ["armor","pike","sword","horse"],
         },
         "catapult": {
@@ -14,6 +15,7 @@ var default_stats = {
             "attack_strength": 4,
             "cost": 100,
             "max_HP": 2,
+            "upkeep": 20,
             "viable_attachments": ["horse"],
         },
         "town_center": {
@@ -48,7 +50,7 @@ var default_stats = {
             "buys_per_turn": 1,
             "cost": 100,
             "buildable": true,
-            "can_make": ["catpult"],
+            "can_make": ["catapult"],
         },
         "armory": {
             "attack_range": 0,
@@ -148,6 +150,7 @@ var icons = {
         "pike_shop": "pike-shop.png",
         "stable": "stable.png",
         "town_center": "well.png",
+        "catapult_factory": "catapult-factory.png"
     },
     "attach_icons": {
         "armor": "armor.png",

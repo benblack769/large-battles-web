@@ -1,3 +1,4 @@
+var types = require("./types.js")
 
 function create_unit(unit_type,player_id){
     return {
@@ -9,6 +10,7 @@ function create_unit(unit_type,player_id){
             "attacked": true,
             "HP": 0,
             "buys_left": 0,
+            "turns_til_active": 0,
         },
         "attachments": [],
     }

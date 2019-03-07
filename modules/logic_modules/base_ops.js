@@ -148,6 +148,9 @@ function get_current_income(gamestate,player){
                 if(unit_stats.income){
                     income += unit_stats.income
                 }
+                if(unit_stats.upkeep){
+                    income -= unit_stats.upkeep
+                }
             }
         })
     })
