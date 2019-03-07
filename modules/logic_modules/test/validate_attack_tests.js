@@ -145,3 +145,19 @@ test('validate_attack_single_range', function (t) {
     t.false(validate(game,instr1,"p1"))
     t.end()
 })
+
+test('validate_attack_status', function (t) {
+    var map = make_single_range_map()
+    var game = make_game_state(map)
+    var instr1 = {
+        type: "ATTACK",
+        source_coord: {x:2,y:1},
+        target_coord: {x:2,y:0},
+    }
+    t.false(validate(game,instr1,"p1"))
+    map[1][2].status.turns_til_active = 3
+    t.true(validate(game,instr1,"p1"))
+    map[1][2].status.turns_til_active = 0
+    t.true(validate(game,instr1,"p2"))
+    t.end()
+})

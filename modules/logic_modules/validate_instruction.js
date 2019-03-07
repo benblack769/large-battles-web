@@ -75,14 +75,25 @@ function assert_active_player(gamestate, player){
         throw new Error('You are not the current active player, so you cannot execute instructions')
     }
 }*/
+function assert_unit_active(map,coord){
+    var num_active_turns = at(map,coord).status.turns_til_active
+    if(num_active_turns > 0){
+        throw new Error('Unit needs another '+num_active_turns+' turns before it can be used.')
+    }
+}
+function assert_active_unit(gamestate,coord,player){
+    assert_is_valid_coord(coord,gamestate.map)
+    assert_is_unit(gamestate.map, coord)
+    assert_unit_active(gamestate.map, coord)
+    assert_player_is(gamestate.map, coord, player)
+    assert_active_player(gamestate,player)
+}
 function valid_move(gamestate, instr, player){
     assert_keys_equal(instr,["type","start_coord","end_coord"])
     assert_is_valid_coord(instr.start_coord,gamestate.map)
     assert_is_valid_coord(instr.end_coord,gamestate.map)
     assert_empty(gamestate.map, instr.end_coord)
-    assert_is_unit(gamestate.map, instr.start_coord)
-    assert_player_is(gamestate.map, instr.start_coord, player)
-    assert_active_player(gamestate,player)
+    assert_active_unit(gamestate, instr.start_coord, player)
     assert_actual_move(instr.start_coord,instr.end_coord)
     var unit = at(gamestate.map, instr.start_coord)
     assert_hasnt_moved(unit)
@@ -103,11 +114,9 @@ function valid_attack(gamestate,instr,player){
     assert_keys_equal(instr,["type","source_coord","target_coord"])
     assert_is_valid_coord(instr.source_coord,gamestate.map)
     assert_is_valid_coord(instr.target_coord,gamestate.map)
-    assert_is_unit(gamestate.map, instr.source_coord)
+    assert_active_unit(gamestate, instr.source_coord, player)
     assert_is_unit(gamestate.map, instr.target_coord)
-    assert_player_is(gamestate.map, instr.source_coord, player)
     assert_player_is_not(gamestate.map, instr.target_coord, player)
-    assert_active_player(gamestate,player)
     assert_actual_attack(instr.source_coord,instr.target_coord)
     var unit = at(gamestate.map, instr.source_coord)
     assert_hasnt_attacked(unit)
@@ -179,11 +188,9 @@ function valid_buy_unit(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_coord","placement_coord","buy_type"])
     assert_is_valid_coord(instr.building_coord,gamestate.map)
     assert_is_valid_coord(instr.placement_coord,gamestate.map)
-    assert_active_player(gamestate,player)
     assert_valid_unit_type(gamestate,instr.buy_type)
     assert_empty(gamestate.map, instr.placement_coord)
-    assert_is_unit(gamestate.map, instr.building_coord)
-    assert_player_is(gamestate.map, instr.building_coord, player)
+    assert_active_unit(gamestate, instr.building_coord, player)
     assert_money_enough(instr.buy_type, player, gamestate)
     assert_building_can_build(gamestate,instr,player)
     var BUY_RANGE = 1
@@ -220,14 +227,9 @@ function assert_valid_attachment_type(gamestate,equip_name){
 }
 function valid_buy_attachment(gamestate, instr, player){
     assert_keys_equal(instr,["type","building_coord","equip_coord","equip_type"])
-    assert_is_valid_coord(instr.building_coord,gamestate.map)
-    assert_is_valid_coord(instr.equip_coord,gamestate.map)
-    assert_active_player(gamestate,player)
+    assert_active_unit(gamestate, instr.building_coord, player)
+    assert_active_unit(gamestate, instr.equip_coord, player)
     assert_valid_attachment_type(gamestate,instr.equip_type)
-    assert_is_unit(gamestate.map, instr.equip_coord)
-    assert_is_unit(gamestate.map, instr.building_coord)
-    assert_player_is(gamestate.map, instr.equip_coord, player)
-    assert_player_is(gamestate.map, instr.building_coord, player)
     assert_money_enough_equip(instr.equip_type, player, gamestate)
     assert_building_can_equip(gamestate,instr,player)
     assert_target_can_be_equipped(gamestate,instr)

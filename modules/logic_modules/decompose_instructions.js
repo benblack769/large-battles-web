@@ -56,7 +56,12 @@ function decomp_build(gamestate,instr,player){
         type: "SET_MONEY",
         player: player,
         amount: gamestate.players.player_info[player].money - gamestate.stats.unit_types[instr.building_type].cost,
-    }]
+    },{
+        type: "SET_STATUS",
+        status_key: "turns_til_active",
+        new_status: gamestate.stats.unit_types[instr.building_type].activation_delay,
+        coord: instr.coord,
+    },]
 }
 function next_player(player_state, active_player){
     var idx = player_state.player_order.indexOf(active_player)
@@ -64,7 +69,7 @@ function next_player(player_state, active_player){
     var new_id = player_state.player_order[newidx]
     return new_id
 }
-function reset_entry(entry_stack,entry,coord,key,new_value){
+function set_entry(entry_stack,entry,coord,key,new_value){
     if(entry.status[key] !== undefined && entry.status[key] !== new_value){
         entry_stack.push({
             type: "SET_STATUS",
@@ -74,30 +79,25 @@ function reset_entry(entry_stack,entry,coord,key,new_value){
         })
     }
 }
-function decrement_activation_time(entry_stack,entry){
-    if(entry.status.turns_til_active > 0){
-        entry_stack.push({
-            type: "SET_STATUS",
-            status_key: "turns_til_active",
-            new_status: entry.status.turns_til_active-1,
-            coord: coord,
-        })
-    }
-}
-function reset_status(reset_stack,unit,coord,stats){
-    reset_entry(reset_stack,unit,coord,"moved",false)
-    reset_entry(reset_stack,unit,coord,"attacked",false)
+function reset_status(reset_stack,unit,coord,stats,active_player){
+    set_entry(reset_stack,unit,coord,"moved",false)
+    set_entry(reset_stack,unit,coord,"attacked",false)
     var buys_per_turn = stats.unit_types[unit.unit_type].buys_per_turn
     if(buys_per_turn){
-        reset_entry(reset_stack,unit,coord,"buys_left",buys_per_turn)
+        set_entry(reset_stack,unit,coord,"buys_left",buys_per_turn)
     }
-    reset_entry(reset_stack,unit,coord,"HP",types.calc_stat(stats,unit,"max_HP"))
-    //decrement_activation_time(reset_stack,unit)
+    set_entry(reset_stack,unit,coord,"HP",types.calc_stat(stats,unit,"max_HP"))
 }
 function all_status_resets(gamestate){
     var all_resets = []
+    var active_player = gamestate.players.active_player
     base_ops.all_units_on_board(gamestate).forEach(function(centry){
-        reset_status(all_resets,centry.unit,centry.coord,gamestate.stats)
+        if(centry.unit.player === active_player){
+            reset_status(all_resets,centry.unit,centry.coord,gamestate.stats)
+            if(centry.unit.status.turns_til_active > 0){
+                set_entry(all_resets,centry.unit,centry.coord,"turns_til_active",centry.unit.status.turns_til_active-1)
+            }
+        }
     })
     return all_resets
 }
@@ -165,6 +165,11 @@ function decomp_buy_unit(gamestate,instr,player){
         status_key: "buys_left",
         new_status: at(gamestate.map,instr.building_coord).status.buys_left - 1,
         coord: instr.building_coord,
+    },{
+        type: "SET_STATUS",
+        status_key: "turns_til_active",
+        new_status: gamestate.stats.unit_types[instr.buy_type].activation_delay,
+        coord: instr.placement_coord,
     },]
 }
 function decomp_buy_attachment(gamestate,instr,player){
@@ -181,7 +186,17 @@ function decomp_buy_attachment(gamestate,instr,player){
            type: "ADD_EQUIPMENT",
            equip_type: instr.equip_type,
            coord: instr.equip_coord,
-       },]
+       }, {
+           type: "SET_STATUS",
+           status_key: "moved",
+           new_status: true,
+           coord: instr.equip_coord,
+       }, {
+           type: "SET_STATUS",
+           status_key: "attacked",
+           new_status: true,
+           coord: instr.equip_coord,
+       }]
 }
 function decomp_init_game(gamestate,instr,player){
     var money_setups = instr.player_order.map(function(player){return{
@@ -194,6 +209,7 @@ function decomp_init_game(gamestate,instr,player){
     instr.initial_creations.forEach(function(centry){
         if(centry.type === "CREATE"){
             reset_status(all_resets,centry.data,centry.coord,instr.stats)
+            set_entry(all_resets,centry.data,centry.coord,"turns_til_active",0)
         }
     })
     return [{
