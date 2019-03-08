@@ -1,6 +1,7 @@
 var display_board = require("../display_board.js")
 var basecomp = require("./base_component.js")
 var icons = require("../../logic_modules/types.js").icons
+var base_ops = require("../../logic_modules/base_ops.js")
 
 var BaseComponent = basecomp.BaseComponent
 var createEL = basecomp.createEL
@@ -36,32 +37,44 @@ class ForegroundCanvas extends BaseComponent {
         this.canvas = create_canvas_of_size(gamesize)
         this.context = this.canvas.getContext('2d')
         basediv.appendChild(this.canvas)
-        this.signals.gameStateChange.listen(this.onGameStateChange.bind(this))
+        this.cur_map = null
+        this.signals.game_state_changed.listen((game_state) => {
+            this.redraw(game_state)
+        })
     }
-    onGameStateChange(statechange){
-        switch(statechange.type){
-            case "DESTROY_UNIT": this.removeChange(statechange.coord); break;
-            case "CREATE": this.createChange(statechange.data,statechange.coord); break;
-            case "MOVE": this.moveChange(statechange.start_coord,statechange.end_coord); break;
-            case "ADD_EQUIPMENT": this.onAddEquipment(statechange.equip_type,statechange.coord); break;
-            case "CLEAR": this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); break;
-            //default: console.log("bad state change"); break;
-        }
+    redraw(game_state){
+         //this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+         base_ops.all_coords(game_state).forEach((coord) => {
+             if(!this.cur_map || !base_ops.deep_equals(base_ops.at(this.cur_map,coord),base_ops.at(game_state.map,coord))){
+                 this.onCoordChange(base_ops.at(game_state.map,coord), coord, game_state)
+             }
+         })
+         this.cur_map = base_ops.deep_copy(game_state.map)
     }
-    removeChange(coord){
+    onCoordChange(unit_data, coord, gane_state){
+        //display_board.clear_rect(this.context,coord)
+        this.drawUnit(unit_data, coord, gane_state.stats)
+    }
+    drawUnit(data, coord, stats){
         display_board.clear_rect(this.context,coord)
+        if(data.category != "unit") {
+            return
+        }
+        console.log("drawn")
+        display_board.draw_image(this.context,icons.unit_icons[data.unit_type],coord)
+        var player_color = this.signals.playerColors.getState()[data.player]
+        display_board.draw_player_marker(this.context,coord,player_color)
+        this.createChange(data, coord)
+        if(data.status.turns_til_active > 0){
+            var max_turns_til_active = stats.unit_types[data.unit_type].activation_delay
+            var percent_done = data.status.turns_til_active / max_turns_til_active
+            display_board.draw_timer(this.context, coord, percent_done, "rgba(0,0,0,0.4)", "rgba(0,0,0,0.1)")
+        }
     }
     createChange(data, coord){
         display_board.draw_image(this.context,icons.unit_icons[data.unit_type],coord)
         var player_color = this.signals.playerColors.getState()[data.player]
         display_board.draw_player_marker(this.context,coord,player_color)
-    }
-    onAddEquipment(equip_type, coord){
-        display_board.draw_image(this.context,icons.attach_icons[equip_type],coord)
-    }
-    moveChange(start_coord, end_coord){
-        display_board.copy_rect(this.context, start_coord, end_coord)
-        display_board.clear_rect(this.context,start_coord)
     }
 }
 class Color {

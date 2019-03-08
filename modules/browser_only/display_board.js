@@ -23,6 +23,23 @@ function get_game_coords_from_pixels(xpix,ypix){
 function p2(v){
     return v+0.5
 }
+function draw_timer_arc(ctx,coord,startrad,endrad,color){
+    var radius = sqr_size*0.35
+    var cx = (coord.x+0.5)*sqr_size
+    var cy = (coord.y+0.5)*sqr_size
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,radius,startrad,endrad,true);
+    //ctx.stroke();
+    ctx.fill();
+}
+function draw_timer(ctx,coord,percent_done,primary_color,secondary_color){
+    var start_rad = 1.5*Math.PI
+    var tot_rad = 2*Math.PI
+    draw_timer_arc(ctx, coord, start_rad, start_rad-percent_done*tot_rad, primary_color)
+    draw_timer_arc(ctx, coord, start_rad-percent_done*tot_rad, start_rad-tot_rad, secondary_color)
+}
 function draw_player_marker(ctx,coord,color){
     draw_mini_circle(ctx,coord,color,0.8,0.8)
 }
@@ -107,5 +124,6 @@ module.exports = {
     fill_rect: fill_rect,
     draw_line: draw_line,
     draw_mini_circle: draw_mini_circle,
+    draw_timer: draw_timer,
     draw_player_marker: draw_player_marker,
 }
