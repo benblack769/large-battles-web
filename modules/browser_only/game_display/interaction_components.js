@@ -84,31 +84,12 @@ class BuildHandler {
     constructor(buy_type,game_state,signals){
         this.signals = signals
         this.buy_type = buy_type
-        this.calc_buildable_units(game_state)
         this.draw_all(game_state)
-    }
-    calc_buildable_units(game_state){
-        var coord_map = new Map()
-        var hashable = JSON.stringify
-        lib.all_coords(game_state)
-            .filter((coord)=>lib.is_build_radius_unit(game_state,coord))
-            .forEach(function(buildable_coord){
-                var range = lib.get_build_radius(game_state,buildable_coord)
-                lib.get_possible_moves(game_state.map,buildable_coord,range)
-                    .forEach(function(target_coord){
-                        coord_map.set(hashable(target_coord),buildable_coord)
-                    })
-            })
-        this.coord_map = coord_map
-    }
-    get_builder(coord){
-        return this.coord_map.get(JSON.stringify(coord))
     }
     handleClick(click,game_state){
         var instr = {
             type: "BUILD",
             building_type: this.buy_type,
-            builder_coord: this.get_builder(click),
             coord: click,
         }
         postMessage(this.signals,instr)
@@ -124,10 +105,8 @@ class BuildHandler {
         var instr = {
             type: "BUILD",
             building_type: this.buy_type,
-            builder_coord: this.get_builder(coord),
             coord: coord,
         }
-        //console.log(lib.get_instr_err(game_state,instr,game_state.my_player))
         return lib.is_valid_instr(game_state,instr,game_state.my_player)
     }
 }

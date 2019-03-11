@@ -80,14 +80,6 @@ function place_initial_units(gamesize,player_ids){
                 y: cen.y,
             }),
         })
-        all_messages.push({
-            type: "CREATE",
-            data: create_utils.create_unit("town_center",player_ids[i]),
-            coord: trans({
-                x: cen.x-1,
-                y: cen.y+1,
-            }),
-        })
         farm_coords(cen).forEach(function(farm_coord){
             var farm = create_utils.create_unit("farm",player_ids[i])
             all_messages.push({

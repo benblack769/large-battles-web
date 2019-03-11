@@ -143,25 +143,13 @@ function assert_buildable(build_type, game_stats){
 function sum_values(obj){
     return  Object.values(obj).reduce((a,b)=>(a+b))
 }
-function assert_in_buildable_range(game_state,target_coord,builder_coord,player){
-    var builder = at(game_state.map,builder_coord)
-    var range = calc_stat(game_state.stats,builder,"buildable_radius")
-    if(!range){
-        throw new Error('Unit designated as builder is not an actual builder!')
-    }
-    assert_in_range(game_state.map, builder_coord, target_coord, range)
-}
 function valid_build(gamestate, instr, player){
-    assert_keys_equal(instr,["type","building_type","coord","builder_coord"])
+    assert_keys_equal(instr,["type","building_type","coord"])
     assert_is_valid_coord(instr.coord,gamestate.map)
-    assert_is_valid_coord(instr.builder_coord,gamestate.map)
-    assert_is_unit(gamestate.map, instr.builder_coord)
     assert_valid_unit_type(gamestate,instr.building_type)
     assert_active_player(gamestate,player)
-    assert_player_is(gamestate.map, instr.builder_coord, player)
     assert_empty(gamestate.map, instr.coord)
     assert_buildable(instr.building_type,gamestate.stats)
-    assert_in_buildable_range(gamestate,instr.coord,instr.builder_coord,player)
     assert_money_enough(instr.building_type, player, gamestate)
 }
 function valid_end_turn(gamestate, instr, player){

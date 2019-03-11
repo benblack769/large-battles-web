@@ -78,7 +78,6 @@ test('validate_build_over', function (t) {
     var instr1 = {
         type: "BUILD",
         coord: {x:2,y:3},
-        builder_coord: {x:1,y:1},
         building_type: "cheap_building",
     }
     t.true(validate(game,instr1,"p1"),"BUILD_OVER")
@@ -89,24 +88,9 @@ test('validate_build_type', function (t) {
     var instr1 = {
         type: "BUILD",
         coord: {x:1,y:2},
-        builder_coord: {x:1,y:1},
         building_type: "bad_build_type",
     }
     t.true(validate(game,instr1,"p1"),"BAD_BUILD_TYPE")
-    t.end()
-})
-
-test('validate_builder_proximity', function (t) {
-    var game = make_game_state()
-    var instr1 = {
-        type: "BUILD",
-        coord: {x:1,y:2},
-        builder_coord: {x:1,y:1},
-        building_type: "cheap_building",
-    }
-    t.false(validate(game,instr1,"p1"),"GOOD")
-    instr1.coord = {x:1,y:4}
-    t.true(validate(game,instr1,"p1"),"BUILDER_OUT_OF_RANGE")
     t.end()
 })
 
@@ -115,7 +99,6 @@ test('validate_active_player', function (t) {
     var instr1 = {
         type: "BUILD",
         coord: {x:0,y:0},
-        builder_coord: {x:1,y:1},
         building_type: "cheap_building",
     }
     t.false(validate(game,instr1,"p1"),"GOOD")
@@ -132,7 +115,6 @@ test('validate_money_build', function (t) {
     var instr1 = {
         type: "BUILD",
         coord: {x:0,y:0},
-        builder_coord: {x:1,y:1},
         building_type: "cheap_building",
     }
     t.false(validate(game,instr1,"p1"),"GOOD")

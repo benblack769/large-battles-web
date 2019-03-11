@@ -20,14 +20,14 @@ var default_stats = {
             "activation_delay": 5,
             "viable_attachments": ["horse"],
         },
-        "town_center": {
-            "attack_range": 0,
-            "move_range": 0,
-            "max_HP": 4,
-            "cost": 400,
-            "buildable": true,
-            "buildable_radius": 4,
-        },
+        // "villager": {
+        //     "attack_range": 0,
+        //     "move_range": 1,
+        //     "cost": 30,
+        //     "upkeep": 2,
+        //     "activation_delay": 2,
+        //     "builder": true,
+        // },
         "farm": {
             "attack_range": 0,
             "move_range": 0,
