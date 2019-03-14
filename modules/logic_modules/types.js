@@ -161,8 +161,8 @@ var icons = {
     "unit_icons": {
         "soldier": "Soldier.png",
         "catapult": "Catapult.png",
-        "villager": "Soldier.png",
-        "house": "bow-arrow-shop.png",
+        "villager": "villager.png",
+        "house": "house.png",
         "farm": "farm.png",
         "barracks": "barracks.png",
         "armory": "armory.png",
