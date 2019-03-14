@@ -20,14 +20,14 @@ var default_stats = {
             "activation_delay": 5,
             "viable_attachments": ["horse"],
         },
-        // "villager": {
-        //     "attack_range": 0,
-        //     "move_range": 1,
-        //     "cost": 30,
-        //     "upkeep": 2,
-        //     "activation_delay": 2,
-        //     "builder": true,
-        // },
+        "villager": {
+            "attack_range": 0,
+            "move_range": 1,
+            "cost": 10,
+            "upkeep": 2,
+            "activation_delay": 2,
+            "builder": true,
+        },
         "farm": {
             "attack_range": 0,
             "move_range": 0,
@@ -35,6 +35,16 @@ var default_stats = {
             "cost": 50,
             "buildable": true,
             "income": 5,
+        },
+        "house": {
+            "attack_range": 0,
+            "move_range": 0,
+            "max_HP": 2,
+            "buys_per_turn": 1,
+            "activation_delay": 3,
+            "cost": 100,
+            "buildable": true,
+            "can_make": ["villager"],
         },
         "barracks": {
             "attack_range": 0,
@@ -151,6 +161,8 @@ var icons = {
     "unit_icons": {
         "soldier": "Soldier.png",
         "catapult": "Catapult.png",
+        "villager": "Soldier.png",
+        "house": "bow-arrow-shop.png",
         "farm": "farm.png",
         "barracks": "barracks.png",
         "armory": "armory.png",

@@ -60,6 +60,18 @@ function farm_coords(cen_coord){
     }
     return res
 }
+function villager_coords(cen_coord){
+    var res = []
+    for(var x = 2; x < 3; x++){
+        for(var y = 0; y < 3; y++){
+            res.push({
+                x:cen_coord.x+x,
+                y:cen_coord.y+y,
+            })
+        }
+    }
+    return res
+}
 function place_initial_units(gamesize,player_ids){
     var init_coord = get_init_coord(gamesize)
     var refl_coord = reflect_over_axes(gamesize,init_coord)
@@ -80,8 +92,24 @@ function place_initial_units(gamesize,player_ids){
                 y: cen.y,
             }),
         })
+        all_messages.push({
+            type: "CREATE",
+            data: create_utils.create_unit("house",player_ids[i]),
+            coord: trans({
+                x: cen.x-1,
+                y: cen.y-1,
+            }),
+        })
         farm_coords(cen).forEach(function(farm_coord){
             var farm = create_utils.create_unit("farm",player_ids[i])
+            all_messages.push({
+                type: "CREATE",
+                data: farm,
+                coord: trans(farm_coord),
+            })
+        })
+        villager_coords(cen).forEach(function(farm_coord){
+            var farm = create_utils.create_unit("villager",player_ids[i])
             all_messages.push({
                 type: "CREATE",
                 data: farm,

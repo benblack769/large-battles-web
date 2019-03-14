@@ -140,6 +140,13 @@ function assert_buildable(build_type, game_stats){
         throw new Error('Unit type not buildable!')
     }
 }
+function assert_builder(game_state,coord){
+    let unit = at(game_state.map,coord)
+    //console.log(game_state)
+    if(!calc_stat(game_state.stats,unit,"builder")) {
+        throw new Error('Cannot build over a unit that is not a builder!')
+    }
+}
 function sum_values(obj){
     return  Object.values(obj).reduce((a,b)=>(a+b))
 }
@@ -148,7 +155,8 @@ function valid_build(gamestate, instr, player){
     assert_is_valid_coord(instr.coord,gamestate.map)
     assert_valid_unit_type(gamestate,instr.building_type)
     assert_active_player(gamestate,player)
-    assert_empty(gamestate.map, instr.coord)
+    assert_active_unit(gamestate, instr.coord, player)
+    assert_builder(gamestate, instr.coord)
     assert_buildable(instr.building_type,gamestate.stats)
     assert_money_enough(instr.building_type, player, gamestate)
 }

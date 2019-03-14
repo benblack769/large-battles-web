@@ -11,6 +11,9 @@ var validate = function(g,i,p){
 function make_stats(){
     return {
         "unit_types": {
+            "example_builder": {
+                "builder": true
+            },
             "cheap_building": {
                 "cost": 20,
                 "buildable": true,
@@ -50,6 +53,12 @@ function ee(){
 function C1(){
     return create_utils.create_unit("cheap_building", "p1")
 }
+function B1(){
+    return create_utils.create_unit("example_builder", "p1")
+}
+function B2(){
+    return create_utils.create_unit("example_builder", "p2")
+}
 function T1(){
     return create_utils.create_unit("buildable_around_building", "p1")
 }
@@ -58,11 +67,11 @@ function T2(){
 }
 function make_game_map(){
     return [
-        [ee(),ee(),ee(),C1()],
-        [ee(),T1(),ee(),C1()],
-        [ee(),ee(),ee(),C1()],
+        [B1(),ee(),ee(),C1()],
+        [ee(),T1(),B1(),C1()],
+        [B1(),B1(),ee(),C1()],
         [ee(),C1(),C1(),ee()],
-        [ee(),ee(),ee(),ee()],
+        [ee(),ee(),B1(),ee()],
     ]
 }
 function make_game_state(){
@@ -81,6 +90,10 @@ test('validate_build_over', function (t) {
         building_type: "cheap_building",
     }
     t.true(validate(game,instr1,"p1"),"BUILD_OVER")
+    instr1.coord = {x:1,y:0}
+    t.true(validate(game,instr1,"p1"),"BUILD_EMPTY")
+    instr1.coord = {x:0,y:0}
+    t.false(validate(game,instr1,"p1"),"GOOD")
     t.end()
 })
 test('validate_build_type', function (t) {
@@ -102,12 +115,10 @@ test('validate_active_player', function (t) {
         building_type: "cheap_building",
     }
     t.false(validate(game,instr1,"p1"),"GOOD")
-    game.map[1][1] = T2()
-    t.true(validate(game,instr1,"p2"),"NOT_ACTIVE_PLAYER")
     game.players.active_player = "p2"
-    t.false(validate(game,instr1,"p2"),"GOOD")
-    game.map[1][1] = T1()
     t.true(validate(game,instr1,"p1"),"NOT_ACTIVE_PLAYER")
+    game.map[0][0] = B2()
+    t.false(validate(game,instr1,"p2"),"GOOD")
     t.end()
 })
 test('validate_money_build', function (t) {
