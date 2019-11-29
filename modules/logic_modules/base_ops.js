@@ -145,7 +145,7 @@ function get_current_income(gamestate,player){
         row.forEach(function(entry){
             if(entry.category === "unit" && entry.player === player){
                 var unit_stats = gamestate.stats.unit_types[entry.unit_type]
-                if(unit_stats.income){
+                if(unit_stats.income && !entry.status.turns_til_active){
                     income += unit_stats.income
                 }
                 if(unit_stats.upkeep){
