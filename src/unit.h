@@ -3,7 +3,7 @@
 #include <array>
 
 enum class Category {UNIT,EMPTY};
-enum class Player {RED,BLUE};
+enum class Player {RED,BLUE,NEITHER_PLAYER,SERVER_PLAYER};
 enum class UnitType {
     SOLDIER,
     CATAPULT,

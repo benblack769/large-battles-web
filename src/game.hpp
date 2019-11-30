@@ -17,11 +17,14 @@ struct PlayersData{
     const PlayerInfo & get(Player p)const{
         return order[static_cast<int>(p)];
     }
+    PlayerInfo & get(Player p){
+        return order[static_cast<int>(p)];
+    }
 };
 struct Game{
     Map map;
     PlayersData players;
     AllStats stats;
 };
-bool validate(std::string & errmsg,const Game & game,const GameMove & move);
+bool validate(std::string & errmsg,const Game & game,const GameMove & move, Player player);
 void make_move(Game & game,const GameMove & move);

@@ -137,7 +137,7 @@ void valid_end_turn(const Game & game,Player player){
 void assert_building_can_build(const Game & game,const BuyUnitInfo & instr,Player player){
     Unit building = game.map.at(instr.building_coord);
     UnitStat building_stats = game.stats.get(building.unit_type);
-    if(!building_stats.can_make.includes(instr.buy_type){
+    if(!building_stats.can_make.includes(instr.buy_type)){
         throw std::runtime_error("Selected building cannot make unit of selected type");
     }
     if(!building.status.buys_left){
@@ -183,7 +183,9 @@ void valid_buy_attachment(const Game & game,const BuyAttachInfo & instr,Player p
     assert_in_range(game.map, instr.building_coord, instr.equip_coord, BUY_RANGE);
 }
 void validate_game_start(const Game & game,const InitGameInfo & instr,Player player){
-    //TODO: add player check here
+    if(player != Player::SERVER_PLAYER){
+        throw std::runtime_error("Only server player can issue this special instruction: game_start.");
+    }
 }
 void valid_gamemove(const Game & game,const GameMove & instr,Player player){
     switch(instr.move){
@@ -194,6 +196,7 @@ void valid_gamemove(const Game & game,const GameMove & instr,Player player){
         case MoveType::END_TURN:  valid_end_turn(game,player); break;
         case MoveType::BUY_ATTACHMENT:  valid_buy_attachment(game,instr.info.buy_attach,player); break;
         case MoveType::GAME_STARTED:  validate_game_start(game,instr.info.init_game,player); break;
+        default: throw std::runtime_error("bad move type");
     }
 }
 bool validate(std::string & errmsg,const Game & game,const GameMove & move, Player player){

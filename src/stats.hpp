@@ -31,3 +31,4 @@ struct AllStats{
     AttachmentStat get(AttachType type)const{return attachments.at(static_cast<int>(type));}
     UnitStat total_stats(const Unit & unit)const;
 };
+Unit create_new_unit(UnitStat stats);
