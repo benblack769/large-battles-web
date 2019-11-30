@@ -65,7 +65,7 @@ namespace std{
     template<>
     struct hash<Point>{
         size_t operator()(const Point & P)const{
-            return P.X + (int64_t(P.Y) << 32);
+            return hash<int64_t>()(P.X | (int64_t(P.Y) << 32));
         }
     };
 }

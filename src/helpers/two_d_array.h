@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <stdexcept>
-#include <point.hpp>
+#include "helpers/point.hpp"
 
 template<typename Ty>
 class DArraySlice {
@@ -31,6 +31,12 @@ public:
 	}
 	Ty * operator &() {
 		return Ptr;
+	}
+	Ty & at(int x){
+		if(!(x >= 0 && x < Size)){
+			throw std::runtime_error("darrayslice had index out of bounds");
+		}
+		return Ptr[x];
 	}
 	Ty & operator [](int X) {
 		return Ptr[X];
@@ -65,24 +71,12 @@ public:
 	std::vector<Ty> Data;
 	int Height;
 	int Width;
-	DArray2d(int D1, int D2) {
-		resize_w_loss(D1, D2);
+    DArray2d(int D1, int D2) {
+        Height = D1;
+        Width = D2;
+        Data.resize(Height * Width);
 	}
 	DArray2d() { Height = 0; Width = 0; }
-	DArray2d(std::initializer_list<std::initializer_list<Ty>> list) {
-		if (list.size() > 0) {
-			int low_size = (*list.begin()).size();
-			for (std::initializer_list<Ty> sub_l : list) {
-				if (low_size != sub_l.size())
-					throw std::invalid_argument("sub arguments of DArray2d initialization are different!");
-				for (Ty data : sub_l){
-					Data.push_back(data);
-				}
-			}
-			Height = low_size;
-			Width = list.size();
-		}
-	}
 	DArray2d(DArray2d & Other) {
 		*this = Other;
 	}
@@ -100,11 +94,27 @@ public:
 		Width = Other.Width;
 		Data = std::move(Other.Data);
 	}
+	DArraySlice<Ty> at(int x){
+		if(!(x >= 0 && x < Width)){
+			throw std::runtime_error("index out of bounds");
+		}
+		return (*this)[x];
+	}
 	DArraySlice<Ty> operator[](int Y) {
 		return DArraySlice<Ty>(Data.data() + Y*Height, Height);
 	}
-	Ty & operator[](Point P) {
+    Ty & operator[](Point P)  {
 		return Data[P.Y*Height + P.X];
+	}
+    bool in_bounds(Point P)const{
+        return P.X >= 0 && P.X < Width &&
+                P.Y >= 0 && P.Y < Height;
+    }
+    const Ty & at(Point P)const{
+        if(!in_bounds(P)){
+			throw std::runtime_error("point index out of bounds");
+		}
+        return Data[P.Y*Height + P.X];
 	}
 	iterator begin() {
 		return iterator{ Data.data(), Height };

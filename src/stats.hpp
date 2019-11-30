@@ -22,8 +22,7 @@ struct AllStats{
     AllStats();
     std::vector<UnitStat> unit_stats;
     std::vector<AttachmentStat> attachments;
-    UnitStat get(UnitType type){return unit_stats.at(static_cast<int>(type));}
-    AttachmentStat get(AttachType type){return attachments.at(static_cast<int>(type));}
-    UnitStat total_stats(const Unit & unit); 
-    int total_cost(const Unit & unit);
+    UnitStat get(UnitType type)const{return unit_stats.at(static_cast<int>(type));}
+    AttachmentStat get(AttachType type)const{return attachments.at(static_cast<int>(type));}
+    UnitStat total_stats(const Unit & unit)const;
 };

@@ -10,7 +10,11 @@ struct PlayerInfo{
     int money;
 };
 constexpr int NUM_PLAYERS = 2;
-using PlayersData = std::array<PlayerInfo,NUM_PLAYERS>;
+using PlayersOrder = std::array<PlayerInfo,NUM_PLAYERS>;
+struct PlayersData{
+    PlayersOrder order;
+    Player active_player;
+};
 struct Game{
     Map map;
     PlayersData players;
