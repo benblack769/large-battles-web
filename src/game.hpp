@@ -14,6 +14,9 @@ using PlayersOrder = std::array<PlayerInfo,NUM_PLAYERS>;
 struct PlayersData{
     PlayersOrder order;
     Player active_player;
+    const PlayerInfo & get(Player p)const{
+        return order[static_cast<int>(p)];
+    }
 };
 struct Game{
     Map map;

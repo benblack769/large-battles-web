@@ -97,4 +97,113 @@ void valid_attack(const Game & game,const AttackInfo & instr,Player player){
     assert_hasnt_attacked(unit);
     assert_is_possible_attack(game,instr,unit);
 }
-//int get_money()
+int get_money(const Game & game,Player player){
+    return game.players.get(player).money;
+}
+void assert_money_enough(const Game & game,Player player,UnitType build_type){
+    if(game.stats.get(build_type).cost > get_money(game,player)){
+        throw std::runtime_error("Building costs more money than you have!");
+    }
+}
+void assert_money_enough_equip(const Game & game,Player player,AttachType equip_type){
+    if(game.stats.get(equip_type).cost > get_money(game,player)){
+        throw std::runtime_error("Equipment costs more money than you have!");
+    }
+}
+void assert_buildable(const Game & game,UnitType build_type){
+    if(!game.stats.get(build_type).buildable){
+        throw std::runtime_error("Unit type not buildable!");
+    }
+}
+
+void assert_builder(const Game & game,Point coord){
+    Unit unit = game.map.at(coord);
+    if(!game.stats.get(unit.unit_type).builder){
+        throw std::runtime_error("annot build over a unit that is not a builder!");
+    }
+}
+
+void valid_build(const Game & game,const BuildInfo & instr,Player player){
+    //assert_valid_unit_type(game,instr.building_type);
+    assert_active_player(game,player);
+    assert_active_unit(game, instr.coord, player);
+    assert_builder(game, instr.coord);
+    assert_buildable(game,instr.building_type);
+    assert_money_enough(game, player,instr.building_type);
+}
+void valid_end_turn(const Game & game,Player player){
+    assert_active_player(game,player);
+}
+void assert_building_can_build(const Game & game,const BuyUnitInfo & instr,Player player){
+    Unit building = game.map.at(instr.building_coord);
+    UnitStat building_stats = game.stats.get(building.unit_type);
+    if(!building_stats.can_make.includes(instr.buy_type){
+        throw std::runtime_error("Selected building cannot make unit of selected type");
+    }
+    if(!building.status.buys_left){
+        throw std::runtime_error("Building cannot buy any more units this turn. Wait until next turn.");
+    }
+}
+void valid_buy_unit(const Game & game,const BuyUnitInfo & instr,Player player){
+    assert_empty(game.map, instr.placement_coord);
+    assert_active_unit(game, instr.building_coord, player);
+    assert_money_enough(game, player, instr.buy_type);
+    assert_building_can_build(game,instr,player);
+    int BUY_RANGE = 1;
+    assert_in_range(game.map, instr.building_coord, instr.placement_coord, BUY_RANGE);
+}
+void assert_building_can_equip(const Game & game,const BuyAttachInfo & instr){
+    Unit building = game.map.at(instr.building_coord);
+    UnitStat building_stats = game.stats.get(building.unit_type);
+    if(!building_stats.can_make_equip.includes(instr.equip_type)){
+        throw std::runtime_error("Selected building cannot make unit of selected type");
+    }
+    if(!building.status.buys_left){
+        throw std::runtime_error("Building cannot buy any more units this turn. Wait until next turn.");
+    }
+}
+void assert_target_can_be_equipped(const Game & game,const BuyAttachInfo & instr){
+    Unit target = game.map.at(instr.equip_coord);
+    UnitStat target_stats = game.stats.get(target.unit_type);
+    if(!target_stats.viable_attachments.includes(instr.equip_type)){
+        throw std::runtime_error("Target unit cannot equip equipment of selected type");
+    }
+    SlotType slot = game.stats.get(instr.equip_type).slot;
+    if(!game.map.at(instr.equip_coord).attachments.includes(slot)){
+        throw std::runtime_error("Building cannot buy any more units this turn. Wait until next turn.");
+    }
+}
+void valid_buy_attachment(const Game & game,const BuyAttachInfo & instr,Player player){
+    assert_active_unit(game, instr.equip_coord, player);
+    assert_active_unit(game, instr.building_coord, player);
+    assert_money_enough_equip(game, player, instr.equip_type);
+    assert_building_can_equip(game,instr);
+    assert_target_can_be_equipped(game,instr);
+    int BUY_RANGE = 1;
+    assert_in_range(game.map, instr.building_coord, instr.equip_coord, BUY_RANGE);
+}
+void validate_game_start(const Game & game,const InitGameInfo & instr,Player player){
+    //TODO: add player check here
+}
+void valid_gamemove(const Game & game,const GameMove & instr,Player player){
+    switch(instr.move){
+        case MoveType::MOVE: valid_move(game,instr.info.move,player); break;
+        case MoveType::ATTACK:  valid_attack(game,instr.info.attack,player); break;
+        case MoveType::BUILD:  valid_build(game,instr.info.build,player); break;
+        case MoveType::BUY_UNIT:  valid_buy_unit(game,instr.info.buy_unit,player); break;
+        case MoveType::END_TURN:  valid_end_turn(game,player); break;
+        case MoveType::BUY_ATTACHMENT:  valid_buy_attachment(game,instr.info.buy_attach,player); break;
+        case MoveType::GAME_STARTED:  validate_game_start(game,instr.info.init_game,player); break;
+    }
+}
+bool validate(std::string & errmsg,const Game & game,const GameMove & move, Player player){
+    try{
+        valid_gamemove(game,move,player);
+    }
+    catch(std::runtime_error err){
+        errmsg = err.what();
+        return false;
+    }
+    errmsg = "";
+    return true;
+}

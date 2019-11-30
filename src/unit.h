@@ -1,5 +1,6 @@
 #pragma once
 #include <stdexcept>
+#include <array>
 
 enum class Category {UNIT,EMPTY};
 enum class Player {RED,BLUE};
@@ -25,19 +26,33 @@ enum class AttachType{
     HORSE,
     ATTACH_TYPES_MAX// keep this at the end, serves to count number of attachments
 };
+enum class SlotType{
+    TOP_RIGHT,
+    TOP_LEFT,
+    BOTTOM_RIGHT,
+    BOTTOM_LEFT,
+    SLOT_TYPES_MAX // keep this at the end, serves to count number of slots 
+};
+
 constexpr size_t MAX_ATTACHMENTS = static_cast<int>(AttachType::ATTACH_TYPES_MAX);
+constexpr size_t MAX_UNITS = static_cast<int>(UnitType::UNIT_TYPES_MAX);
+constexpr size_t MAX_SLOTS = static_cast<int>(SlotType::SLOT_TYPES_MAX);
 inline AttachType attach_of(int x){
     if(x < 0 || x >= MAX_ATTACHMENTS){
         throw std::runtime_error("bad attachment found");
     }
     return static_cast<AttachType>(x);
 }
-struct AttachmentList{
-    bool attachList[MAX_ATTACHMENTS] = {false};
-    bool in(AttachType att){
-        return attachList[static_cast<int>(att)];
+template<class ElTy,size_t MAX_SIZE>
+struct FixedElementList{
+    std::array<bool,MAX_SIZE> elList;
+    bool includes(ElTy el)const{
+        return elList.at(static_cast<int>(el));
     }
 };
+using AttachmentList = FixedElementList<AttachType,MAX_ATTACHMENTS>;
+using UnitList = FixedElementList<UnitType,MAX_UNITS>;
+using SlotList = FixedElementList<SlotType,MAX_SLOTS>;
 
 struct UnitStatus{
     bool moved=true;
@@ -51,6 +66,7 @@ struct Unit{
     Player player;
     UnitType unit_type;
     UnitStatus status;
+    SlotList attachments;
 };
 inline Unit create_empty(){
     Unit u;

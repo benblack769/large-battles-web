@@ -11,11 +11,16 @@ struct UnitStat{
     int upkeep;
     int activation_delay;
     AttachmentList viable_attachments;
+    //economic stats
+    bool buildable;
+    int buys_per_turn;
+    bool builder;
+    AttachmentList can_make_equip;
+    UnitList can_make;
 };
-enum class AttachmentSlot{TOP_RIGHT,TOP_LEFT,BOTTOM_RIGHT,BOTTOM_LEFT};
 struct AttachmentStat{
     int cost;
-    AttachmentSlot slot;
+    SlotType slot;
     UnitStat stat_alt;
 };
 struct AllStats{
