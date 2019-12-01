@@ -102,13 +102,19 @@ public:
 	}
 	DArraySlice<Ty> operator[](int Y) {
 		return DArraySlice<Ty>(Data.data() + Y*Height, Height);
-	}
+    }
     Ty & operator[](Point P)  {
-		return Data[P.Y*Height + P.X];
-	}
+        return Data[P.Y*Height + P.X];
+    }
+    const Ty & operator[](Point P)const  {
+        return Data[P.Y*Height + P.X];
+    }
     bool in_bounds(Point P)const{
         return P.X >= 0 && P.X < Width &&
                 P.Y >= 0 && P.Y < Height;
+    }
+    Point shape()const{
+        return Point(Height,Width);
     }
     const Ty & at(Point P)const{
         if(!in_bounds(P)){

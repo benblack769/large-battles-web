@@ -15,6 +15,7 @@ struct UnitStat{
     bool buildable;
     int buys_per_turn;
     bool builder;
+    int income;
     AttachmentList can_make_equip;
     UnitList can_make;
 };
@@ -31,4 +32,4 @@ struct AllStats{
     AttachmentStat get(AttachType type)const{return attachments.at(static_cast<int>(type));}
     UnitStat total_stats(const Unit & unit)const;
 };
-Unit create_new_unit(UnitStat stats);
+UnitStatus initial_status(UnitStat stats);

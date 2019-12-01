@@ -2,3 +2,4 @@ build
 SDL
 *.user
 release
+.vscode

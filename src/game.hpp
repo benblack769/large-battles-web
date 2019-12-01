@@ -3,6 +3,7 @@
 #include "unit.h"
 #include "stats.hpp"
 #include "gamemove.hpp"
+#include "decomposed_move.hpp"
 #include <array>
 
 using Map = DArray2d<Unit>;
@@ -26,5 +27,3 @@ struct Game{
     PlayersData players;
     AllStats stats;
 };
-bool validate(std::string & errmsg,const Game & game,const GameMove & move, Player player);
-void make_move(Game & game,const GameMove & move);

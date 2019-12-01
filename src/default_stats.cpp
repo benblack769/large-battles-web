@@ -6,6 +6,6 @@ UnitStat AllStats::total_stats(const Unit & unit)const{
 AllStats::AllStats(){
     //TODO:: fill in all stats
 }
-Unit create_new_unit(UnitStat stats){
-    //TODO: fill in 
+UnitStatus initial_status(UnitStat stats){
+    //TODO: fill in
 }

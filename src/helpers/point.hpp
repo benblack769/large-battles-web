@@ -147,3 +147,9 @@ public:
         return EndIter;
     }
 };
+inline PIterContainter point_range(Point end){
+    return PIterContainter(0,0,end.X,end.Y);
+}
+inline PIterContainter point_range(Point start,Point end){
+    return PIterContainter(start.X,start.Y,end.X,end.Y);
+}

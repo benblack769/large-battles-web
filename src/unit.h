@@ -9,6 +9,7 @@ enum class UnitType {
     CATAPULT,
     FARM,
     HOUSE,
+    VILLAGER,
     BARRACKS,
     CATAPULT_FACTORY,
     ARMORY,
@@ -49,17 +50,20 @@ struct FixedElementList{
     bool includes(ElTy el)const{
         return elList.at(static_cast<int>(el));
     }
+    void add(ElTy el){
+        elList.at(static_cast<int>(el)) = true;
+    }
 };
 using AttachmentList = FixedElementList<AttachType,MAX_ATTACHMENTS>;
 using UnitList = FixedElementList<UnitType,MAX_UNITS>;
 using SlotList = FixedElementList<SlotType,MAX_SLOTS>;
 
 struct UnitStatus{
-    bool moved=true;
-    bool attacked=true;
+    int turns_til_active=0;
     int HP=0;
     int buys_left=0;
-    int turns_til_active=0;
+    bool moved=true;
+    bool attacked=true;
 };
 struct Unit{
     Category category;
@@ -68,6 +72,13 @@ struct Unit{
     UnitStatus status;
     SlotList attachments;
 };
+inline Unit create_unit(UnitType unit_ty,Player player){
+    Unit u;
+    u.category = Category::UNIT;
+    u.player = player;
+    u.unit_type = unit_ty;
+    return u;
+}
 inline Unit create_empty(){
     Unit u;
     u.category = Category::EMPTY;

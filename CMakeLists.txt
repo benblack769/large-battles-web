@@ -9,9 +9,11 @@ include_directories(${CPP_SOURCE_DIR}/helpers)
 
 add_library(game_lib
     ${CPP_SOURCE_DIR}/validate.cpp
-    ${CPP_SOURCE_DIR}/make_move.cpp
+    ${CPP_SOURCE_DIR}/decompose_move.cpp
+    ${CPP_SOURCE_DIR}/consume_move.cpp
     ${CPP_SOURCE_DIR}/default_stats.cpp
     ${CPP_SOURCE_DIR}/pathing.cpp
+    ${CPP_SOURCE_DIR}/game_utils.cpp
 )
 #add_executable(gui
 #    ${CPP_SOURCE_DIR}/gui.cpp
