@@ -230,7 +230,7 @@ Point get_init_coord(Point gamesize){
     int min_player_distance = 16;
     Point try_coord;
     do{
-        try_coord = Point(rand_dim(gamesize.X),rand_dim(gamesize.Y));
+        try_coord = Point{rand_dim(gamesize.X),rand_dim(gamesize.Y)};
     }
     while(distance(try_coord,reflect_over_axes(gamesize,try_coord)) < min_player_distance);
     return try_coord;
@@ -250,19 +250,19 @@ void decomp_init_game(MoveAccum & accum,const Game & game,const InitGameInfo & i
         add(accum,SetMoneyDecomp{.new_amnt=instr.initial_money});
         add_init_unit(accum,game,
                       UnitType::BARRACKS,
-                      trans(p,cen+Point(-1,0)));
+                      trans(p,cen+Point{-1,0}));
         add_init_unit(accum,game,
                       UnitType::SOLDIER,
-                      trans(p,cen+Point(0,-1)));
+                      trans(p,cen+Point{0,-1}));
         add_init_unit(accum,game,
                       UnitType::HOUSE,
-                      trans(p,cen+Point(-1,-1)));
-        for(Point offset : point_range(Point(0,0),Point(2,3))){
+                      trans(p,cen+Point{-1,-1}));
+        for(Point offset : point_range(Point{0,0},Point{2,3})){
             add_init_unit(accum,game,
                           UnitType::FARM,
                           trans(p,cen+offset));
         }
-        for(Point offset : point_range(Point(2,0),Point(3,3))){
+        for(Point offset : point_range(Point{2,0},Point{3,3})){
             add_init_unit(accum,game,
                           UnitType::VILLAGER,
                           trans(p,cen+offset));

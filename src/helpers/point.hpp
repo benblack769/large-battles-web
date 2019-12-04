@@ -8,11 +8,11 @@
 struct Point{
     int32_t X;
     int32_t Y;
-    Point():X(0),Y(0){}
-    Point(int32_t inX,int32_t inY):X(inX),Y(inY){}
+    //Point():X(0),Y(0){}
+    //Point(int32_t inX,int32_t inY):X(inX),Y(inY){}
 };
 inline Point abs(Point P){
-    return Point(abs(P.X), abs(P.Y));
+    return Point{abs(P.X), abs(P.Y)};
 }
 inline bool operator==(Point P1, Point P2){
     return P1.X == P2.X && P1.Y == P2.Y;
@@ -94,7 +94,10 @@ struct PointInfo{
 struct ConstSquare{
     Point Cen;
     int Range;
-    ConstSquare():Cen(0,0),Range(0){}
+    ConstSquare(){
+        Cen = Point{0,0};
+        Range = 0;
+    }
     ConstSquare(Point InCen, int InRange){
         Cen = InCen;
         Range = InRange;
@@ -105,7 +108,7 @@ struct ConstSquare{
 class PointIter{
 public:
     PointIter(int xstart, int ystart, int xend, int yend):
-        P(xstart,ystart),
+        P{xstart,ystart},
         XCap(xend),
         YCap(yend),
         XLow(xstart)

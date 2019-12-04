@@ -4,14 +4,14 @@
 #include "game.hpp"
 
 const std::array<Point,8> coords_around = {
-    Point(1,1),
-    Point(1,-1),
-    Point(-1,1),
-    Point(-1,-1),
-    Point(1,0),
-    Point(-1,0),
-    Point(0,1),
-    Point(0,-1)
+    Point{1,1},
+    Point{1,-1},
+    Point{-1,1},
+    Point{-1,-1},
+    Point{1,0},
+    Point{-1,0},
+    Point{0,1},
+    Point{0,-1}
 };
 
 bool is_possible_move(const Map & map,Point start,Point end,int range){
@@ -48,7 +48,7 @@ bool is_possible_attack(const Map & map,Point start,Point target, int range){
             return false;
         }
         for(int y = min_y+1; y <= max_y-1; y++){
-            if(map[Point(x,y)].category != Category::EMPTY){
+            if(map[Point{x,y}].category != Category::EMPTY){
                 return false;
             }
         }
@@ -62,7 +62,7 @@ bool is_possible_attack(const Map & map,Point start,Point target, int range){
             return false;
         }
         for(int x = min_x+1; x <= max_x-1; x++){
-            if(map[Point(x,y)].category != Category::EMPTY){
+            if(map[Point{x,y}].category != Category::EMPTY){
                 return false;
             }
         }

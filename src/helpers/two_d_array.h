@@ -114,7 +114,7 @@ public:
                 P.Y >= 0 && P.Y < Height;
     }
     Point shape()const{
-        return Point(Height,Width);
+        return Point{Height,Width};
     }
     const Ty & at(Point P)const{
         if(!in_bounds(P)){

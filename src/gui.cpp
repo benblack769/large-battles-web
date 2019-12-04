@@ -77,12 +77,16 @@ public:
 };
 
 int main(){
-    const Point gamesize(35,37);
+    const Point gamesize{35,37};
     const int img_size = 30;
     Renderer renderer(gamesize,img_size);
     Game game;
+    //game.map = Map(gamesize.X,gamesize.Y);
+    DecompMove move{.info = JoinedDecomp{.init_game=InitGameDecomp{.game_size=gamesize}},
+                   .move = DecompType::INIT_GAME_STATE};
+    consume_decomped(game,move);
     while(!should_exit()){
-        renderer.refresh_screen();
+        renderer.refresh_screen(game.map);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 

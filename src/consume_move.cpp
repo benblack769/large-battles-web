@@ -30,6 +30,9 @@ void consume_set_active_player(Game & game,const SetActivePlayerDecomp & instr){
 }
 void consume_init_game(Game & game,const InitGameDecomp & instr){
     game.map = Map(instr.game_size.X,instr.game_size.Y);
+    for(Unit & u : game.map.Data){
+        u = create_empty();
+    }
 }
 void consume_decomped(Game & game,const DecompMove & move){
     switch(move.move){
