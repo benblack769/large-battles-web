@@ -199,8 +199,8 @@ AllStats::AllStats(){
 }
 UnitStatus initial_status(UnitStat stats){
     UnitStatus status;
-    status.attacked = false;
-    status.moved = false;
+    status.attacked = true;
+    status.moved = true;
     status.buys_left = stats.buys_per_turn;
     status.turns_til_active = stats.activation_delay;
     status.HP = stats.max_HP;

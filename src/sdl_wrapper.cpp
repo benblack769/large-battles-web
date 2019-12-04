@@ -58,6 +58,9 @@ SDL_Texture * sdl_load_bitmap(SDL_info * info,std::string imagePath){
     }
     return tex;
 }
+bool should_exit(){
+    return SDL_QuitRequested();
+}
 void sdl_clear_screen(SDL_info * info){
 	SDL_RenderClear(info->ren);
 }

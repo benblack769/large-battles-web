@@ -66,6 +66,30 @@ struct FixedElementList{
 };
 using AttachmentList = FixedElementList<AttachType,MAX_ATTACHMENTS>;
 using UnitList = FixedElementList<UnitType,MAX_UNITS>;
+template<typename EnumTy,typename DataTy,size_t MAX_ENUMS>
+struct EnumArray{
+    std::array<DataTy,MAX_ENUMS> data;
+    EnumArray() = default;
+    EnumArray(DataTy default_value){
+        data.fill(default_value);
+    }
+    const DataTy & at(EnumTy enum_v)const{
+        return data.at(static_cast<int>(enum_v));
+    }
+    DataTy & at(EnumTy enum_v){
+        return data.at(static_cast<int>(enum_v));
+    }
+    const DataTy & operator[](EnumTy enum_v)const{
+        return at(enum_v);
+    }
+    DataTy & operator[](EnumTy enum_v){
+        return at(enum_v);
+    }
+};
+template<class DataTy>
+using AttachArray = EnumArray<AttachType,DataTy,MAX_ATTACHMENTS>;
+template<class DataTy>
+using UnitArray = EnumArray<UnitType,DataTy,MAX_UNITS>;
 struct Slots{
     std::array<AttachType,MAX_SLOTS> data;
     Slots(){

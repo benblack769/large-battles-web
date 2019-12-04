@@ -15,16 +15,16 @@ add_library(game_lib
     ${CPP_SOURCE_DIR}/pathing.cpp
     ${CPP_SOURCE_DIR}/game_utils.cpp
 )
-#add_executable(gui
-#    ${CPP_SOURCE_DIR}/gui.cpp
-#    ${CPP_SOURCE_DIR}/sdl_wrapper.cpp
-#)
+add_executable(gui
+    ${CPP_SOURCE_DIR}/gui.cpp
+    ${CPP_SOURCE_DIR}/sdl_wrapper.cpp
+)
 add_executable(test_main
     ${CPP_SOURCE_DIR}/test_main.cpp
 )
 set_property(TARGET game_lib PROPERTY CXX_STANDARD 14)
-#set_property(TARGET gui PROPERTY CXX_STANDARD 14)
+set_property(TARGET gui PROPERTY CXX_STANDARD 14)
 set_property(TARGET test_main PROPERTY CXX_STANDARD 14)
 
-#target_link_libraries(gui SDL2 game_lib)
+target_link_libraries(gui SDL2 game_lib)
 target_link_libraries(test_main game_lib)

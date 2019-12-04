@@ -9,4 +9,5 @@ SDL_Texture * sdl_load_bitmap(SDL_info * info,std::string path);
 void sdl_draw_bitmap(SDL_info * info,SDL_Texture * tex,int xpos,int ypos);
 void sdl_clear_screen(SDL_info * info);
 void present(SDL_info * info);
+bool should_exit();
 void destroy_sdl(SDL_info * info);
