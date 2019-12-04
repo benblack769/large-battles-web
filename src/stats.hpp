@@ -18,16 +18,16 @@ struct UnitStat{
     int income;
     AttachmentList can_make_equip;
     UnitList can_make;
+    void combine_(const UnitStat & other);
 };
 struct AttachmentStat{
-    int cost;
     SlotType slot;
     UnitStat stat_alt;
 };
 struct AllStats{
     AllStats();
-    std::vector<UnitStat> unit_stats;
-    std::vector<AttachmentStat> attachments;
+    std::array<UnitStat,MAX_UNITS> unit_stats;
+    std::array<AttachmentStat,MAX_ATTACHMENTS> attachments;
     UnitStat get(UnitType type)const{return unit_stats.at(static_cast<int>(type));}
     AttachmentStat get(AttachType type)const{return attachments.at(static_cast<int>(type));}
     UnitStat total_stats(const Unit & unit)const;

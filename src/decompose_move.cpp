@@ -195,7 +195,7 @@ void decomp_buy_attachment(MoveAccum & accum,const Game & game,const BuyAttachIn
         });
     Player player = game.players.active_player;
     add(accum,SetMoneyDecomp{
-            .new_amnt=game.players.get(player).money - stats.cost
+            .new_amnt=game.players.get(player).money - stats.stat_alt.cost
         });
 }
 void add_init_unit(MoveAccum & accum,const Game & game,UnitType type,Point coord){
@@ -257,7 +257,7 @@ void decomp_init_game(MoveAccum & accum,const Game & game,const InitGameInfo & i
         add_init_unit(accum,game,
                       UnitType::HOUSE,
                       trans(p,cen+Point(-1,-1)));
-        for(Point offset : point_range(Point(2,3))){
+        for(Point offset : point_range(Point(0,0),Point(2,3))){
             add_init_unit(accum,game,
                           UnitType::FARM,
                           trans(p,cen+offset));
