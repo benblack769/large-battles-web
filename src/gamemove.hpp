@@ -9,7 +9,8 @@ enum class MoveType{
     BUY_UNIT,
     END_TURN,
     BUY_ATTACHMENT,
-    GAME_STARTED
+    GAME_STARTED,
+    MAX_MOVE_TYPES//keep this at end so it keep track of how many move types there are
 };
 struct MoveInfo{ Point start_coord; Point end_coord; };
 struct AttackInfo{ Point source_coord; Point target_coord; };

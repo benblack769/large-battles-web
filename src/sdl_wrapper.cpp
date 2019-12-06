@@ -72,16 +72,12 @@ void sdl_draw_bitmap(SDL_info * info,SDL_Texture * tex,int xpos,int ypos){
     int a,w,h;
     int e = SDL_QueryTexture(tex,&f,&a,&w,&h);
     SDL_Rect DestR;
-    SDL_Rect SrcR;
-std::cout << w << " " << h << "\n";
-          DestR.x = xpos;
-          DestR.y = ypos;
-          DestR.w = w;
-          DestR.h = h;
-                SrcR.x = xpos;
-                SrcR.y = ypos;
-                SrcR.w = w;
-                SrcR.h = h;
+
+    DestR.x = xpos;
+    DestR.y = ypos;
+    DestR.w = w;
+    DestR.h = h;
+
      int err = SDL_RenderCopy(info->ren, tex, NULL, &DestR);
      if(err < 0){
          std::cout << "SDL draw bitmap Error: " << SDL_GetError() << std::endl;

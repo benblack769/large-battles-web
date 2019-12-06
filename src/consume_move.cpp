@@ -1,7 +1,7 @@
 #include "game_utils.hpp"
 #include "decomposed_move.hpp"
 
-void consume_victory(Game & game,const VictoryDecomp & instr){
+void consume_victory(Game & ,const VictoryDecomp & ){
     //noop because this functionality needs to be handled elsewhere
 }
 
@@ -29,7 +29,7 @@ void consume_set_active_player(Game & game,const SetActivePlayerDecomp & instr){
     game.players.active_player = instr.new_active_player;
 }
 void consume_init_game(Game & game,const InitGameDecomp & instr){
-    game.map = Map(instr.game_size.X,instr.game_size.Y);
+    game.map = Map(instr.game_size);
     for(Unit & u : game.map.Data){
         u = create_empty();
     }

@@ -40,10 +40,10 @@ bool is_possible_move(const Map & map,Point start,Point end,int range){
     return false;
 }
 bool is_possible_attack(const Map & map,Point start,Point target, int range){
-    if(start.X == target.X){
-        int x = start.X;
-        int min_y = std::min(start.Y,target.Y);
-        int max_y = std::max(start.Y,target.Y);
+    if(start.x == target.x){
+        int x = start.x;
+        int min_y = std::min(start.y,target.y);
+        int max_y = std::max(start.y,target.y);
         if(max_y - min_y > range){
             return false;
         }
@@ -54,10 +54,10 @@ bool is_possible_attack(const Map & map,Point start,Point target, int range){
         }
         return true;
     }
-    else if(start.Y == target.Y){
-        int y = start.Y;
-        int min_x = std::min(start.X,target.X);
-        int max_x = std::max(start.X,target.X);
+    else if(start.y == target.y){
+        int y = start.y;
+        int min_x = std::min(start.x,target.x);
+        int max_x = std::max(start.x,target.x);
         if(max_x - min_x > range){
             return false;
         }

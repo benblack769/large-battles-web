@@ -43,8 +43,8 @@ inline auto all_units(){ return enum_range(UnitType::UNIT_TYPES_MAX);}
 constexpr size_t MAX_ATTACHMENTS = static_cast<int>(AttachType::ATTACH_TYPES_MAX);
 constexpr size_t MAX_UNITS = static_cast<int>(UnitType::UNIT_TYPES_MAX);
 constexpr size_t MAX_SLOTS = static_cast<int>(SlotType::SLOT_TYPES_MAX);
-inline AttachType attach_of(int x){
-    if(x < 0 || x >= MAX_ATTACHMENTS){
+inline AttachType attach_of(size_t x){
+    if(x >= MAX_ATTACHMENTS){
         throw std::runtime_error("bad attachment found");
     }
     return static_cast<AttachType>(x);
@@ -108,11 +108,11 @@ struct Slots{
 //using SlotList = FixedElementList<SlotType,MAX_SLOTS>;
 
 struct UnitStatus{
-    int turns_til_active=0;
-    int HP=0;
-    int buys_left=0;
-    bool moved=true;
-    bool attacked=true;
+    int16_t turns_til_active;
+    int16_t HP;
+    int16_t buys_left;
+    bool moved;
+    bool attacked;
 };
 struct Unit{
     Category category;

@@ -3,26 +3,27 @@
 #include <cstdint>
 #include <cmath>
 #include <algorithm>
+#include <ostream>
 #include <unordered_map>
 
 struct Point{
-    int32_t X;
-    int32_t Y;
+    int32_t x;
+    int32_t y;
     //Point():X(0),Y(0){}
     //Point(int32_t inX,int32_t inY):X(inX),Y(inY){}
 };
 inline Point abs(Point P){
-    return Point{abs(P.X), abs(P.Y)};
+    return Point{abs(P.x), abs(P.y)};
 }
 inline bool operator==(Point P1, Point P2){
-    return P1.X == P2.X && P1.Y == P2.Y;
+    return P1.x == P2.x && P1.y == P2.y;
 }
 inline bool operator!=(Point P1, Point P2){
     return !(P1 == P2);
 }
 inline void operator += (Point & P1, Point P2){//refrence first
-    P1.X += P2.X;
-    P1.Y += P2.Y;
+    P1.x += P2.x;
+    P1.y += P2.y;
 }
 inline Point operator + (Point P1, Point P2){//do not make Point a refrence!!!
     //P1 is copied, so the += do not affect the original
@@ -30,13 +31,13 @@ inline Point operator + (Point P1, Point P2){//do not make Point a refrence!!!
     return P1;
 }
 inline Point operator - (Point P){//do not refrence!
-    P.X = -P.X;
-    P.Y = -P.Y;
+    P.x = -P.x;
+    P.y = -P.y;
     return P;
 }
 inline void operator -= (Point & P1, Point P2){//refrence first!
-    P1.X -= P2.X;
-    P1.Y -= P2.Y;
+    P1.x -= P2.x;
+    P1.y -= P2.y;
 }
 inline Point operator - (Point P1, Point P2){//do not refrence!
     P1 -= P2;
@@ -44,13 +45,13 @@ inline Point operator - (Point P1, Point P2){//do not refrence!
 }
 template <typename NumType>
 inline void operator *= (Point & P1, NumType Num){//refrence first
-    P1.X *= Num;
-    P1.Y *= Num;
+    P1.x *= Num;
+    P1.y *= Num;
 }
 template <typename NumType>
 inline void operator /= (Point & P1, NumType Num){//refrence first
-    P1.X /= Num;
-    P1.Y /= Num;
+    P1.x /= Num;
+    P1.y /= Num;
 }
 template <typename NumType>
 inline Point operator * (Point P1, NumType Mult){
@@ -62,11 +63,14 @@ inline Point operator / (Point P1, NumType Mult){
     P1 /= Mult;
     return P1;
 }
+inline std::ostream & operator << (std::ostream & o,Point p){
+    return o << '(' << p.x << ',' << p.y << ')';
+}
 namespace std{
     template<>
     struct hash<Point>{
         size_t operator()(const Point & P)const{
-            return hash<int64_t>()(P.X | (int64_t(P.Y) << 32));
+            return hash<int64_t>()(P.x | (int64_t(P.y) << 32));
         }
     };
 }
@@ -117,16 +121,16 @@ public:
         PointIter(0,0,0,0){}
 
     bool NotEnd(){
-        return P.Y < YCap;
+        return P.y < YCap;
     }
     bool operator != (const PointIter & ){
         return NotEnd();
     }
     void operator++ (){
-        P.X++;
-        if (P.X >= XCap){
-            P.Y++;
-            P.X = XLow;
+        P.x++;
+        if (P.x >= XCap){
+            P.y++;
+            P.x = XLow;
         }
     }
     Point operator * (){
@@ -151,8 +155,8 @@ public:
     }
 };
 inline PIterContainter point_range(Point end){
-    return PIterContainter(0,0,end.X,end.Y);
+    return PIterContainter(0,0,end.x,end.y);
 }
 inline PIterContainter point_range(Point start,Point end){
-    return PIterContainter(start.X,start.Y,end.X,end.Y);
+    return PIterContainter(start.x,start.y,end.x,end.y);
 }

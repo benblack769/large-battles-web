@@ -3,19 +3,19 @@
 #include "unit.h"
 
 struct UnitStat{
-    int attack_range;
-    int move_range;
-    int attack_strength;
-    int cost;
-    int max_HP;
-    int upkeep;
-    int activation_delay;
+    int16_t attack_range;
+    int16_t move_range;
+    int16_t attack_strength;
+    int16_t cost;
+    int16_t max_HP;
+    int16_t upkeep;
+    int16_t activation_delay;
     AttachmentList viable_attachments;
     //economic stats
     bool buildable;
-    int buys_per_turn;
+    int16_t buys_per_turn;
     bool builder;
-    int income;
+    int16_t income;
     AttachmentList can_make_equip;
     UnitList can_make;
     void combine_(const UnitStat & other);

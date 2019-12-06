@@ -45,7 +45,7 @@ public:
     Renderer(Point gamesize,int img_size){
         this->img_size = img_size;
         this->gamesize = gamesize;
-        sdl = sdl_init(img_size*gamesize.X,img_size*gamesize.Y,"hithere");
+        sdl = sdl_init(img_size*gamesize.x,img_size*gamesize.y,"hithere");
         background = sdl_load_bitmap(sdl,"images/"+background_fname());
         for(AttachType att : all_attachs()){
             attach_textures[att] = sdl_load_bitmap(sdl,"images/"+get_fname(att));
@@ -62,12 +62,12 @@ public:
         for(Point p : point_range(gamesize)){
             Unit u = map[p];
             Point dp = p * img_size;
-            sdl_draw_bitmap(sdl,background,dp.X,dp.Y);
+            sdl_draw_bitmap(sdl,background,dp.x,dp.y);
             if(u.category == Category::UNIT){
-                sdl_draw_bitmap(sdl,unit_textures[u.unit_type],dp.X,dp.Y);
+                sdl_draw_bitmap(sdl,unit_textures[u.unit_type],dp.x,dp.y);
                 for(SlotType slot : all_slots()){
                     if(u.attachments.slot_filled(slot)){
-                        sdl_draw_bitmap(sdl,attach_textures[u.attachments.at(slot)],dp.X,dp.Y);
+                        sdl_draw_bitmap(sdl,attach_textures[u.attachments.at(slot)],dp.x,dp.y);
                     }
                 }
             }
@@ -82,9 +82,14 @@ int main(){
     Renderer renderer(gamesize,img_size);
     Game game;
     //game.map = Map(gamesize.X,gamesize.Y);
-    DecompMove move{.info = JoinedDecomp{.init_game=InitGameDecomp{.game_size=gamesize}},
-                   .move = DecompType::INIT_GAME_STATE};
-    consume_decomped(game,move);
+    InitGameInfo init_info{.game_size=gamesize,
+                          .start_player=Player::RED,
+                          .initial_money=50,
+                          .rand_seed=912
+                          };
+    GameMove move{.move=MoveType::GAME_STARTED,
+                    .info=JoinedInfo{.init_game=init_info}};
+    exec_gamemove(game,move);
     while(!should_exit()){
         renderer.refresh_screen(game.map);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));

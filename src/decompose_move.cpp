@@ -84,7 +84,7 @@ Player next_player(const Game & game){
     int next_num = (pnum + 1) % NUM_PLAYERS;
     return static_cast<Player>(next_num);
 }
-void reset_status(MoveAccum & accum,UnitStatus & status,const UnitStat & stat){
+UnitStatus reset_status(UnitStatus status,const UnitStat & stat){
     status.moved = false;
     status.attacked = false;
     status.buys_left = stat.buys_per_turn;
@@ -92,16 +92,17 @@ void reset_status(MoveAccum & accum,UnitStatus & status,const UnitStat & stat){
     if(status.turns_til_active > 0){
         status.turns_til_active -= 1;
     }
+    return status;
 }
 void all_status_resets(MoveAccum & accum,const Game & game,Player active_player){
     for(Point unit_coord : point_range(game.map.shape())){
         Unit unit = game.map.at(unit_coord);
         if(unit.player == active_player){
-            reset_status(accum,unit.status,game.stats.get(unit.unit_type));
+            UnitStatus new_status = reset_status(unit.status,game.stats.get(unit.unit_type));
 
             add(accum,SetStatusDecomp{
                     .coord=unit_coord,
-                    .new_status=unit.status
+                    .new_status=new_status
                 });
         }
     }
@@ -109,7 +110,7 @@ void all_status_resets(MoveAccum & accum,const Game & game,Player active_player)
 int get_effective_player_money(const Game & game,Player player){
     int player_assets = get_player_assets(game,player);
     int player_cash = game.players.get(player).money;
-    int player_money = player_assets + player_money;
+    int player_money = player_assets + player_cash;
 
     //if player has no assets, then they are also lost, no matter how much cash
     if(player_assets == 0){
@@ -222,15 +223,15 @@ int reflect_dim(int size,int dval){
 }
 Point reflect_over_axes(Point gamesize,Point coord){
     return Point{
-        .X=reflect_dim(gamesize.X,coord.X),
-        .Y=reflect_dim(gamesize.Y,coord.Y)
+        .x=reflect_dim(gamesize.x,coord.x),
+        .y=reflect_dim(gamesize.y,coord.y)
     };
 }
 Point get_init_coord(Point gamesize){
     int min_player_distance = 16;
     Point try_coord;
     do{
-        try_coord = Point{rand_dim(gamesize.X),rand_dim(gamesize.Y)};
+        try_coord = Point{rand_dim(gamesize.x),rand_dim(gamesize.y)};
     }
     while(distance(try_coord,reflect_over_axes(gamesize,try_coord)) < min_player_distance);
     return try_coord;

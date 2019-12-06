@@ -23,8 +23,9 @@ public:
 		Size = Other.Size;
 	}
 	DArraySlice & operator = (DArraySlice & Other) {
-		if (Size == Other.Size)
+        if (Size == Other.Size){
 			copy_n(this->begin(), Size, Other);
+        }
 		else {
 			throw std::invalid_argument("DArraySlice of different sizes assigned");
 		}
@@ -57,26 +58,29 @@ public:
 	class iterator {
 	public:
 		Ty * pos;
-		int height;
+        int width;
 		DArraySlice<Ty> operator *() {
-			return DArraySlice<Ty>(pos, height);
+            return DArraySlice<Ty>(pos, width);
 		}
 		bool operator !=(iterator & Other) {
 			return this->pos < Other.pos;
 		}
 		void operator ++() {
-			pos += height;
+            pos += width;
 		}
 	};
 	std::vector<Ty> Data;
-	int Height;
-	int Width;
-    DArray2d(int D1, int D2) {
-        Height = D1;
-        Width = D2;
-        Data.resize(Height * Width);
+    int height;
+    int width;
+    DArray2d(int Width, int Height) {
+        height = Height;
+        width = Width;
+        Data.resize(height * width);
 	}
-	DArray2d() { Height = 0; Width = 0; }
+    DArray2d(Point p):
+        DArray2d(p.y,p.x){}
+
+    DArray2d() { height = 0; width = 0; }
 	DArray2d(DArray2d & Other) {
 		*this = Other;
 	}
@@ -84,54 +88,48 @@ public:
 		*this = Other;
 	}
 	DArray2d & operator = (DArray2d & Other) {
-		Height = Other.Height;
-		Width = Other.Width;
+        height = Other.height;
+        width = Other.width;
 		Data = Other.Data;
 		return *this;
 	}
 	void operator = (DArray2d && Other) {
-		Height = Other.Height;
-		Width = Other.Width;
+        height = Other.height;
+        width = Other.width;
 		Data = std::move(Other.Data);
 	}
 	DArraySlice<Ty> at(int x){
-		if(!(x >= 0 && x < Width)){
+        if(!(x >= 0 && x < width)){
 			throw std::runtime_error("index out of bounds");
 		}
 		return (*this)[x];
 	}
-	DArraySlice<Ty> operator[](int Y) {
-		return DArraySlice<Ty>(Data.data() + Y*Height, Height);
+    DArraySlice<Ty> operator[](int y) {
+        return DArraySlice<Ty>(Data.data() + y*width, width);
     }
     Ty & operator[](Point P)  {
-        return Data[P.Y*Height + P.X];
+        return Data[P.y*width + P.x];
     }
     const Ty & operator[](Point P)const  {
-        return Data[P.Y*Height + P.X];
+        return Data[P.y*width + P.x];
     }
     bool in_bounds(Point P)const{
-        return P.X >= 0 && P.X < Width &&
-                P.Y >= 0 && P.Y < Height;
+        return P.x >= 0 && P.x < width &&
+                P.y >= 0 && P.y < height;
     }
     Point shape()const{
-        return Point{Height,Width};
+        return Point{width,height};
     }
     const Ty & at(Point P)const{
         if(!in_bounds(P)){
 			throw std::runtime_error("point index out of bounds");
 		}
-        return Data[P.Y*Height + P.X];
+        return Data[P.y*width + P.x];
 	}
 	iterator begin() {
-		return iterator{ Data.data(), Height };
+        return iterator{ Data.data(), width };
 	}
 	iterator end() {
-		return iterator{ Data.data() + Data.size(), Height };
-	}
-	int dim1() {
-		return Width;
-	}
-	int dim2() {
-		return Height;
-	}
+        return iterator{ Data.data() + Data.size(), width };
+    }
 };

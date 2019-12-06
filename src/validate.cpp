@@ -1,6 +1,5 @@
 #include "game_utils.hpp"
 #include "pathing.hpp"
-#include <stdexcept>
 
 struct validate_error{
     const char * info;
@@ -150,7 +149,7 @@ void valid_build(const Game & game,const BuildInfo & instr,Player player){
 void valid_end_turn(const Game & game,Player player){
     assert_active_player(game,player);
 }
-void assert_building_can_build(const Game & game,const BuyUnitInfo & instr,Player player){
+void assert_building_can_build(const Game & game,const BuyUnitInfo & instr){
     Unit building = game.map[instr.building_coord];
     UnitStat building_stats = game.stats.get(building.unit_type);
     if(!building_stats.can_make.includes(instr.buy_type)){
@@ -164,7 +163,7 @@ void valid_buy_unit(const Game & game,const BuyUnitInfo & instr,Player player){
     assert_empty(game.map, instr.placement_coord);
     assert_active_unit(game, instr.building_coord, player);
     assert_money_enough(game, player, instr.buy_type);
-    assert_building_can_build(game,instr,player);
+    assert_building_can_build(game,instr);
     int BUY_RANGE = 1;
     assert_in_range(game.map, instr.building_coord, instr.placement_coord, BUY_RANGE);
 }
@@ -198,7 +197,7 @@ void valid_buy_attachment(const Game & game,const BuyAttachInfo & instr,Player p
     int BUY_RANGE = 1;
     assert_in_range(game.map, instr.building_coord, instr.equip_coord, BUY_RANGE);
 }
-void validate_game_start(const Game & game,const InitGameInfo & instr,Player player){
+void validate_game_start(const Game & ,const InitGameInfo & ,Player player){
     if(player != Player::SERVER_PLAYER){
         throw validate_error("Only server player can issue this special instruction: game_start.");
     }
@@ -215,7 +214,7 @@ void valid_gamemove(const Game & game,const GameMove & instr,Player player){
         default: throw validate_error("bad move type");
     }
 }
-bool validate(std::string & errmsg,const Game & game,const GameMove & move, Player player){
+bool validate(const char *& errmsg,const Game & game,const GameMove & move, Player player){
     try{
         valid_gamemove(game,move,player);
     }
@@ -225,4 +224,8 @@ bool validate(std::string & errmsg,const Game & game,const GameMove & move, Play
     }
     errmsg = "";
     return true;
+}
+bool is_valid(const Game & game,const GameMove & move, Player player){
+    const char * a;
+    return validate(a,game,move,player);
 }
