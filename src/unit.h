@@ -1,6 +1,6 @@
 #pragma once
-#include <stdexcept>
 #include <array>
+#include <cassert>
 #include "RangeIterator.h"
 
 enum class Category {UNIT,EMPTY};
@@ -34,7 +34,7 @@ enum class SlotType{
     TOP_LEFT,
     BOTTOM_RIGHT,
     BOTTOM_LEFT,
-    SLOT_TYPES_MAX // keep this at the end, serves to count number of slots 
+    SLOT_TYPES_MAX // keep this at the end, serves to count number of slots
 };
 inline auto all_slots(){ return enum_range(SlotType::SLOT_TYPES_MAX);}
 inline auto all_attachs(){ return enum_range(AttachType::ATTACH_TYPES_MAX);}
@@ -44,14 +44,15 @@ constexpr size_t MAX_ATTACHMENTS = static_cast<int>(AttachType::ATTACH_TYPES_MAX
 constexpr size_t MAX_UNITS = static_cast<int>(UnitType::UNIT_TYPES_MAX);
 constexpr size_t MAX_SLOTS = static_cast<int>(SlotType::SLOT_TYPES_MAX);
 inline AttachType attach_of(size_t x){
-    if(x >= MAX_ATTACHMENTS){
-        throw std::runtime_error("bad attachment found");
-    }
+    assert(x >= MAX_ATTACHMENTS && "bad attachment found");
     return static_cast<AttachType>(x);
 }
 template<class ElTy,size_t MAX_SIZE>
 struct FixedElementList{
     std::array<bool,MAX_SIZE> elList;
+    FixedElementList(){
+        elList.fill(false);
+    }
     bool includes(ElTy el)const{
         return elList.at(static_cast<int>(el));
     }
@@ -69,7 +70,9 @@ using UnitList = FixedElementList<UnitType,MAX_UNITS>;
 template<typename EnumTy,typename DataTy,size_t MAX_ENUMS>
 struct EnumArray{
     std::array<DataTy,MAX_ENUMS> data;
-    EnumArray() = default;
+    EnumArray(){
+        data.fill(DataTy{});
+    };
     EnumArray(DataTy default_value){
         data.fill(default_value);
     }

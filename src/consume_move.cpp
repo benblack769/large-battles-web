@@ -1,5 +1,7 @@
 #include "game_utils.hpp"
 #include "decomposed_move.hpp"
+#include <cassert>
+#include <iostream>
 
 void consume_victory(Game & ,const VictoryDecomp & ){
     //noop because this functionality needs to be handled elsewhere
@@ -45,6 +47,6 @@ void consume_decomped(Game & game,const DecompMove & move){
     case DecompType::SET_MONEY: consume_money_change(game,move.info.money); break;
     case DecompType::SET_ACTIVE_PLAYER: consume_set_active_player(game,move.info.active_player); break;
     case DecompType::INIT_GAME_STATE: consume_init_game(game,move.info.init_game); break;
-    default: throw std::runtime_error("bad decomp move type");
+    default: assert(false && "bad decomp move type");
     }
 }

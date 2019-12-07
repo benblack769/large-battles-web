@@ -2,4 +2,4 @@
 #include "game_utils.hpp"
 
 using MoveList = std::vector<GameMove>;
-MoveList find_moves(const Game & game,Player player);
+MoveList random_moves(const Game & game);

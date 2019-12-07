@@ -3,7 +3,7 @@
 int get_player_assets(const Game & game,Player player){
     int sum = 0;
     for(const Unit & unit : game.map.Data){
-        if(unit.player == player){
+        if(is_player(unit,player)){
             sum += game.stats.total_stats(unit).cost;
         }
     }
@@ -12,7 +12,7 @@ int get_player_assets(const Game & game,Player player){
 int get_current_income(const Game & game,Player player){
     int sum = 0;
     for(const Unit & unit : game.map.Data){
-        if(unit.player == player){
+        if(is_player(unit,player)){
             sum += game.stats.total_stats(unit).income;
         }
     }
@@ -31,7 +31,7 @@ std::array<int,NUM_HEURISTICS> get_heuristcs(const Game & game,Player player){
     int military_assets = 0;
     int other_assets = 0;
     for(Unit unit : game.map.Data){
-        if(unit.player == player){
+        if(is_player(unit,player)){
             UnitStat ustat = game.stats.total_stats(unit);
             int cur_cost = ustat.cost;
             bool is_military = ustat.attack_range > 1;

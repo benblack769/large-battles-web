@@ -1,5 +1,6 @@
 #include "game_utils.hpp"
 #include "pathing.hpp"
+#include <iostream>
 
 struct validate_error{
     const char * info;
@@ -22,22 +23,22 @@ void assert_empty(const Map & map, Point coord){
     }
 }
 void assert_player_is(const Map & map, Point coord, Player player){
-    if(map[coord].player != player){
+    if(!is_player(map[coord],player)){
         throw validate_error("Targeted player other than self");
     }
 }
 void assert_player_is_not(const Map & map, Point coord, Player player){
-    if(map[coord].player == player){
+    if(is_player(map[coord],player)){
         throw validate_error("Cannot attack yourself");
     }
 }
 void assert_actual_move(Point start,Point end){
-    if(start != end){
+    if(start == end){
         throw validate_error("zero position moves invalid");
     }
 }
 void assert_actual_attack(Point start,Point end){
-    if(start != end){
+    if(start == end){
         throw validate_error("units cannot attack themselves");
     }
 }
@@ -89,6 +90,7 @@ void valid_move(const Game & game,const MoveInfo & instr,Player player){
     assert_active_unit(game,instr.start_coord,player);
     assert_actual_move(instr.start_coord,instr.end_coord);
     Unit unit = game.map[instr.start_coord];
+    assert(player == unit.player);
     assert_hasnt_moved(unit);
     assert_movement_range(game,instr,unit);
 }

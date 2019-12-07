@@ -1,8 +1,13 @@
 #pragma once
+#include "unit.h"
 #include "game.hpp"
 
 int get_player_assets(const Game & game,Player player);
 int get_current_income(const Game & game,Player player);
+inline bool is_player(const Unit & unit,Player player){
+    return unit.category == Category::UNIT &&
+            unit.player == player;
+}
 
 using MoveAccum = std::vector<DecompMove>;
 bool validate(const char *& errmsg,const Game & game,const GameMove & move, Player player);

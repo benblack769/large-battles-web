@@ -1,8 +1,10 @@
 #include "sdl_wrapper.h"
 #include <thread>
 #include <iostream>
+#include <cassert>
 #include "unit.h"
 #include "game_utils.hpp"
+#include "movefinding.hpp"
 
 std::string background_fname(){
     return "Background.bmp";
@@ -21,7 +23,7 @@ std::string get_fname(UnitType unit){
     case UnitType::PIKE_SHOP:return "pike-shop.bmp";
     case UnitType::STABLE:return "stable.bmp";
     case UnitType::CATAPULT_FACTORY:return "catapult-factory.bmp";
-    default: throw std::runtime_error("bad unit type to get_fname");
+    default: assert(false && "bad unit type to get_fname");
     }
 }
 std::string get_fname(AttachType attch){
@@ -31,7 +33,7 @@ std::string get_fname(AttachType attch){
     case AttachType::SWORD: return "sword.bmp";
     case AttachType::PIKE: return "pike.bmp";
     case AttachType::HORSE: return "horse.bmp";
-    default: throw std::runtime_error("bad attach type to get_fname");
+    default: assert(false && "bad attach type to get_fname");
     }
 }
 class Renderer{
@@ -60,13 +62,14 @@ public:
     void refresh_screen(const Map & map){
         sdl_clear_screen(sdl);
         for(Point p : point_range(gamesize)){
-            Unit u = map[p];
+            Unit u = map.at(p);
             Point dp = p * img_size;
             sdl_draw_bitmap(sdl,background,dp.x,dp.y);
             if(u.category == Category::UNIT){
                 sdl_draw_bitmap(sdl,unit_textures[u.unit_type],dp.x,dp.y);
                 for(SlotType slot : all_slots()){
                     if(u.attachments.slot_filled(slot)){
+                        std::cout << static_cast<int>(u.attachments.at(slot)) << std::endl;
                         sdl_draw_bitmap(sdl,attach_textures[u.attachments.at(slot)],dp.x,dp.y);
                     }
                 }
@@ -77,22 +80,31 @@ public:
 };
 
 int main(){
-    const Point gamesize{35,37};
+    const Point gamesize{35,35};
     const int img_size = 30;
     Renderer renderer(gamesize,img_size);
     Game game;
     //game.map = Map(gamesize.X,gamesize.Y);
     InitGameInfo init_info{.game_size=gamesize,
                           .start_player=Player::RED,
-                          .initial_money=50,
-                          .rand_seed=912
+                          .initial_money=50
                           };
     GameMove move{.move=MoveType::GAME_STARTED,
                     .info=JoinedInfo{.init_game=init_info}};
     exec_gamemove(game,move);
+    std::cout << "initted succesfuuly" << std::endl;
+    std::cout << game.map.shape() << std::endl;
     while(!should_exit()){
+        MoveList moves = random_moves(game,game.players.active_player);
+        for(GameMove move : moves){
+            assert(is_valid(game,move,game.players.active_player));
+            exec_gamemove(game,move);
+        }
+        GameMove end_turn_move{
+            .move=MoveType::END_TURN,.info=JoinedInfo{}
+        };
+        exec_gamemove(game,end_turn_move);
         renderer.refresh_screen(game.map);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-
 }

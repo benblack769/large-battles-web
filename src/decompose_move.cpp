@@ -4,6 +4,7 @@
 #include "pathing.hpp"
 #include <random>
 #include <functional>
+#include <cassert>
 
 void add(MoveAccum & accum,VictoryDecomp instr){
     accum.push_back(DecompMove{.move=DecompType::VICTORY,.info=JoinedDecomp{.victory=instr}});
@@ -97,7 +98,7 @@ UnitStatus reset_status(UnitStatus status,const UnitStat & stat){
 void all_status_resets(MoveAccum & accum,const Game & game,Player active_player){
     for(Point unit_coord : point_range(game.map.shape())){
         Unit unit = game.map.at(unit_coord);
-        if(unit.player == active_player){
+        if(is_player(unit,active_player)){
             UnitStatus new_status = reset_status(unit.status,game.stats.get(unit.unit_type));
 
             add(accum,SetStatusDecomp{
@@ -140,6 +141,7 @@ void decomp_end_turn(MoveAccum & accum,const Game & game){
         Player player = game.players.active_player;
         int prev_money = game.players.get(player).money;
         int new_money = get_current_income(game,player);
+        all_status_resets(accum,game,player);
         add(accum,SetMoneyDecomp{
                 .new_amnt=prev_money + new_money
             });
@@ -280,6 +282,6 @@ void decomp_gamemove(MoveAccum & accum,const Game & game,const GameMove & instr)
         case MoveType::END_TURN:  decomp_end_turn(accum,game); break;
         case MoveType::BUY_ATTACHMENT:  decomp_buy_attachment(accum,game,instr.info.buy_attach); break;
         case MoveType::GAME_STARTED:  decomp_init_game(accum,game,instr.info.init_game); break;
-        default: throw std::runtime_error("bad move type");
+        default: assert(false && "bad move type");
     }
 }

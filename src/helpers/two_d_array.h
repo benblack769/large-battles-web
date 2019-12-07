@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <stdexcept>
+#include <cassert>
 #include "helpers/point.hpp"
 
 template<typename Ty>
@@ -23,20 +24,14 @@ public:
 		Size = Other.Size;
 	}
 	DArraySlice & operator = (DArraySlice & Other) {
-        if (Size == Other.Size){
-			copy_n(this->begin(), Size, Other);
-        }
-		else {
-			throw std::invalid_argument("DArraySlice of different sizes assigned");
-		}
+		assert(Size == Other.Size && "DArraySlice of different sizes assigned");
+		copy_n(this->begin(), Size, Other);
 	}
 	Ty * operator &() {
 		return Ptr;
 	}
 	Ty & at(int x){
-		if(!(x >= 0 && x < Size)){
-			throw std::runtime_error("darrayslice had index out of bounds");
-		}
+		assert(x >= 0 && x < Size && "darrayslice had index out of bounds");
 		return Ptr[x];
 	}
 	Ty & operator [](int X) {
@@ -78,30 +73,31 @@ public:
         Data.resize(height * width);
 	}
     DArray2d(Point p):
-        DArray2d(p.y,p.x){}
+        DArray2d(p.x,p.y){}
 
     DArray2d() { height = 0; width = 0; }
-	DArray2d(DArray2d & Other) {
+    DArray2d(const DArray2d & Other) {
 		*this = Other;
 	}
 	DArray2d(DArray2d && Other) {
 		*this = Other;
 	}
-	DArray2d & operator = (DArray2d & Other) {
+    DArray2d & operator = (const DArray2d & Other) {
         height = Other.height;
         width = Other.width;
 		Data = Other.Data;
 		return *this;
 	}
+    void fill(const Ty & val){
+        std::fill(Data.begin(),Data.end(),val);
+    }
 	void operator = (DArray2d && Other) {
         height = Other.height;
         width = Other.width;
 		Data = std::move(Other.Data);
 	}
 	DArraySlice<Ty> at(int x){
-        if(!(x >= 0 && x < width)){
-			throw std::runtime_error("index out of bounds");
-		}
+		assert(x >= 0 && x < width && "index out of bounds");
 		return (*this)[x];
 	}
     DArraySlice<Ty> operator[](int y) {
@@ -117,15 +113,17 @@ public:
         return P.x >= 0 && P.x < width &&
                 P.y >= 0 && P.y < height;
     }
-    Point shape()const{
+    Point shape()const{ 
         return Point{width,height};
     }
     const Ty & at(Point P)const{
-        if(!in_bounds(P)){
-			throw std::runtime_error("point index out of bounds");
-		}
+		assert(in_bounds(P) && "point index out of bounds");
         return Data[P.y*width + P.x];
 	}
+    Ty & at(Point P){
+        assert(in_bounds(P) && "point index out of bounds");
+        return Data[P.y*width + P.x];
+    }
 	iterator begin() {
         return iterator{ Data.data(), width };
 	}

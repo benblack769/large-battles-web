@@ -1,17 +1,37 @@
 #include "game.hpp"
 #include <iostream>
 #include "game_utils.hpp"
+#include "movefinding.hpp"
 
 
 int main(){
-    GameMove move;
-    DecompMove dmove;
-    DArray2d<int> ints(5,10);
-    ints.at(Point{4,9});
-    for(Point p : point_range(Point{1,2},Point{3,4})){
+    const Point gamesize{35,37};
+    Game game;
+    InitGameInfo init_info{.game_size=gamesize,
+                          .start_player=Player::RED,
+                          .initial_money=50
+                          };
+    for(Point p : point_range(Point{2,5})){
         std::cout << p << "\n";
     }
-
-    std::cout << sizeof(move) << "\n";
-    std::cout << sizeof(dmove) << "\n";
+    Map map(Point{3,6});
+    std::cout << map.shape() << "\n";
+     map.at(Point{2,5}).player;
+    GameMove move{.move=MoveType::GAME_STARTED,
+                    .info=JoinedInfo{.init_game=init_info}};
+    exec_gamemove(game,move);
+    std::cout << game.map.shape() << "\n";
+    game.players.active_player = Player::RED;
+    for(int i = 0; i < 100000; i++){
+        MoveList moves = random_moves(game);
+        for(GameMove move : moves){
+            assert(is_valid(game,move,game.players.active_player));
+            exec_gamemove(game,move);
+        }
+        std::cout <<moves.size() << "\n";
+        GameMove end_turn_move{
+            .move=MoveType::END_TURN,.info=JoinedInfo{}
+        };
+        exec_gamemove(game,end_turn_move);
+    }
 }
