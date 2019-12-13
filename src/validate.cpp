@@ -186,8 +186,8 @@ void assert_target_can_be_equipped(const Game & game,const BuyAttachInfo & instr
         throw validate_error("Target unit cannot equip equipment of selected type");
     }
     SlotType slot = game.stats.get(instr.equip_type).slot;
-    if(!game.map[instr.equip_coord].attachments.slot_filled(slot)){
-        throw validate_error("Building cannot buy any more units this turn. Wait until next turn.");
+    if(target.attachments.slot_filled(slot)){
+        throw validate_error("Attachment slot for this unit is already full!.");
     }
 }
 void valid_buy_attachment(const Game & game,const BuyAttachInfo & instr,Player player){

@@ -33,3 +33,4 @@ struct GameMove{
     MoveType move;
     JoinedInfo info;
 };
+constexpr GameMove NULL_MOVE = GameMove{.move=MoveType::NULL_MOVE,JoinedInfo{}};

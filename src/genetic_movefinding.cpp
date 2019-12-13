@@ -5,7 +5,7 @@
 #include <cassert>
 std::random_device true_rand;
 using randgen = std::default_random_engine;
-using MoveMap = DArray2d<GameMove>;
+using Population = std::vector<MoveList>;
 int rand_int(randgen & gen, int maxsize){
     std::uniform_int_distribution<int> distribution(0,maxsize-1);
     return distribution(gen);
@@ -46,9 +46,9 @@ EnumTy sample_enum(randgen & gen){
     EnumTy sampled_type = static_cast<EnumTy>(rand_int(gen,max_types));
     return sampled_type;
 }
-#define sample_movetype sample_enum<MoveType,MoveType::MAX_MOVE_TYPES>
-#define sample_unittype  sample_enum<UnitType,UnitType::UNIT_TYPES_MAX>
-#define sample_attachtype  sample_enum<AttachType,AttachType::ATTACH_TYPES_MAX>
+MoveType sample_movetype(randgen & gen){ return sample_enum<MoveType,MoveType::MAX_MOVE_TYPES>(gen);}
+UnitType sample_unittype(randgen & gen){ return sample_enum<UnitType,UnitType::UNIT_TYPES_MAX>(gen);}
+AttachType sample_attachtype(randgen & gen){ return sample_enum<AttachType,AttachType::ATTACH_TYPES_MAX>(gen);}
 
 JoinedInfo sample_type(randgen & gen,const Game & game,Point coord,MoveType type){
     Unit unit = game.map.at(coord);
@@ -85,7 +85,7 @@ JoinedInfo sample_type(randgen & gen,const Game & game,Point coord,MoveType type
 }
 GameMove sample_legal_moves(randgen & gen,const Game & game,Point coord){
     const int TYPE_CHANCES = 3;
-    const int CHANCES_PER_TYPE = 5;
+    const int CHANCES_PER_TYPE = 7;
     for(int type_choices = 0; type_choices < TYPE_CHANCES; type_choices++){
         MoveType samp_type;
         do{
@@ -154,15 +154,17 @@ Game continuation(const Game & old_game,const MoveList & moves){
 }
 MoveList mutate(randgen & gen,const MoveList & moves,const Game & game){
     //tries to mutate a few times before giving up
-    for(int mut = 0; mut < 10; mut++){
+    for(int mut : range(10)){
         MoveList res = moves;
+        bool did_mutate = false;
         int mutate_type = rand_int(gen,3);
-        if(mutate_type == 0){
+        if(mutate_type == 0 && moves.size() > 1){
             //random order swaps
             int swap_count = rand_int(gen,10);
             for(int i = 0; i < swap_count; i++){
                 std::swap(res[rand_int(gen,res.size())],res[rand_int(gen,res.size())]);
             }
+            did_mutate = true;
         }
         else if(mutate_type == 1){
             //random addition (being careful about trying your best to add a ledgal move)
@@ -172,14 +174,16 @@ MoveList mutate(randgen & gen,const MoveList & moves,const Game & game){
             GameMove move_to_add = sample_legal_moves(gen,cur_game,add_point);
             if(move_to_add.move != MoveType::NULL_MOVE){
                 res.push_back(move_to_add);
+                did_mutate = true;
             }
         }
-        else if (mutate_type == 2){
+        else if (mutate_type == 2 && moves.size() > 0){
             //random removal
             int rand_idx = rand_int(gen,res.size());
             res.erase(res.begin()+rand_idx);
+            did_mutate = true;
         }
-        if(is_valid(game,res)){
+        if(did_mutate && is_valid(game,res)){
             return res;
         }
     }
@@ -195,31 +199,109 @@ Point move_point(GameMove move){
     default: assert("bad movetype"); return Point{};
     }
 }
-using MoveMap = DArray2d<GameMove>;
-MoveMap to_movemap(Point gamesize,const MoveList & moves){
-    MoveMap move_map(gamesize);
-    move_map.fill(GameMove{.move=MoveType::NULL_MOVE,.info=JoinedInfo{}});
-    for(GameMove move : moves){
-        move_map.at(move_point(move)) = move;
-    }
-    return move_map;
-}
 Point crossover_shape(randgen & gen,Point gamesize){
     int size_type = rand_int(gen,3);
     int max_size = size_type == 0 ? 3 : size_type == 1 ? 7 : 15;
     assert(max_size < gamesize.x && max_size < gamesize.y);
     return rand_point(gen,Point{max_size,max_size});
 }
+bool in_range(int pos,int left,int size){
+    return pos >= left && pos < left + size;
+}
+bool in_section(Point pos, Point corner, Point size){
+    return in_range(pos.x,corner.x,size.x) &&
+           in_range(pos.y,corner.y,size.y);
+}
 MoveList crossover(randgen & gen,const Game & game,const MoveList & moves1,const MoveList & moves2){
     Point gamesize = game.map.shape();
-    MoveMap map1 = to_movemap(gamesize,moves1);
-    MoveMap map2 = to_movemap(gamesize,moves2);
+    //tries crossover a few times before giving up
+    for(int i : range(10)){
+        Point cross_size = crossover_shape(gen,gamesize);
+        Point cross_pos = rand_point(gen,gamesize-cross_size);
 
-    Point cross_size = crossover_shape(gen,gamesize);
-    Point cross_pos = rand_point(gen,gamesize-cross_size);
+        MoveList result;
+        bool any_changes = false;
+        for(GameMove move : moves1){
+            if(!in_section(move_point(move),cross_pos,cross_size)){
+                result.push_back(move);
+                any_changes = true;
+            }
+        }
 
-    for(Point cp : point_range(cross_pos,cross_pos+cross_size)){
-        map1[cp] = map2[cp];
+        for(GameMove move : moves2){
+            if(in_section(move_point(move),cross_pos,cross_size)){
+                result.push_back(move);
+                any_changes = true;
+            }
+        }
+        if(any_changes && is_valid(game,result)){
+            return result;
+        }
     }
-    return map1;
+    return moves1;
+}
+bool strict_less_eq(const Heuristics & h1,const Heuristics & h2){
+    for(size_t i : range(NUM_HEURISTICS)){
+        if(h1[i] > h2[i]){
+            return false;
+        }
+    }
+    return true;
+}
+void compete(randgen & gen,const Game & game,Population & pop,size_t reduce_size){
+    assert(reduce_size > (1 << NUM_HEURISTICS) && "population size cannot be reliably reduced below combinations of heuristics");
+    //std::vector<Game> resulting_game(pop.size());
+    size_t pop_size = pop.size();
+    std::vector<Heuristics> game_evals(pop_size);
+    for(int i : range(pop_size)){
+        Game resulting_game = game;
+        for(GameMove m : pop[i]){
+            exec_gamemove(resulting_game,m);
+        }
+        game_evals[i] = get_heuristcs(resulting_game,resulting_game.players.active_player);
+    }
+    std::vector<char> has_eliminated(pop_size,false);
+    size_t elim_count = 0;
+    while(elim_count < pop_size - reduce_size){
+        int i1 = rand_int(gen,pop_size);
+        int i2 = rand_int(gen,pop_size);
+        if(!has_eliminated[i1] &&
+                strict_less_eq(game_evals[i1],game_evals[i2])){
+            has_eliminated[i1] = true;
+            elim_count++;
+        }
+    }
+    Population new_pop;
+    for(size_t i : range(pop_size)){
+        if(!has_eliminated[i]){
+            new_pop.push_back(std::move(pop[i]));
+        }
+    }
+    pop.swap(new_pop);
+}
+MoveList genetic_movefinding(const Game & game){
+    randgen gen(true_rand());
+
+    const int POP_SIZE = 40;
+    const int GENERATIONS = 20;
+    const int MUTATE_SIZE = 100;
+    const int CROSSOVER_SIZE = 100;
+
+    Population population(POP_SIZE);
+    for(size_t i : range(POP_SIZE)){
+        population[i] = random_moves(gen,game);
+    }
+    for(size_t g : range(GENERATIONS)){
+        for(size_t j  :range(MUTATE_SIZE)){
+            size_t src = rand_int(gen,POP_SIZE);
+            population.push_back(mutate(gen,population[src],game));
+        }
+        for(size_t j : range(CROSSOVER_SIZE)){
+            size_t src1 = rand_int(gen,POP_SIZE);
+            size_t src2 = rand_int(gen,POP_SIZE);
+            population.push_back(crossover(gen,game,population[src1],population[src2]));
+        }
+        compete(gen,game,population,POP_SIZE);
+    }
+    return population[0];
 }

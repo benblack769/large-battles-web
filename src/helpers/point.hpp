@@ -15,6 +15,9 @@ struct Point{
 inline Point abs(Point P){
     return Point{abs(P.x), abs(P.y)};
 }
+inline Point to_square(int32_t s){
+    return Point{s,s};
+}
 inline bool operator==(Point P1, Point P2){
     return P1.x == P2.x && P1.y == P2.y;
 }

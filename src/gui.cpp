@@ -95,7 +95,7 @@ int main(){
     std::cout << "initted succesfuuly" << std::endl;
     std::cout << game.map.shape() << std::endl;
     while(!should_exit()){
-        MoveList moves = random_moves(game,game.players.active_player);
+        MoveList moves = genetic_movefinding(game);
         for(GameMove move : moves){
             assert(is_valid(game,move,game.players.active_player));
             exec_gamemove(game,move);

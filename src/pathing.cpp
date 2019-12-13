@@ -1,7 +1,7 @@
 #include "pathing.hpp"
 #include <array>
-#include <unordered_set>
 #include "game.hpp"
+#include "two_d_array.h"
 
 const std::array<Point,8> coords_around = {
     Point{1,1},
@@ -14,15 +14,30 @@ const std::array<Point,8> coords_around = {
     Point{0,-1}
 };
 
+template<class Ty>
+class OffsetArray2d{
+    Point offset;
+    DArray2d<Ty> data;
+public:
+    OffsetArray2d(Point in_offset, Point size):
+        offset(in_offset),
+        data(size){}
+    Ty & operator [](Point p){
+        return data[p-offset];
+    }
+};
 bool is_possible_move(const Map & map,Point start,Point end,int range){
+    if(distance(start,end) > range){
+        return false;
+    }
     std::vector<Point> cur_list;
     std::vector<Point> next_list;
-    std::unordered_set<Point> visited;
+    OffsetArray2d<char> visited(start-to_square(range),to_square(range*2+1+1));
     cur_list.push_back(start);
     for(int r = 0; r < range && cur_list.size(); r++){
         for(Point curp : cur_list){
-            if(!visited.count(curp)){
-                visited.insert(curp);
+            if(!visited[curp]){
+                visited[curp] = true;
                 for(Point off : coords_around){
                     Point nextp = curp + off;
                     if(nextp == end){

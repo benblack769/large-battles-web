@@ -16,4 +16,5 @@ void decomp_gamemove(MoveAccum & accum, const Game & game, const GameMove & inst
 void exec_gamemove(Game & game, const GameMove & instr);
 void consume_decomped(Game & game,const DecompMove & move);
 constexpr int NUM_HEURISTICS = 4;
-std::array<int,NUM_HEURISTICS> get_heuristcs(const Game & game,Player player);
+using Heuristics = std::array<int,NUM_HEURISTICS>;
+Heuristics get_heuristcs(const Game & game,Player player);

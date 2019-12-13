@@ -28,7 +28,7 @@ endif()
 add_executable(test_main
     ${CPP_SOURCE_DIR}/test_main.cpp
 )
-target_compile_options(game_lib PRIVATE -Wall -Wextra)
+target_compile_options(game_lib PRIVATE -Wall -Wextra -Wno-unused-variable)
 
 set_property(TARGET game_lib PROPERTY CXX_STANDARD 17)
 if(${MAKE_GUI})

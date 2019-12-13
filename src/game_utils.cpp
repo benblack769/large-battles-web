@@ -25,7 +25,7 @@ void exec_gamemove(Game & game, const GameMove & instr){
         consume_decomped(game,decomp);
     }
 }
-std::array<int,NUM_HEURISTICS> get_heuristcs(const Game & game,Player player){
+Heuristics get_heuristcs(const Game & game,Player player){
     int cash = game.players.get(player).money;
     int income = get_current_income(game,player);
     int military_assets = 0;
@@ -43,7 +43,7 @@ std::array<int,NUM_HEURISTICS> get_heuristcs(const Game & game,Player player){
             }
         }
     }
-    return std::array<int,NUM_HEURISTICS> {
+    return Heuristics {
         cash,
         income,
         military_assets,

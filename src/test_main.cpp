@@ -23,7 +23,7 @@ int main(){
     std::cout << game.map.shape() << "\n";
     game.players.active_player = Player::RED;
     for(int i = 0; i < 100000; i++){
-        MoveList moves = random_moves(game);
+        MoveList moves = genetic_movefinding(game);
         for(GameMove move : moves){
             assert(is_valid(game,move,game.players.active_player));
             exec_gamemove(game,move);
@@ -33,5 +33,6 @@ int main(){
             .move=MoveType::END_TURN,.info=JoinedInfo{}
         };
         exec_gamemove(game,end_turn_move);
+        std::cout << game.players.order[0].money << " " << game.players.order[1].money << "\n";
     }
 }
