@@ -3,3 +3,5 @@ SDL
 *.user
 release
 .vscode
+minsize
+
