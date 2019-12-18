@@ -73,7 +73,7 @@ validate_error assert_active_player(const Game & game,Player player){
     return valid();
 }
 validate_error assert_unit_active(const Map & map,Point coord){
-    int num_active_turns = map[coord].status.turns_til_active;
+    int num_active_turns = map[coord].unit.status.turns_til_active;
     assert_ret(num_active_turns == 0,"Unit needs more turns until active");
     return valid();
 }
@@ -89,7 +89,7 @@ validate_error valid_move(const Game & game,const MoveInfo & instr,Player player
     ret_if(assert_empty(game.map,instr.end_coord));
     ret_if(assert_active_unit(game,instr.start_coord,player));
     ret_if(assert_actual_move(instr.start_coord,instr.end_coord));
-    Unit unit = game.map[instr.start_coord];
+    Unit unit = game.map[instr.start_coord].unit;
     assert(player == unit.player);
     ret_if(assert_hasnt_moved(unit));
     ret_if(assert_movement_range(game,instr,unit));
@@ -110,7 +110,7 @@ validate_error valid_attack(const Game & game,const AttackInfo & instr,Player pl
     ret_if(assert_is_unit(game.map,instr.target_coord));
     ret_if(assert_player_is_not(game.map,instr.target_coord,player));
     ret_if(assert_actual_attack(instr.source_coord,instr.target_coord));
-    Unit unit = game.map[instr.source_coord];
+    Unit unit = game.map[instr.source_coord].unit;
     ret_if(assert_hasnt_attacked(unit));
     ret_if(assert_is_possible_attack(game,instr,unit));
     return valid();
@@ -132,7 +132,7 @@ validate_error assert_buildable(const Game & game,UnitType build_type){
 }
 
 validate_error assert_builder(const Game & game,Point coord){
-    Unit unit = game.map[coord];
+    Unit unit = game.map[coord].unit;
     assert_ret(game.stats.get(unit.unit_type).builder,"Cannot build over a unit that is not a builder!");
     return valid();
 }
@@ -151,7 +151,7 @@ validate_error valid_end_turn(const Game & game,Player player){
     return valid();
 }
 validate_error assert_building_can_build(const Game & game,const BuyUnitInfo & instr){
-    Unit building = game.map[instr.building_coord];
+    Unit building = game.map[instr.building_coord].unit;
     UnitStat building_stats = game.stats.get(building.unit_type);
     assert_ret(building_stats.can_make.includes(instr.buy_type),"Selected building cannot make unit of selected type");
     assert_ret(building.status.buys_left > 0,"Building cannot buy any more units this turn. Wait until next turn.");
@@ -167,14 +167,14 @@ validate_error valid_buy_unit(const Game & game,const BuyUnitInfo & instr,Player
     return valid();
 }
 validate_error assert_building_can_equip(const Game & game,const BuyAttachInfo & instr){
-    Unit building = game.map[instr.building_coord];
+    Unit building = game.map[instr.building_coord].unit;
     UnitStat building_stats = game.stats.get(building.unit_type);
     assert_ret(building_stats.can_make_equip.includes(instr.equip_type),"Selected building cannot make unit of selected type");
     assert_ret(building.status.buys_left > 0,"Building cannot buy any more equipment this turn. Wait until next turn.");
     return valid();
 }
 validate_error assert_target_can_be_equipped(const Game & game,const BuyAttachInfo & instr){
-    Unit target = game.map[instr.equip_coord];
+    Unit target = game.map[instr.equip_coord].unit;
     UnitStat target_stats = game.stats.get(target.unit_type);
     assert_ret(target_stats.viable_attachments.includes(instr.equip_type),"Target unit cannot equip equipment of selected type");
     SlotType slot = game.stats.get(instr.equip_type).slot;

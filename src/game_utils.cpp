@@ -2,18 +2,18 @@
 
 int get_player_assets(const Game & game,Player player){
     int sum = 0;
-    for(const Unit & unit : game.map.Data){
-        if(is_player(unit,player)){
-            sum += game.stats.total_stats(unit).cost;
+    for(const MapItem & item : game.map.Data){
+        if(is_player(item,player)){
+            sum += game.stats.total_stats(item.unit).cost;
         }
     }
     return sum;
 }
 int get_current_income(const Game & game,Player player){
     int sum = 0;
-    for(const Unit & unit : game.map.Data){
-        if(is_player(unit,player)){
-            sum += game.stats.total_stats(unit).income;
+    for(const MapItem & item : game.map.Data){
+        if(is_player(item,player)){
+            sum += game.stats.total_stats(item.unit).income;
         }
     }
     return sum;
@@ -30,9 +30,9 @@ Heuristics get_heuristcs(const Game & game,Player player){
     int income = get_current_income(game,player);
     int military_assets = 0;
     int other_assets = 0;
-    for(Unit unit : game.map.Data){
-        if(is_player(unit,player)){
-            UnitStat ustat = game.stats.total_stats(unit);
+    for(MapItem item : game.map.Data){
+        if(is_player(item,player)){
+            UnitStat ustat = game.stats.total_stats(item.unit);
             int cur_cost = ustat.cost;
             bool is_military = ustat.attack_range > 1;
             if(is_military){

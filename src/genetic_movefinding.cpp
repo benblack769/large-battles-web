@@ -51,8 +51,8 @@ UnitType sample_unittype(randgen & gen){ return sample_enum<UnitType,UnitType::U
 AttachType sample_attachtype(randgen & gen){ return sample_enum<AttachType,AttachType::ATTACH_TYPES_MAX>(gen);}
 
 JoinedInfo sample_type(randgen & gen,const Game & game,Point coord,MoveType type){
-    Unit unit = game.map.at(coord);
-    assert(unit.category == Category::UNIT);
+    Unit unit = game.map.at(coord).unit;
+    assert(game.map.at(coord).category == Category::UNIT);
     UnitStat stats = game.stats.total_stats(unit);
     int BUY_RANGE = 1;
     switch(type){
@@ -108,7 +108,7 @@ std::vector<Point> unit_points(const Game & game,Player player){
     std::vector<Point> res;
     for(Point p : point_range(game.map.shape())){
         if(game.map[p].category == Category::UNIT &&
-                game.map[p].player == player){
+                game.map[p].unit.player == player){
             res.push_back(p);
         }
     }

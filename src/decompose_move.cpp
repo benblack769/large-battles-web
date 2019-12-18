@@ -36,7 +36,7 @@ void add(MoveAccum & accum,InitGameDecomp instr){
 
 void decomp_move(MoveAccum & accum,const Game & game,const MoveInfo & instr){
     //do_move(game,instr.start_coord,instr.end_coord);
-    UnitStatus new_status = game.map[instr.start_coord].status;
+    UnitStatus new_status = game.map[instr.start_coord].unit.status;
     new_status.moved = true;
     add(accum,SetStatusDecomp{
             .coord=instr.start_coord,
@@ -48,8 +48,8 @@ void decomp_move(MoveAccum & accum,const Game & game,const MoveInfo & instr){
         });
 }
 void decomp_attack(MoveAccum & accum,const Game & game,const AttackInfo & instr){
-    Unit source_unit = game.map[instr.source_coord];
-    Unit target_unit = game.map[instr.source_coord];
+    Unit source_unit = game.map[instr.source_coord].unit;
+    Unit target_unit = game.map[instr.source_coord].unit;
     int source_attack = game.stats.total_stats(source_unit).attack_strength;
     int new_hp = target_unit.status.HP - source_attack;
     if(new_hp <= 0){
@@ -97,8 +97,8 @@ UnitStatus reset_status(UnitStatus status,const UnitStat & stat){
 }
 void all_status_resets(MoveAccum & accum,const Game & game,Player active_player){
     for(Point unit_coord : point_range(game.map.shape())){
-        Unit unit = game.map.at(unit_coord);
-        if(is_player(unit,active_player)){
+        Unit unit = game.map[unit_coord].unit;
+        if(is_player(game.map[unit_coord],active_player)){
             UnitStatus new_status = reset_status(unit.status,game.stats.get(unit.unit_type));
 
             add(accum,SetStatusDecomp{
@@ -162,7 +162,7 @@ void decomp_buy_unit(MoveAccum & accum,const Game & game,const BuyUnitInfo & ins
             .new_status=init_status
         });
     //set build stats
-    UnitStatus new_build_status = game.map.at(instr.building_coord).status;
+    UnitStatus new_build_status = game.map.at(instr.building_coord).unit.status;
     new_build_status.buys_left -= 1;
 
     add(accum,SetStatusDecomp{
@@ -176,7 +176,7 @@ void decomp_buy_unit(MoveAccum & accum,const Game & game,const BuyUnitInfo & ins
 }
 void decomp_buy_attachment(MoveAccum & accum,const Game & game,const BuyAttachInfo & instr){
     AttachmentStat stats = game.stats.get(instr.equip_type);
-    UnitStatus new_equip_status = game.map.at(instr.equip_coord).status;
+    UnitStatus new_equip_status = game.map.at(instr.equip_coord).unit.status;
     new_equip_status.attacked = true;
     new_equip_status.moved = true;
     add(accum,AddEquipDecomp{
@@ -189,7 +189,7 @@ void decomp_buy_attachment(MoveAccum & accum,const Game & game,const BuyAttachIn
         });
 
     //set build stats
-    UnitStatus new_build_status = game.map.at(instr.building_coord).status;
+    UnitStatus new_build_status = game.map.at(instr.building_coord).unit.status;
     new_build_status.buys_left -= 1;
 
     add(accum,SetStatusDecomp{

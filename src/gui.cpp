@@ -62,15 +62,15 @@ public:
     void refresh_screen(const Map & map){
         sdl_clear_screen(sdl);
         for(Point p : point_range(gamesize)){
-            Unit u = map.at(p);
+            MapItem u = map.at(p);
             Point dp = p * img_size;
             sdl_draw_bitmap(sdl,background,dp.x,dp.y);
             if(u.category == Category::UNIT){
-                sdl_draw_bitmap(sdl,unit_textures[u.unit_type],dp.x,dp.y);
+                sdl_draw_bitmap(sdl,unit_textures[u.unit.unit_type],dp.x,dp.y);
                 for(SlotType slot : all_slots()){
-                    if(u.attachments.slot_filled(slot)){
-                        std::cout << static_cast<int>(u.attachments.at(slot)) << std::endl;
-                        sdl_draw_bitmap(sdl,attach_textures[u.attachments.at(slot)],dp.x,dp.y);
+                    if(u.unit.attachments.slot_filled(slot)){
+                        std::cout << static_cast<int>(u.unit.attachments.at(slot)) << std::endl;
+                        sdl_draw_bitmap(sdl,attach_textures[u.unit.attachments.at(slot)],dp.x,dp.y);
                     }
                 }
             }

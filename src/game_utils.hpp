@@ -4,9 +4,9 @@
 
 int get_player_assets(const Game & game,Player player);
 int get_current_income(const Game & game,Player player);
-inline bool is_player(const Unit & unit,Player player){
-    return unit.category == Category::UNIT &&
-            unit.player == player;
+inline bool is_player(const MapItem & item,Player player){
+    return item.category == Category::UNIT &&
+            item.unit.player == player;
 }
 
 using MoveAccum = std::vector<DecompMove>;

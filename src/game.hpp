@@ -6,7 +6,7 @@
 #include "decomposed_move.hpp"
 #include <array>
 
-using Map = DArray2d<Unit>;
+using Map = DArray2d<MapItem>;
 struct PlayerInfo{
     int money;
 };

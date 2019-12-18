@@ -9,20 +9,21 @@ void consume_victory(Game & ,const VictoryDecomp & ){
 
 void consume_move(Game & game,const MoveDecomp & instr){
     game.map[instr.end_coord] = game.map[instr.start_coord];
-    game.map[instr.start_coord] = create_empty();
+    game.map[instr.start_coord].category = Category::EMPTY;
 }
 void consume_destroy(Game & game,const DestroyDecomp & instr){
-    game.map[instr.coord] = create_empty();
+    game.map[instr.coord].category = Category::EMPTY;
 }
 void consume_create(Game & game,const CreateDecomp & instr){
-    game.map[instr.coord] = create_unit(instr.unit_type,game.players.active_player);
+    game.map[instr.coord].category = Category::UNIT;
+    game.map[instr.coord].unit = create_unit(instr.unit_type,game.players.active_player);
 }
 void consume_add_equip(Game & game,const AddEquipDecomp & instr){
     SlotType equip_slot = game.stats.get(instr.equip_type).slot;
-    game.map[instr.coord].attachments.place(equip_slot,instr.equip_type);
+    game.map[instr.coord].unit.attachments.place(equip_slot,instr.equip_type);
 }
 void consume_set_status(Game & game,const SetStatusDecomp & instr){
-    game.map[instr.coord].status = instr.new_status;
+    game.map[instr.coord].unit.status = instr.new_status;
 }
 void consume_money_change(Game & game,const SetMoneyDecomp & instr){
     game.players.get(game.players.active_player).money = instr.new_amnt;
@@ -32,8 +33,9 @@ void consume_set_active_player(Game & game,const SetActivePlayerDecomp & instr){
 }
 void consume_init_game(Game & game,const InitGameDecomp & instr){
     game.map = Map(instr.game_size);
-    for(Unit & u : game.map.Data){
-        u = create_empty();
+    for(MapItem & u : game.map.Data){
+        u.category = Category::EMPTY;
+        u.land = LandType::FERTILE;
     }
 }
 void consume_decomped(Game & game,const DecompMove & move){

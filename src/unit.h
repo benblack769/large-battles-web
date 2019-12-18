@@ -4,6 +4,7 @@
 #include "RangeIterator.h"
 
 enum class Category {UNIT,EMPTY};
+enum class LandType {FERTILE,BARREN};
 enum class Player {RED,BLUE,NEITHER_PLAYER,SERVER_PLAYER};
 enum class UnitType {
     SOLDIER,
@@ -118,21 +119,25 @@ struct UnitStatus{
     bool attacked;
 };
 struct Unit{
-    Category category;
     Player player;
     UnitType unit_type;
     UnitStatus status;
     Slots attachments;
 };
+struct MapItem{
+    Category category;
+    LandType land;
+    Unit unit;
+};
 inline Unit create_unit(UnitType unit_ty,Player player){
     Unit u;
-    u.category = Category::UNIT;
     u.player = player;
     u.unit_type = unit_ty;
     return u;
 }
-inline Unit create_empty(){
-    Unit u;
+inline MapItem create_fertile(){
+    MapItem u;
     u.category = Category::EMPTY;
+    u.land = LandType::FERTILE;
     return u;
 }

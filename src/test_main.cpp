@@ -16,7 +16,7 @@ int main(){
     }
     Map map(Point{3,6});
     std::cout << map.shape() << "\n";
-     map.at(Point{2,5}).player;
+     map.at(Point{2,5}).unit.player;
     GameMove move{.move=MoveType::GAME_STARTED,
                     .info=JoinedInfo{.init_game=init_info}};
     exec_gamemove(game,move);
@@ -28,7 +28,7 @@ int main(){
             assert(is_valid(game,move,game.players.active_player));
             exec_gamemove(game,move);
         }
-        std::cout <<moves.size() << "\n";
+        std::cout <<moves.size() << std::endl;
         GameMove end_turn_move{
             .move=MoveType::END_TURN,.info=JoinedInfo{}
         };
