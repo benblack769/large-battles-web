@@ -3,12 +3,20 @@
 #include <cassert>
 #include <iostream>
 
+inline Unit create_unit(UnitType unit_ty,Player player){
+    Unit u;
+    u.player = player;
+    u.unit_type = unit_ty;
+    return u;
+}
+
 void consume_victory(Game & ,const VictoryDecomp & ){
     //noop because this functionality needs to be handled elsewhere
 }
 
 void consume_move(Game & game,const MoveDecomp & instr){
-    game.map[instr.end_coord] = game.map[instr.start_coord];
+    game.map[instr.end_coord].unit = game.map[instr.start_coord].unit;
+    game.map[instr.end_coord].category = Category::UNIT;
     game.map[instr.start_coord].category = Category::EMPTY;
 }
 void consume_destroy(Game & game,const DestroyDecomp & instr){
@@ -28,6 +36,12 @@ void consume_set_status(Game & game,const SetStatusDecomp & instr){
 void consume_money_change(Game & game,const SetMoneyDecomp & instr){
     game.players.get(game.players.active_player).money = instr.new_amnt;
 }
+void consume_land_value_change(Game & game,const SetLandValue & instr){
+    game.map[instr.coord].value = instr.new_value;
+    if(instr.new_value == 0){
+        game.map[instr.coord].land = LandType::BARREN;
+    }
+}
 void consume_set_active_player(Game & game,const SetActivePlayerDecomp & instr){
     game.players.active_player = instr.new_active_player;
 }
@@ -36,6 +50,7 @@ void consume_init_game(Game & game,const InitGameDecomp & instr){
     for(MapItem & u : game.map.Data){
         u.category = Category::EMPTY;
         u.land = LandType::FERTILE;
+        u.value = 50;
     }
 }
 void consume_decomped(Game & game,const DecompMove & move){
@@ -47,6 +62,7 @@ void consume_decomped(Game & game,const DecompMove & move){
     case DecompType::ADD_EQUIPMENT: consume_add_equip(game,move.info.equip); break;
     case DecompType::SET_STATUS: consume_set_status(game,move.info.status); break;
     case DecompType::SET_MONEY: consume_money_change(game,move.info.money); break;
+    case DecompType::SET_LAND_VALUE: consume_land_value_change(game,move.info.value); break;
     case DecompType::SET_ACTIVE_PLAYER: consume_set_active_player(game,move.info.active_player); break;
     case DecompType::INIT_GAME_STATE: consume_init_game(game,move.info.init_game); break;
     default: assert(false && "bad decomp move type");

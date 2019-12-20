@@ -33,6 +33,7 @@ UnitStat zero_stat(){
     u.cost=0;
     u.max_HP=0;
     u.upkeep=0;
+    u.land_drain=0;
     u.activation_delay=0;
     u.buildable=false;
     u.buys_per_turn=0;
@@ -91,6 +92,7 @@ AllStats::AllStats(){
     farm.cost = 50;
     farm.buildable = true;
     farm.income = 5;
+    farm.land_drain = 1;
     //farm.degrade_time = 50;
     farm.activation_delay = 1;
 

@@ -27,6 +27,9 @@ void add(MoveAccum & accum,SetStatusDecomp instr){
 void add(MoveAccum & accum,SetMoneyDecomp instr){
     accum.push_back(DecompMove{.move=DecompType::SET_MONEY,.info=JoinedDecomp{.money=instr}});
 }
+void add(MoveAccum & accum,SetLandValue instr){
+    accum.push_back(DecompMove{.move=DecompType::SET_LAND_VALUE,.info=JoinedDecomp{.value=instr}});
+}
 void add(MoveAccum & accum,SetActivePlayerDecomp instr){
     accum.push_back(DecompMove{.move=DecompType::SET_ACTIVE_PLAYER,.info=JoinedDecomp{.active_player=instr}});
 }
@@ -108,6 +111,15 @@ void all_status_resets(MoveAccum & accum,const Game & game,Player active_player)
         }
     }
 }
+bool player_inactive(const Game & game,Player player){
+    for(MapItem item : game.map.Data){
+        if(is_player(item,player)){
+            UnitStat stat = game.stats.total_stats(item.unit);
+            if()
+        }
+    }
+    return true;
+}
 int get_effective_player_money(const Game & game,Player player){
     int player_assets = get_player_assets(game,player);
     int player_cash = game.players.get(player).money;
@@ -132,6 +144,25 @@ Player winning_player(const Game & game){
                 moneyP2 >= moneyP1*WIN_RATIO ? Player::BLUE :
                     Player::NEITHER_PLAYER;
 }
+void all_land_updates(MoveAccum & accum,const Game & game){
+    Player player = game.players.active_player;
+    for(Point p : point_range(game.map.shape())){
+        MapItem item = game.map[p];
+        if(is_player(item,player)){
+            UnitStat stats = game.stats.total_stats(item.unit);
+            if(stats.land_drain){
+                if(item.value > 0){
+                    int new_landval = item.value - stats.land_drain;
+                    add(accum,SetLandValue{.coord=p,
+                                       .new_value=new_landval});
+                }
+                else{
+                    add(accum,DestroyDecomp{.coord=p});
+                }
+            }
+        }
+    }
+}
 void decomp_end_turn(MoveAccum & accum,const Game & game){
     Player win_player = winning_player(game);
     if(win_player != Player::NEITHER_PLAYER){
@@ -142,6 +173,7 @@ void decomp_end_turn(MoveAccum & accum,const Game & game){
         int prev_money = game.players.get(player).money;
         int new_money = get_current_income(game,player);
         all_status_resets(accum,game,player);
+        all_land_updates(accum,game);
         add(accum,SetMoneyDecomp{
                 .new_amnt=prev_money + new_money
             });

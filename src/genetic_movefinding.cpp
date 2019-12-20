@@ -282,10 +282,10 @@ void compete(randgen & gen,const Game & game,Population & pop,size_t reduce_size
 MoveList genetic_movefinding(const Game & game){
     randgen gen(true_rand());
 
-    const int POP_SIZE = 40;
-    const int GENERATIONS = 20;
-    const int MUTATE_SIZE = 100;
-    const int CROSSOVER_SIZE = 100;
+    const int POP_SIZE = 5;
+    const int GENERATIONS = 5;
+    const int MUTATE_SIZE = 20;
+    const int CROSSOVER_SIZE = 20;
 
     Population population(POP_SIZE);
     for(size_t i : range(POP_SIZE)){

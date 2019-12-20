@@ -9,6 +9,7 @@ struct UnitStat{
     int16_t cost;
     int16_t max_HP;
     int16_t upkeep;
+    int16_t land_drain;
     int16_t activation_delay;
     AttachmentList viable_attachments;
     //economic stats

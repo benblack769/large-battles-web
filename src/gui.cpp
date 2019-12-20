@@ -6,8 +6,12 @@
 #include "game_utils.hpp"
 #include "movefinding.hpp"
 
-std::string background_fname(){
-    return "Background.bmp";
+std::string get_fname(LandType land){
+    switch(land){
+    case LandType::FERTILE:return "Background.bmp";
+    case LandType::BARREN:return "Background_infertile.bmp";
+    default: assert(false && "bad land type to get_fname");
+    }
 }
 std::string get_fname(UnitType unit){
     switch(unit){
@@ -40,15 +44,17 @@ class Renderer{
     int img_size;
     Point gamesize;
     AttachArray<SDL_Texture*> attach_textures;
+    LandArray<SDL_Texture*> land_textures;
     UnitArray<SDL_Texture*> unit_textures;
-    SDL_Texture* background;
     SDL_info * sdl;
 public:
     Renderer(Point gamesize,int img_size){
         this->img_size = img_size;
         this->gamesize = gamesize;
         sdl = sdl_init(img_size*gamesize.x,img_size*gamesize.y,"hithere");
-        background = sdl_load_bitmap(sdl,"images/"+background_fname());
+        for(LandType land : all_land_types()){
+            land_textures[land] = sdl_load_bitmap(sdl,"images/"+get_fname(land));
+        }
         for(AttachType att : all_attachs()){
             attach_textures[att] = sdl_load_bitmap(sdl,"images/"+get_fname(att));
         }
@@ -64,7 +70,7 @@ public:
         for(Point p : point_range(gamesize)){
             MapItem u = map.at(p);
             Point dp = p * img_size;
-            sdl_draw_bitmap(sdl,background,dp.x,dp.y);
+            sdl_draw_bitmap(sdl,land_textures[u.land],dp.x,dp.y);
             if(u.category == Category::UNIT){
                 sdl_draw_bitmap(sdl,unit_textures[u.unit.unit_type],dp.x,dp.y);
                 for(SlotType slot : all_slots()){
@@ -105,6 +111,6 @@ int main(){
         };
         exec_gamemove(game,end_turn_move);
         renderer.refresh_screen(game.map);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 }

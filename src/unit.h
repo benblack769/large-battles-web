@@ -4,7 +4,11 @@
 #include "RangeIterator.h"
 
 enum class Category {UNIT,EMPTY};
-enum class LandType {FERTILE,BARREN};
+enum class LandType {
+    FERTILE,
+    BARREN,
+    LAND_TYPES_MAX// keep this at the end, serves to count number of land types
+};
 enum class Player {RED,BLUE,NEITHER_PLAYER,SERVER_PLAYER};
 enum class UnitType {
     SOLDIER,
@@ -40,10 +44,12 @@ enum class SlotType{
 inline auto all_slots(){ return enum_range(SlotType::SLOT_TYPES_MAX);}
 inline auto all_attachs(){ return enum_range(AttachType::ATTACH_TYPES_MAX);}
 inline auto all_units(){ return enum_range(UnitType::UNIT_TYPES_MAX);}
+inline auto all_land_types(){ return enum_range(LandType::LAND_TYPES_MAX);}
 
 constexpr size_t MAX_ATTACHMENTS = static_cast<int>(AttachType::ATTACH_TYPES_MAX);
 constexpr size_t MAX_UNITS = static_cast<int>(UnitType::UNIT_TYPES_MAX);
 constexpr size_t MAX_SLOTS = static_cast<int>(SlotType::SLOT_TYPES_MAX);
+constexpr size_t MAX_LAND_TYPES = static_cast<int>(LandType::LAND_TYPES_MAX);
 inline AttachType attach_of(size_t x){
     assert(x >= MAX_ATTACHMENTS && "bad attachment found");
     return static_cast<AttachType>(x);
@@ -94,6 +100,9 @@ template<class DataTy>
 using AttachArray = EnumArray<AttachType,DataTy,MAX_ATTACHMENTS>;
 template<class DataTy>
 using UnitArray = EnumArray<UnitType,DataTy,MAX_UNITS>;
+template<class DataTy>
+using LandArray = EnumArray<LandType,DataTy,MAX_LAND_TYPES>;
+
 struct Slots{
     std::array<AttachType,MAX_SLOTS> data;
     Slots(){
@@ -127,17 +136,6 @@ struct Unit{
 struct MapItem{
     Category category;
     LandType land;
+    int value;
     Unit unit;
 };
-inline Unit create_unit(UnitType unit_ty,Player player){
-    Unit u;
-    u.player = player;
-    u.unit_type = unit_ty;
-    return u;
-}
-inline MapItem create_fertile(){
-    MapItem u;
-    u.category = Category::EMPTY;
-    u.land = LandType::FERTILE;
-    return u;
-}
