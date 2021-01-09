@@ -101,11 +101,11 @@ int main(){
     std::cout << "initted succesfuuly" << std::endl;
     std::cout << game.map.shape() << std::endl;
     while(!should_exit()){
-        MoveList moves = genetic_movefinding(game);
+        /*MoveList moves = genetic_movefinding(game);
         for(GameMove move : moves){
             assert(is_valid(game,move,game.players.active_player));
-            exec_gamemove(game,move);
-        }
+            //exec_gamemove(game,move);
+        }*/
         GameMove end_turn_move{
             .move=MoveType::END_TURN,.info=JoinedInfo{}
         };

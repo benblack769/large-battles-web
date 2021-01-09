@@ -115,7 +115,7 @@ bool player_inactive(const Game & game,Player player){
     for(MapItem item : game.map.Data){
         if(is_player(item,player)){
             UnitStat stat = game.stats.total_stats(item.unit);
-            if()
+            //if()
         }
     }
     return true;

@@ -23,6 +23,7 @@ int main(){
     std::cout << game.map.shape() << "\n";
     game.players.active_player = Player::RED;
     for(int i = 0; i < 100000; i++){
+        //if(game)
         MoveList moves = genetic_movefinding(game);
         for(GameMove move : moves){
             assert(is_valid(game,move,game.players.active_player));
